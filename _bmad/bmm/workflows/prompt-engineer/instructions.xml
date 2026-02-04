@@ -1,0 +1,572 @@
+<workflow>
+  <critical>The workflow execution engine is governed by: {project-root}/_bmad/core/tasks/workflow.xml</critical>
+  <critical>You MUST have already loaded and processed: {installed_path}/workflow.yaml</critical>
+  <critical>Communicate all responses in {communication_language}</critical>
+  <critical>Generate all documents in {document_output_language}</critical>
+  <critical>Execute ALL steps in exact order; do NOT skip steps</critical>
+
+  <step n="1" goal="Gather input from user">
+    <output>🎯 **Prompt Engineer - GitHub Issue Analyzer**
+
+Hello {user_name}! I'll help you generate a professional BMAD workflow prompt from a GitHub issue.
+
+I need the following information:
+    </output>
+
+    <check if="{{github_issue_url}} is NOT provided">
+      <ask>📌 **GitHub Issue URL** (required):
+Please provide the full URL to the GitHub issue.
+Example: `https://github.com/owner/repo/issues/123`</ask>
+      <action>Store user response as {{github_issue_url}}</action>
+    </check>
+
+    <check if="{{complexity_level}} is NOT specified by user">
+      <output>📊 **Complexity Level** (optional):
+1. **quick** - Minimal workflow (2-3 agents), for simple bugs or small changes
+2. **standard** - Balanced workflow (3-5 agents), recommended for most issues
+3. **complete** - Full workflow (5+ agents), for complex features or architectural changes
+
+Default: standard
+      </output>
+      <ask>Choose [1], [2], [3], or press Enter for default:</ask>
+      <action>Map response: 1 → quick, 2 → standard, 3 → complete, empty → standard</action>
+      <action>Store as {{complexity_level}}</action>
+    </check>
+
+    <check if="{{testing_priority}} is NOT specified by user">
+      <output>🧪 **Testing Priority** (optional):
+1. **basic** - Unit tests only, minimal coverage
+2. **standard** - Unit + integration tests, good coverage
+3. **enterprise** - Full test suite with E2E, high coverage requirements
+
+Default: standard
+      </output>
+      <ask>Choose [1], [2], [3], or press Enter for default:</ask>
+      <action>Map response: 1 → basic, 2 → standard, 3 → enterprise, empty → standard</action>
+      <action>Store as {{testing_priority}}</action>
+    </check>
+
+    <output>✅ Input gathered:
+- Issue URL: {{github_issue_url}}
+- Complexity: {{complexity_level}}
+- Testing: {{testing_priority}}
+
+Proceeding with analysis...
+    </output>
+  </step>
+
+  <step n="2" goal="Fetch and parse GitHub issue">
+    <critical>Use web_fetch tool to retrieve the GitHub issue content</critical>
+
+    <action>Extract repository owner and name from {{github_issue_url}}</action>
+    <action>Extract issue number from URL</action>
+
+    <action>Fetch the GitHub issue page content</action>
+    <action>Parse and extract:
+      - {{issue_title}}: Issue title
+      - {{issue_number}}: Issue number
+      - {{issue_body}}: Full description/body
+      - {{issue_labels}}: All labels (array)
+      - {{issue_comments}}: Relevant comments
+      - {{issue_author}}: Who created the issue
+      - {{issue_assignees}}: Assigned developers
+      - {{issue_milestone}}: Associated milestone
+      - {{issue_linked_prs}}: Any linked pull requests
+      - {{repo_url}}: Repository URL
+    </action>
+
+    <check if="issue fetch fails">
+      <output>❌ Could not fetch the GitHub issue.
+
+Please verify:
+- The URL is correct and accessible
+- The repository is public (or you have access)
+- The issue number exists
+      </output>
+      <ask>Would you like to:
+1. Try a different URL
+2. Manually provide issue details
+3. Cancel</ask>
+      <action if="user chooses 1">Go back to Step 1</action>
+      <action if="user chooses 2">Collect manual input: title, description, type, labels</action>
+      <action if="user chooses 3">HALT: User cancelled workflow</action>
+    </check>
+
+    <output>📋 **Issue Fetched Successfully**
+
+**#{{issue_number}}:** {{issue_title}}
+
+**Labels:** {{issue_labels}}
+**Author:** {{issue_author}}
+**Milestone:** {{issue_milestone}}
+
+---
+**Description:**
+{{issue_body}}
+---
+
+Proceeding to project analysis...
+    </output>
+  </step>
+
+  <step n="3" goal="Analyze current project structure and tech stack">
+    <critical>Thoroughly analyze the project to understand context for prompt generation</critical>
+
+    <action>Scan {project_root} for configuration files:
+      - package.json (Node.js/React/Next.js)
+      - pubspec.yaml (Flutter/Dart)
+      - requirements.txt / pyproject.toml (Python)
+      - Cargo.toml (Rust)
+      - go.mod (Go)
+      - pom.xml / build.gradle (Java)
+    </action>
+
+    <action>Store {{tech_stack}} with detected technologies:
+      - Primary language
+      - Framework(s)
+      - Major dependencies
+      - Package manager
+    </action>
+
+    <action>Analyze folder structure to detect {{architecture_pattern}}:
+      - Clean Architecture
+      - MVC/MVVM
+      - Hexagonal
+      - Feature-based
+      - Layer-based
+    </action>
+
+    <action>Detect {{state_management}} approach if applicable:
+      - Provider/Riverpod (Flutter)
+      - Redux/Zustand/Jotai (React)
+      - Context API
+      - BLoC pattern
+    </action>
+
+    <action>Identify {{testing_framework}}:
+      - Jest/Vitest (JS/TS)
+      - flutter_test (Flutter)
+      - pytest (Python)
+      - Check for existing test directories and patterns
+    </action>
+
+    <action>Check for project documentation:
+      - README.md content and language
+      - docs/ folder structure
+      - Architecture documentation
+      - API documentation
+    </action>
+
+    <action>Detect {{project_language}} from:
+      - README.md language
+      - Code comments language
+      - Documentation language
+    </action>
+
+    <output>🔍 **Project Analysis Complete**
+
+**Project:** {project_name}
+**Tech Stack:** {{tech_stack}}
+**Architecture:** {{architecture_pattern}}
+**State Management:** {{state_management}}
+**Testing Framework:** {{testing_framework}}
+**Project Language:** {{project_language}}
+
+Proceeding to issue classification...
+    </output>
+  </step>
+
+  <step n="4" goal="Classify the issue and determine impact">
+    <critical>Accurate classification drives agent selection</critical>
+
+    <action>Determine {{issue_type}} based on labels and content:
+      - **bug**: Keywords like "fix", "broken", "error", "not working", labels: bug, defect
+      - **feature**: Keywords like "add", "new", "implement", labels: enhancement, feature
+      - **refactor**: Keywords like "refactor", "improve", "optimize", "cleanup"
+      - **documentation**: Keywords like "docs", "readme", "document"
+      - **security**: Keywords like "vulnerability", "security", "CVE"
+    </action>
+
+    <action>Assess {{issue_complexity}} based on:
+      - Number of components/files affected
+      - Whether it requires new architecture
+      - Integration with external services
+      - Database changes needed
+      - UI complexity
+      - Override with user's {{complexity_level}} if specified
+    </action>
+
+    <action>Determine {{impact_areas}} (array of affected areas):
+      - **ui**: Visual changes, new screens, component updates
+      - **backend**: API changes, business logic, services
+      - **database**: Schema changes, migrations, queries
+      - **architecture**: Structural changes, new patterns
+      - **security**: Auth, permissions, data protection
+      - **testing**: New test requirements, coverage needs
+      - **devops**: CI/CD, deployment, infrastructure
+    </action>
+
+    <action>Identify {{edge_cases}} from issue description:
+      - Error scenarios mentioned
+      - Platform-specific considerations
+      - Accessibility requirements
+      - Performance constraints
+    </action>
+
+    <action>Detect {{missing_information}}:
+      - Unclear requirements
+      - Missing acceptance criteria
+      - Undefined behavior specifications
+      - Ambiguous scope
+    </action>
+
+    <output>📊 **Issue Classification**
+
+**Type:** {{issue_type}}
+**Complexity:** {{issue_complexity}}
+**Impact Areas:** {{impact_areas}}
+
+**Edge Cases Identified:**
+{{edge_cases}}
+
+**Missing Information:**
+{{missing_information}}
+
+Proceeding to agent selection...
+    </output>
+
+    <check if="{{missing_information}} contains critical items">
+      <output>⚠️ **Critical Information Missing**
+
+The following clarifications are needed before implementation:
+{{missing_information}}
+
+**Recommendations:**
+- Add clarification questions to the generated prompt
+- Consider running `/pm` agent first to gather requirements
+      </output>
+    </check>
+  </step>
+
+  <step n="5" goal="Select optimal BMAD agents based on classification">
+    <critical>Agent selection must match issue complexity and type</critical>
+
+    <action>Build {{agent_workflow}} array based on classification:
+
+      <!-- QUICK FLOW (Simple bugs, small fixes) -->
+      <check if="{{complexity_level}} == 'quick' OR {{issue_complexity}} == 'simple'">
+        <action>Set {{agent_workflow}} = ["/quick-spec", "/dev-story", "/code-review"]</action>
+        <action>Set {{estimated_phases}} = 3</action>
+      </check>
+
+      <!-- STANDARD FLOW (Most features and medium bugs) -->
+      <check if="{{complexity_level}} == 'standard' AND {{issue_complexity}} != 'simple'">
+        <action>Initialize {{agent_workflow}} = ["/quick-spec"]</action>
+
+        <check if="'ui' in {{impact_areas}}">
+          <action>Append "/ux-designer" to {{agent_workflow}}</action>
+        </check>
+
+        <action>Append "/dev-story" to {{agent_workflow}}</action>
+
+        <check if="{{testing_priority}} != 'basic'">
+          <action>Append "/quinn" to {{agent_workflow}}</action>
+        </check>
+
+        <action>Append "/code-review" to {{agent_workflow}}</action>
+        <action>Set {{estimated_phases}} = length of {{agent_workflow}}</action>
+      </check>
+
+      <!-- COMPLETE FLOW (Complex features, architectural changes) -->
+      <check if="{{complexity_level}} == 'complete' OR {{issue_complexity}} == 'high'">
+        <action>Initialize {{agent_workflow}} = []</action>
+
+        <check if="{{missing_information}} is not empty OR requirements unclear">
+          <action>Prepend "/pm" to {{agent_workflow}}</action>
+        </check>
+
+        <check if="'architecture' in {{impact_areas}}">
+          <action>Append "/architect" to {{agent_workflow}}</action>
+        </check>
+
+        <action>Append "/quick-spec" to {{agent_workflow}}</action>
+
+        <check if="'ui' in {{impact_areas}}">
+          <action>Append "/ux-designer" to {{agent_workflow}}</action>
+        </check>
+
+        <action>Append "/create-story" to {{agent_workflow}}</action>
+        <action>Append "/dev-story" to {{agent_workflow}}</action>
+
+        <check if="{{testing_priority}} == 'enterprise'">
+          <action>Append "/quinn" (with extended coverage) to {{agent_workflow}}</action>
+        </check>
+        <check if="{{testing_priority}} == 'standard'">
+          <action>Append "/quinn" to {{agent_workflow}}</action>
+        </check>
+
+        <action>Append "/code-review" to {{agent_workflow}}</action>
+        <action>Set {{estimated_phases}} = length of {{agent_workflow}}</action>
+      </check>
+
+      <!-- SECURITY OVERRIDE -->
+      <check if="'security' in {{impact_areas}} OR {{issue_type}} == 'security'">
+        <action>Ensure security review is included in workflow notes</action>
+        <action>Add security-specific quality criteria</action>
+      </check>
+    </action>
+
+    <output>🎯 **Agent Workflow Selected**
+
+**Workflow Type:** {{complexity_level}}
+**Agents:** {{agent_workflow}}
+**Estimated Phases:** {{estimated_phases}}
+
+Generating professional prompt...
+    </output>
+  </step>
+
+  <step n="6" goal="Generate the professional prompt document">
+    <critical>The prompt must be complete, actionable, and self-contained</critical>
+
+    <action>Generate prompt document following this structure:</action>
+
+    <output>
+# CONTEXTO DEL PROYECTO
+
+**Proyecto:** {project_name}
+**Repositorio:** {{repo_url}}
+**Tech Stack:** {{tech_stack}}
+**Arquitectura:** {{architecture_pattern}}
+**Issue:** #{{issue_number}} - {{issue_title}}
+**Tipo:** {{issue_type}}
+**Complejidad estimada:** {{issue_complexity}}
+
+---
+
+# OBJETIVO
+
+{{issue_body}}
+
+---
+
+# ANALISIS DEL ISSUE
+
+## Descripcion Original
+{{issue_body}}
+
+## Requerimientos Identificados
+{{extracted_requirements}}
+
+## Consideraciones Tecnicas
+{{technical_considerations}}
+
+## Edge Cases Detectados
+{{edge_cases}}
+
+---
+
+# WORKFLOW DE IMPLEMENTACION
+
+{{generated_phases}}
+
+---
+
+# ESTANDARES DE CALIDAD
+
+## Code Quality
+- [ ] Codigo limpio y bien documentado (comentarios en {{project_language}})
+- [ ] Naming conventions del lenguaje respetadas
+- [ ] No magic numbers ni strings hardcodeados
+- [ ] Null-safety / Type-safety aplicado
+- [ ] No warnings en analisis estatico
+- [ ] Performance optimizada (sin blocking operations innecesarios)
+
+## Architecture
+- [ ] Separacion de responsabilidades (UI, Business Logic, Data)
+- [ ] Consistente con arquitectura existente: {{architecture_pattern}}
+- [ ] Patterns y convenciones del proyecto respetados
+- [ ] Codigo reutilizable y modular
+
+## Security
+- [ ] No credentials hardcodeadas
+- [ ] Input validation apropiada
+- [ ] Manejo seguro de datos sensibles
+- [ ] Error messages no exponen informacion critica
+
+## Testing ({{testing_priority}})
+{{testing_criteria}}
+
+## Documentation
+- [ ] README actualizado si aplica
+- [ ] Comentarios en codigo complejo
+- [ ] API documentation si aplica
+- [ ] Changelog actualizado
+
+{{ui_criteria}}
+
+---
+
+# ENTREGABLES FINALES
+
+Al completar todas las fases, deberas tener:
+
+1. **Codigo implementado:**
+{{expected_code_deliverables}}
+
+2. **Tests:**
+{{expected_test_deliverables}}
+
+3. **Documentacion:**
+{{expected_doc_deliverables}}
+
+---
+
+# CRITERIOS DE EXITO
+
+El issue se considerara resuelto cuando:
+- [ ] Todos los entregables esten completos
+- [ ] Todos los tests pasen
+- [ ] Code review aprobado
+- [ ] No warnings ni errors en analisis estatico
+- [ ] Listo para merge/PR
+
+---
+
+# RESTRICCIONES Y CONSIDERACIONES
+
+## Restricciones tecnicas:
+- NO usar packages deprecated
+- NO introducir breaking changes sin consultar
+- SI mantener backwards compatibility
+- Respetar convenciones de {{tech_stack}}
+
+## Consideraciones de proyecto:
+- Branch sugerido: `{{suggested_branch}}`
+- Merge target: main
+- Idioma de commits: {{project_language}}
+
+---
+
+# INSTRUCCIONES DE EJECUCION
+
+1. Lee completamente este prompt antes de empezar
+2. Ejecuta cada fase en orden secuencial
+3. Muestra los entregables de cada fase antes de continuar
+4. No avances a la siguiente fase sin validacion
+5. Si encuentras blockers, reportalos inmediatamente
+6. Al finalizar, resume que se hizo y que queda pendiente (si algo)
+
+---
+
+**Listo para empezar? Ejecuta la Fase 1.**
+    </output>
+
+    <action>Build {{generated_phases}} section:
+      For each agent in {{agent_workflow}}, create a phase block:
+
+      ## Fase N: [Agent Purpose]
+      **Agente:** /[agent-name]
+
+      **Objetivo:** [What this phase achieves based on agent role]
+
+      **Instrucciones especificas:**
+      - [Instructions specific to this issue]
+      - [Context from issue analysis]
+
+      **Entregables de esta fase:**
+      - [ ] [Deliverable 1]
+      - [ ] [Deliverable 2]
+
+      **Criterios de validacion:**
+      ✓ [Validation criteria 1]
+      ✓ [Validation criteria 2]
+
+      ---
+    </action>
+
+    <action>Build {{testing_criteria}} based on {{testing_priority}}:
+      - basic: Unit tests para logica de negocio (coverage > 60%)
+      - standard: Unit tests (>70%), Integration tests para flujos criticos
+      - enterprise: Unit tests (>80%), Integration tests, E2E tests, Performance tests
+    </action>
+
+    <action>Build {{ui_criteria}} if 'ui' in {{impact_areas}}:
+      ## UX/UI
+      - [ ] Responsive design
+      - [ ] Accesibilidad (WCAG 2.1 Level AA minimo)
+      - [ ] Loading states y feedback visual
+      - [ ] Error handling user-friendly
+    </action>
+
+    <action>Generate {{suggested_branch}} from issue:
+      Pattern: {{issue_type}}/{{issue_number}}-{{slug_from_title}}
+      Example: feature/123-add-login-screen
+    </action>
+  </step>
+
+  <step n="7" goal="Present prompt and offer next actions">
+    <action>Save generated prompt to {{output_folder}}/prompts/issue-{{issue_number}}-prompt.md</action>
+
+    <output>
+✨ **Prompt Generated Successfully!**
+
+📄 **Saved to:** {{output_folder}}/prompts/issue-{{issue_number}}-prompt.md
+
+---
+
+**Summary:**
+- Issue: #{{issue_number}} - {{issue_title}}
+- Type: {{issue_type}}
+- Complexity: {{issue_complexity}}
+- Agents: {{agent_workflow}}
+- Phases: {{estimated_phases}}
+
+---
+
+**What would you like to do next?**
+1. **Execute Phase 1** - Start the workflow immediately
+2. **Review prompt** - Display the full prompt for review
+3. **Modify prompt** - Adjust complexity, testing, or agents
+4. **Copy to clipboard** - Copy prompt for use elsewhere
+5. **Generate another** - Analyze a different issue
+6. **Done** - Exit the workflow
+    </output>
+
+    <ask>Choose an option [1-6]:</ask>
+
+    <check if="user chooses 1">
+      <action>Load first agent from {{agent_workflow}}</action>
+      <action>Begin Phase 1 execution with generated context</action>
+    </check>
+
+    <check if="user chooses 2">
+      <action>Display full prompt content</action>
+      <goto step="7" />
+    </check>
+
+    <check if="user chooses 3">
+      <ask>What would you like to modify?
+- complexity: Change workflow complexity
+- testing: Change testing priority
+- agents: Add/remove specific agents
+- other: Describe your changes</ask>
+      <action>Apply modifications</action>
+      <goto step="6" />
+    </check>
+
+    <check if="user chooses 4">
+      <action>Provide prompt in copyable format</action>
+    </check>
+
+    <check if="user chooses 5">
+      <goto step="1" />
+    </check>
+
+    <check if="user chooses 6">
+      <output>👋 Prompt generation complete. Happy coding, {user_name}!</output>
+      <action>HALT: Workflow complete</action>
+    </check>
+  </step>
+
+</workflow>
