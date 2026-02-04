@@ -90,6 +90,9 @@ jobs:
 
       - name: Validate Prisma schema
         run: npx prisma validate
+        env:
+          DATABASE_URL: 'postgresql://postgres:password@localhost:5432/enigma'
+          DIRECT_URL: 'postgresql://postgres:password@localhost:5432/enigma'
 
   # Uncomment when tests are added
   # test:
