@@ -1,0 +1,31 @@
+name: prompt-engineer
+description: "Analyze GitHub issues and generate professional BMAD workflow prompts with complete context, agent selection, and quality criteria"
+author: "BMad"
+
+# Critical variables from config
+config_source: "{project-root}/_bmad/bmm/config.yaml"
+output_folder: "{config_source}:output_folder"
+user_name: "{config_source}:user_name"
+communication_language: "{config_source}:communication_language"
+user_skill_level: "{config_source}:user_skill_level"
+document_output_language: "{config_source}:document_output_language"
+project_name: "{config_source}:project_name"
+date: system-generated
+
+# Workflow components
+installed_path: "{project-root}/_bmad/bmm/workflows/prompt-engineer"
+instructions: "{installed_path}/instructions.xml"
+checklist: "{installed_path}/checklist.md"
+output_template: "{installed_path}/prompt-template.md"
+
+# Input parameters
+github_issue_url: "" # User-provided GitHub issue URL
+complexity_level: "standard" # quick | standard | complete
+testing_priority: "standard" # basic | standard | enterprise
+
+# Project analysis paths
+project_root: "{project-root}"
+project_docs: "{project-root}/docs"
+project_context: "**/project-context.md"
+
+standalone: true
