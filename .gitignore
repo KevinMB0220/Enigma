@@ -45,6 +45,7 @@ prisma/migrations/**/migration_lock.toml
 
 # Claude Code local settings
 .claude/settings.local.json
+_bmad-output/
 
 # Sentry
 .sentryclirc
