@@ -15,43 +15,64 @@ datasource db {
 // CORE ENTITIES
 // ============================================
 
+/// Autonomous Agent Type
+enum AgentType {
+  TRADING
+  LENDING
+  GOVERNANCE
+  ORACLE
+  CUSTOM
+}
+
+/// Agent Status
+enum AgentStatus {
+  PENDING
+  VERIFIED
+  FLAGGED
+  SUSPENDED
+}
+
+/// Proxy Pattern Type
+enum ProxyType {
+  NONE
+  EIP1967
+  BEACON
+  TRANSPARENT
+  CUSTOM
+}
+
 /// Autonomous Agent registered on the platform
 model Agent {
-  id              String    @id @default(uuid())
-  contractAddress String    @unique @map("contract_address")
-  name            String
-  description     String?
-  category        String
-  chainId         Int       @map("chain_id")
-  ownerAddress    String    @map("owner_address")
+  address                 String       @id // Contract address (0x...)
+  name                    String
+  type                    AgentType
+  description             String?
+  owner_address           String       // Wallet that registered
+  billing_address         String?      // ERC-804 billing address
 
-  // Verification status
-  isVerified      Boolean   @default(false) @map("is_verified")
-  verifiedAt      DateTime? @map("verified_at")
+  // Status and verification
+  status                  AgentStatus  @default(PENDING)
+  trust_score             Int          @default(0) // 0-100
 
-  // Flag status
-  isFlagged       Boolean   @default(false) @map("is_flagged")
-  flaggedAt       DateTime? @map("flagged_at")
-  flagReason      String?   @map("flag_reason")
-
-  // Additional data
-  metadata        Json?
+  // Proxy detection
+  is_proxy                Boolean      @default(false)
+  proxy_type              ProxyType    @default(NONE)
+  implementation_address  String?
 
   // Timestamps
-  createdAt       DateTime  @default(now()) @map("created_at")
-  updatedAt       DateTime  @updatedAt @map("updated_at")
+  created_at              DateTime     @default(now())
+  updated_at              DateTime     @updatedAt
 
-  // Relations
+  // Relations (keeping existing relations for compatibility)
   trustScores     TrustScore[]
   ratings         Rating[]
   scannerResults  ScannerResult[]
   watchlistItems  WatchlistItem[]
 
-  @@index([category])
-  @@index([chainId])
-  @@index([ownerAddress])
-  @@index([isVerified])
-  @@index([createdAt])
+  @@index([type])
+  @@index([status])
+  @@index([trust_score(sort: Desc)])
+  @@index([owner_address])
   @@map("agents")
 }
 
@@ -73,7 +94,7 @@ model TrustScore {
   snapshotData   Json?    @map("snapshot_data")
 
   // Relations
-  agent          Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  agent          Agent    @relation(fields: [agentId], references: [address], onDelete: Cascade)
 
   @@index([agentId])
   @@index([calculatedAt])
@@ -99,7 +120,7 @@ model Rating {
   updatedAt   DateTime @updatedAt @map("updated_at")
 
   // Relations
-  agent       Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  agent       Agent    @relation(fields: [agentId], references: [address], onDelete: Cascade)
 
   @@unique([agentId, userAddress])
   @@index([userAddress])
@@ -160,7 +181,7 @@ model WatchlistItem {
 
   // Relations
   watchlist   Watchlist @relation(fields: [watchlistId], references: [id], onDelete: Cascade)
-  agent       Agent     @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  agent       Agent     @relation(fields: [agentId], references: [address], onDelete: Cascade)
 
   @@unique([watchlistId, agentId])
   @@map("watchlist_items")
@@ -187,7 +208,7 @@ model ScannerResult {
   completedAt DateTime? @map("completed_at")
 
   // Relations
-  agent       Agent     @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  agent       Agent     @relation(fields: [agentId], references: [address], onDelete: Cascade)
 
   @@index([agentId])
   @@index([status])
