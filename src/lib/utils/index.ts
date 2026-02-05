@@ -1,6 +1,10 @@
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
+// Re-export error classes and API helpers
+export * from './errors';
+export * from './api-helpers';
+
 /**
  * Merge Tailwind classes with clsx
  * Used by shadcn/ui components
