@@ -1,3 +1,5 @@
+import { WalletConnectButton } from '@/components/shared';
+
 export default function HomePage() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-8">
@@ -12,9 +14,7 @@ export default function HomePage() {
           <button className="rounded-lg bg-gradient-to-r from-primary to-primary-dark px-6 py-3 font-semibold text-white shadow-primary transition-all hover:-translate-y-0.5 hover:shadow-primary-hover">
             Explore Agents
           </button>
-          <button className="rounded-lg border border-border-light bg-transparent px-6 py-3 font-semibold text-white transition-all hover:border-border-primary hover:bg-glass">
-            Connect Wallet
-          </button>
+          <WalletConnectButton className="rounded-lg border border-border-light bg-transparent px-6 py-3 font-semibold text-white transition-all hover:border-border-primary hover:bg-glass" />
         </div>
       </div>
 
