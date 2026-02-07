@@ -4,6 +4,8 @@ import { Starfield } from '@/components/shared/starfield';
 import { Header, Footer } from '@/components/layout';
 import { prisma } from '@/lib/database/prisma';
 
+export const dynamic = 'force-dynamic';
+
 async function getHomeStats() {
   const [totalAgents, verifiedAgents, avgResult, volumeResult] = await Promise.all([
     prisma.agent.count(),
