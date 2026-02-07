@@ -10,3 +10,9 @@ export {
   type PaginationMeta,
   type UseAgentsResult,
 } from './use-agents';
+export {
+  useAgent,
+  useAgentTrustScore,
+  type AgentDetail,
+  type ScoreComponent,
+} from './use-agent';
