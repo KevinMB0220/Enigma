@@ -16,6 +16,8 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { TrustScoreBadge } from '@/components/shared/trust-score-badge';
 import { TrustScoreBreakdown } from '@/components/agent/trust-score-breakdown';
+import { RatingForm } from '@/components/agent/rating-form';
+import { ReportModal } from '@/components/agent/report-modal';
 import { useAgent, type AgentDetail } from '@/hooks/use-agent';
 import { cn } from '@/lib/utils/index';
 
@@ -182,8 +184,22 @@ export default function AgentProfilePage() {
                   {agent.description}
                 </p>
               )}
+
+              <div className="mt-3">
+                <ReportModal agentAddress={address} />
+              </div>
             </div>
           </div>
+
+          {/* Flagged Warning */}
+          {agent.status === 'FLAGGED' && (
+            <div className="mt-4 flex items-center gap-2 rounded-lg bg-yellow-500/10 border border-yellow-500/20 p-3">
+              <AlertCircle size={16} className="shrink-0 text-yellow-500" />
+              <p className="text-sm text-yellow-400">
+                This agent has been flagged by the community and is under review.
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Tabbed Content */}
@@ -233,7 +249,7 @@ export default function AgentProfilePage() {
 
           {/* Ratings Tab */}
           <TabsContent value="ratings">
-            <RatingsTab agent={agent} />
+            <RatingsTab agent={agent} agentAddress={address} />
           </TabsContent>
         </Tabs>
       </div>
@@ -395,22 +411,27 @@ function StatCard({ label, value, color }: { label: string; value: string; color
 /**
  * Ratings tab content
  */
-function RatingsTab({ agent }: { agent: AgentDetail }) {
+function RatingsTab({ agent, agentAddress }: { agent: AgentDetail; agentAddress: string }) {
   return (
-    <div className="rounded-lg bg-[rgba(15,17,23,0.6)] backdrop-blur-xl border border-[rgba(255,255,255,0.06)] p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-semibold text-white">Community Ratings</h3>
-        <div className="text-right">
-          <p className="text-2xl font-bold text-white">{agent.ratings.average.toFixed(1)}</p>
-          <p className="text-sm text-[rgba(255,255,255,0.5)]">{agent.ratings.count} ratings</p>
-        </div>
-      </div>
+    <div className="space-y-6">
+      {/* Rating Form */}
+      <RatingForm agentAddress={agentAddress} />
 
-      {agent.ratings.count === 0 ? (
-        <p className="text-center text-[rgba(255,255,255,0.5)] py-8">
-          No ratings yet. Be the first to rate this agent!
-        </p>
-      ) : (
+      {/* Ratings List */}
+      <div className="rounded-lg bg-[rgba(15,17,23,0.6)] backdrop-blur-xl border border-[rgba(255,255,255,0.06)] p-6">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-lg font-semibold text-white">Community Ratings</h3>
+          <div className="text-right">
+            <p className="text-2xl font-bold text-white">{agent.ratings.average.toFixed(1)}</p>
+            <p className="text-sm text-[rgba(255,255,255,0.5)]">{agent.ratings.count} ratings</p>
+          </div>
+        </div>
+
+        {agent.ratings.count === 0 ? (
+          <p className="text-center text-[rgba(255,255,255,0.5)] py-8">
+            No ratings yet. Be the first to rate this agent!
+          </p>
+        ) : (
         <div className="space-y-4">
           {agent.ratings.recent.map((rating) => (
             <div
@@ -435,7 +456,8 @@ function RatingsTab({ agent }: { agent: AgentDetail }) {
             </div>
           ))}
         </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

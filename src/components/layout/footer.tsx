@@ -22,7 +22,7 @@ const footerLinks = {
   ],
   social: [
     {
-      href: 'https://twitter.com/enigma',
+      href: 'https://x.com/snowrail_latam?s=20',
       label: 'Twitter',
       icon: Twitter,
       external: true,

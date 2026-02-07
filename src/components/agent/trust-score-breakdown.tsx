@@ -67,11 +67,11 @@ const COMPONENT_INFO: Record<keyof TrustScoreData['breakdown'], { label: string;
  * Get color class based on score
  */
 function getProgressColor(score: number): string {
-  if (score >= 80) return 'bg-green-500';
-  if (score >= 60) return 'bg-blue-500';
-  if (score >= 40) return 'bg-yellow-500';
-  if (score >= 20) return 'bg-orange-500';
-  return 'bg-red-500';
+  if (score >= 80) return 'bg-green-400/50';
+  if (score >= 60) return 'bg-blue-400/50';
+  if (score >= 40) return 'bg-yellow-400/50';
+  if (score >= 20) return 'bg-orange-400/50';
+  return 'bg-red-400/50';
 }
 
 /**

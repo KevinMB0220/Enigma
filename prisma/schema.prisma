@@ -42,6 +42,22 @@ enum ProxyType {
   CUSTOM
 }
 
+/// Report Reason
+enum ReportReason {
+  PROXY_HIDDEN
+  INCONSISTENT_BEHAVIOR
+  SCAM
+  OTHER
+}
+
+/// Report Status
+enum ReportStatus {
+  OPEN
+  REVIEWING
+  RESOLVED
+  DISMISSED
+}
+
 /// Heartbeat Challenge Type
 enum ChallengeType {
   PING
@@ -80,6 +96,7 @@ model Agent {
   // Relations (keeping existing relations for compatibility)
   trustScores         TrustScore[]
   ratings             Rating[]
+  reports             Report[]
   scannerResults      ScannerResult[]
   watchlistItems      WatchlistItem[]
   heartbeatLogs       HeartbeatLog[]
@@ -142,6 +159,32 @@ model Rating {
   @@index([userAddress])
   @@index([createdAt])
   @@map("ratings")
+}
+
+/// Report for flagging suspicious agents
+model Report {
+  id               String       @id @default(uuid())
+  agentId          String       @map("agent_id")
+  reporterAddress  String       @map("reporter_address")
+
+  // Report details
+  reason           ReportReason
+  description      String
+  status           ReportStatus @default(OPEN)
+
+  // Timestamps
+  createdAt        DateTime     @default(now()) @map("created_at")
+  updatedAt        DateTime     @updatedAt @map("updated_at")
+
+  // Relations
+  agent            Agent        @relation(fields: [agentId], references: [address], onDelete: Cascade)
+
+  @@unique([agentId, reporterAddress])
+  @@index([agentId])
+  @@index([reporterAddress])
+  @@index([status])
+  @@index([createdAt])
+  @@map("reports")
 }
 
 // ============================================
