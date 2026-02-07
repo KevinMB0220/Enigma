@@ -38,7 +38,21 @@ enum ProxyType {
   EIP1967
   BEACON
   TRANSPARENT
+  UUPS
   CUSTOM
+}
+
+/// Heartbeat Challenge Type
+enum ChallengeType {
+  PING
+  CHALLENGE_RESPONSE
+}
+
+/// Heartbeat Result
+enum HeartbeatResult {
+  PASS
+  FAIL
+  TIMEOUT
 }
 
 /// Autonomous Agent registered on the platform
@@ -68,6 +82,7 @@ model Agent {
   ratings         Rating[]
   scannerResults  ScannerResult[]
   watchlistItems  WatchlistItem[]
+  heartbeatLogs   HeartbeatLog[]
 
   @@index([type])
   @@index([status])
@@ -274,4 +289,30 @@ model DailyMetric {
   @@unique([date])
   @@index([date])
   @@map("daily_metrics")
+}
+
+// ============================================
+// CENTINELA VERIFICATION
+// ============================================
+
+/// Heartbeat log for agent uptime monitoring
+model HeartbeatLog {
+  id             Int             @id @default(autoincrement())
+  agentAddress   String          @map("agent_address")
+
+  // Heartbeat data
+  timestamp      DateTime        @default(now())
+  challengeType  ChallengeType   @map("challenge_type")
+  responseTimeMs Int?            @map("response_time_ms") // null if timeout
+  result         HeartbeatResult
+  errorMessage   String?         @map("error_message")
+
+  // Relations
+  agent          Agent           @relation(fields: [agentAddress], references: [address], onDelete: Cascade)
+
+  @@index([agentAddress, timestamp])
+  @@index([agentAddress])
+  @@index([timestamp])
+  @@index([result])
+  @@map("heartbeat_logs")
 }
