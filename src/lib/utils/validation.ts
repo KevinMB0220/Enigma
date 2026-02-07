@@ -56,6 +56,63 @@ export const registerAgentSchema = z.object({
 });
 
 // ============================================
+// RATING SCHEMAS
+// ============================================
+
+/**
+ * Schema for rating submission requests
+ */
+export const createRatingSchema = z.object({
+  score: z
+    .number()
+    .int('Score must be a whole number')
+    .min(1, 'Score must be at least 1')
+    .max(5, 'Score must not exceed 5'),
+  comment: z
+    .string()
+    .max(280, 'Comment must not exceed 280 characters')
+    .trim()
+    .optional(),
+  signature: z.string().min(1, 'Signature is required'),
+  userAddress: addressSchema,
+});
+
+/**
+ * Query params for getting ratings
+ */
+export const getRatingsQuerySchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(20),
+});
+
+// ============================================
+// REPORT SCHEMAS
+// ============================================
+
+export const reportReasonSchema = z.enum(
+  ['PROXY_HIDDEN', 'INCONSISTENT_BEHAVIOR', 'SCAM', 'OTHER'],
+  {
+    errorMap: () => ({
+      message: 'Reason must be one of: PROXY_HIDDEN, INCONSISTENT_BEHAVIOR, SCAM, OTHER',
+    }),
+  }
+);
+
+/**
+ * Schema for report submission requests
+ */
+export const createReportSchema = z.object({
+  reason: reportReasonSchema,
+  description: z
+    .string()
+    .min(10, 'Description must be at least 10 characters')
+    .max(1000, 'Description must not exceed 1000 characters')
+    .trim(),
+  signature: z.string().min(1, 'Signature is required'),
+  userAddress: addressSchema,
+});
+
+// ============================================
 // EXPORTED TYPES
 // ============================================
 
@@ -76,3 +133,18 @@ export type Address = z.infer<typeof addressSchema>;
  * Inferred from agentTypeSchema
  */
 export type AgentType = z.infer<typeof agentTypeSchema>;
+
+/**
+ * TypeScript type for rating creation input
+ */
+export type CreateRatingInput = z.infer<typeof createRatingSchema>;
+
+/**
+ * TypeScript type for report creation input
+ */
+export type CreateReportInput = z.infer<typeof createReportSchema>;
+
+/**
+ * TypeScript type for report reason
+ */
+export type ReportReason = z.infer<typeof reportReasonSchema>;
