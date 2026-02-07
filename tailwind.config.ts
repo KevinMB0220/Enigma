@@ -18,7 +18,32 @@ const config: Config = {
           DEFAULT: "#3B82F6",
           dark: "#2563EB",
           deeper: "#1E40AF",
+          foreground: "#FFFFFF",
         },
+
+        // shadcn semantic tokens — Enigma dark theme
+        muted: {
+          DEFAULT: "rgba(31, 41, 55, 0.5)",
+          foreground: "#9CA3AF",
+        },
+        accent: {
+          DEFAULT: "rgba(255, 255, 255, 0.08)",
+          foreground: "#FFFFFF",
+        },
+        popover: {
+          DEFAULT: "#1a1d25",
+          foreground: "#FFFFFF",
+        },
+        secondary: {
+          DEFAULT: "rgba(31, 41, 55, 0.5)",
+          foreground: "#FFFFFF",
+        },
+        destructive: {
+          DEFAULT: "#EF4444",
+          foreground: "#FFFFFF",
+        },
+        input: "rgba(255, 255, 255, 0.1)",
+        ring: "rgba(59, 130, 246, 0.5)",
 
         glass: {
           DEFAULT: "rgba(15, 17, 23, 0.6)",
