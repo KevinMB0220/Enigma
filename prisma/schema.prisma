@@ -78,11 +78,12 @@ model Agent {
   updated_at              DateTime     @updatedAt
 
   // Relations (keeping existing relations for compatibility)
-  trustScores     TrustScore[]
-  ratings         Rating[]
-  scannerResults  ScannerResult[]
-  watchlistItems  WatchlistItem[]
-  heartbeatLogs   HeartbeatLog[]
+  trustScores         TrustScore[]
+  ratings             Rating[]
+  scannerResults      ScannerResult[]
+  watchlistItems      WatchlistItem[]
+  heartbeatLogs       HeartbeatLog[]
+  transactionVolumes  TransactionVolume[]
 
   @@index([type])
   @@index([status])
@@ -315,4 +316,41 @@ model HeartbeatLog {
   @@index([timestamp])
   @@index([result])
   @@map("heartbeat_logs")
+}
+
+// ============================================
+// TRANSACTION VOLUME TRACKING
+// ============================================
+
+/// Volume tracking period
+enum VolumePeriod {
+  DAY
+  WEEK
+  MONTH
+  ALL_TIME
+}
+
+/// Transaction volume data for an agent
+model TransactionVolume {
+  id           Int          @id @default(autoincrement())
+  agentAddress String       @map("agent_address")
+
+  // Period for this volume snapshot
+  period       VolumePeriod
+
+  // Volume metrics
+  txCount      Int          @map("tx_count")
+  volumeAvax   Decimal      @map("volume_avax") @db.Decimal(36, 18)
+  volumeUsd    Decimal      @map("volume_usd") @db.Decimal(18, 2)
+
+  // Timestamps
+  updatedAt    DateTime     @updatedAt @map("updated_at")
+
+  // Relations
+  agent        Agent        @relation(fields: [agentAddress], references: [address], onDelete: Cascade)
+
+  @@unique([agentAddress, period])
+  @@index([agentAddress])
+  @@index([period])
+  @@map("transaction_volumes")
 }
