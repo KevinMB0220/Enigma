@@ -5,6 +5,8 @@ import { createLogger } from '@/lib/utils/logger';
 import { getAgent } from '@/services/agent-service';
 import { getTrustScoreBreakdown, TRUST_SCORE_WEIGHTS } from '@/services/trust-score-service';
 
+export const dynamic = 'force-dynamic';
+
 const logger = createLogger('api-agents-trust-score');
 
 /**

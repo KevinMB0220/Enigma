@@ -5,6 +5,8 @@ import { ValidationError } from '@/lib/utils/errors';
 import { createLogger } from '@/lib/utils/logger';
 import { getAgents, type AgentFilters, type PaginationInput } from '@/services/agent-service';
 
+export const dynamic = 'force-dynamic';
+
 const logger = createLogger('api-agents-list');
 
 /**

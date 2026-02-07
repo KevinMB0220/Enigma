@@ -10,6 +10,8 @@ import {
   type UptimePeriod,
 } from '@/services/centinela/heartbeat-service';
 
+export const dynamic = 'force-dynamic';
+
 const logger = createLogger('api-agents-heartbeats');
 
 /**

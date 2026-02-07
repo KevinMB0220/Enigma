@@ -6,6 +6,8 @@ import { addressSchema, createReportSchema } from '@/lib/utils/validation';
 import { createLogger } from '@/lib/utils/logger';
 import { prisma } from '@/lib/database/prisma';
 
+export const dynamic = 'force-dynamic';
+
 const logger = createLogger('api-reports');
 
 /** Threshold of OPEN reports to auto-flag an agent */

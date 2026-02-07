@@ -6,6 +6,8 @@ import { addressSchema, createRatingSchema, getRatingsQuerySchema } from '@/lib/
 import { createLogger } from '@/lib/utils/logger';
 import { prisma } from '@/lib/database/prisma';
 
+export const dynamic = 'force-dynamic';
+
 const logger = createLogger('api-ratings');
 
 /**

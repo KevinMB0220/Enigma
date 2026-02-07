@@ -7,6 +7,8 @@ import { prisma } from '@/lib/database/prisma';
 import { getTrustScoreBreakdown } from '@/services/trust-score-service';
 import { calculateUptime } from '@/services/centinela/heartbeat-service';
 
+export const dynamic = 'force-dynamic';
+
 const logger = createLogger('api-agent-detail');
 
 /**
