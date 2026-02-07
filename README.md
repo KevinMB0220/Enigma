@@ -4,7 +4,6 @@
 
 **Discovery, Verification, and Trust Scoring Platform for Autonomous Agents on Avalanche**
 
-[![CI](https://github.com/ColombiaBlockChain/Enigma/actions/workflows/ci.yml/badge.svg)](https://github.com/ColombiaBlockChain/Enigma/actions/workflows/ci.yml)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?logo=typescript)](https://www.typescriptlang.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-14-black?logo=next.js)](https://nextjs.org/)
 [![Avalanche](https://img.shields.io/badge/Avalanche-C--Chain-E84142?logo=data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEyIDI0YzYuNjI3IDAgMTItNS4zNzMgMTItMTJTMTguNjI3IDAgMTIgMCAwIDUuMzczIDAgMTJzNS4zNzMgMTIgMTIgMTJ6IiBmaWxsPSIjRTg0MTQyIi8+CjxwYXRoIGQ9Ik0xNi41IDE3SDEzLjVMMTIgMTRMOC41IDE3SDUuNUwxMiA2TDE2LjUgMTdaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4=)](https://www.avax.network/)
