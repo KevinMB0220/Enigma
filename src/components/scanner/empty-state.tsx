@@ -21,7 +21,7 @@ export function EmptyState({ variant = 'no-agents', onResetFilters }: EmptyState
       description: 'Be the first to register an autonomous agent on Enigma.',
       cta: {
         label: 'Register Agent',
-        href: '/register',
+        href: '/register' as const,
       },
     },
     'no-results': {
@@ -36,7 +36,7 @@ export function EmptyState({ variant = 'no-agents', onResetFilters }: EmptyState
       description: 'No agents match your current filters.',
       cta: null,
     },
-  };
+  } as const;
 
   const { icon: Icon, title, description, cta } = content[variant];
 

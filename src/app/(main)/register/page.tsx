@@ -81,14 +81,20 @@ export default function RegisterPage() {
   const selectedType = watch('type');
 
   const onSubmit = (data: FormData) => {
-    registerAgent(data, {
-      onSuccess: (result) => {
-        setShowSuccess(true);
-        setTimeout(() => {
-          router.push(`/agents/${result?.agent.address}`);
-        }, 2000);
+    registerAgent(
+      {
+        ...data,
+        address: data.address.toLowerCase() as `0x${string}`,
       },
-    });
+      {
+        onSuccess: (result) => {
+          setShowSuccess(true);
+          setTimeout(() => {
+            router.push(`/agents/${result?.agent.address}`);
+          }, 2000);
+        },
+      }
+    );
   };
 
   // Success state
