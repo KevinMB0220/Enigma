@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import { Providers } from './providers';
 import { WebsiteJsonLd } from '@/components/shared/json-ld';
+import { Starfield } from '@/components/shared/starfield';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -49,6 +50,7 @@ export default function RootLayout({
     <html lang="en" className="dark">
       <body className={`${inter.variable} font-sans antialiased`}>
         <WebsiteJsonLd />
+        <Starfield />
         <Providers>
           {children}
         </Providers>

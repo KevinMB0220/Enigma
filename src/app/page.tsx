@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import { Shield, Activity, Search, Code2, ArrowRight, Zap, Eye, BarChart3 } from 'lucide-react';
-import { Starfield } from '@/components/shared/starfield';
 import { Header, Footer } from '@/components/layout';
 import { prisma } from '@/lib/database/prisma';
 
@@ -38,7 +37,6 @@ export default async function HomePage() {
   return (
     <>
       <Header />
-      <Starfield />
 
       {/* =================== HERO =================== */}
       <section className="relative flex min-h-[85vh] flex-col items-center justify-center px-6 text-center">
