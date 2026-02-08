@@ -113,7 +113,7 @@ export default async function HomePage() {
 
       {/* =================== FEATURES =================== */}
       <section className="relative z-10 mx-auto max-w-6xl px-6 py-20">
-        <div className="mb-16 text-center">
+        <div className="mb-16 text-center animate-fade-in-up">
           <h2 className="mb-4 text-3xl font-bold text-white lg:text-4xl">
             Why Enigma?
           </h2>
@@ -145,7 +145,7 @@ export default async function HomePage() {
           ].map((feature, index) => (
             <div
               key={feature.title}
-              className="glass group p-8 interactive-card gradient-border"
+              className="glass group p-8 interactive-card gradient-border animate-fade-in-up"
               style={{ animationDelay: `${index * 150}ms` }}
             >
               <div className="mb-4 inline-flex rounded-lg bg-[rgba(59,130,246,0.1)] p-3 transition-all group-hover:bg-[rgba(59,130,246,0.2)] group-hover:scale-110">
@@ -162,7 +162,7 @@ export default async function HomePage() {
 
       {/* =================== HOW IT WORKS =================== */}
       <section className="relative z-10 mx-auto max-w-6xl px-6 py-20">
-        <div className="mb-16 text-center">
+        <div className="mb-16 text-center animate-fade-in-up">
           <h2 className="mb-4 text-3xl font-bold text-white lg:text-4xl">
             How It Works
           </h2>
@@ -192,7 +192,7 @@ export default async function HomePage() {
                 'Track agent health over time with heartbeat monitoring, volume analysis, and community ratings.',
             },
           ].map((item) => (
-            <div key={item.step} className="relative text-center group hover-lift p-6">
+            <div key={item.step} className="relative text-center group hover-lift p-6 animate-fade-in-up" style={{ animationDelay: `${(['01', '02', '03'].indexOf(item.step)) * 150}ms` }}>
               <div className="mb-4 text-5xl font-extrabold text-primary/20 transition-all group-hover:text-primary/40 group-hover:scale-110 number-animate">
                 {item.step}
               </div>
@@ -207,7 +207,7 @@ export default async function HomePage() {
 
       {/* =================== CTA =================== */}
       <section className="relative z-10 mx-auto max-w-4xl px-6 py-20">
-        <div className="glass overflow-hidden p-12 text-center interactive-card hover-glow">
+        <div className="glass overflow-hidden p-12 text-center interactive-card hover-glow animate-scale-in">
           <div
             className="pointer-events-none absolute inset-0 animate-pulse-glow"
             style={{
