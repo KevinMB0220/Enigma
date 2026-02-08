@@ -259,11 +259,12 @@ export function AgentTable({ agents, onSortChange }: AgentTableProps) {
           ))}
         </TableHeader>
         <TableBody>
-          {table.getRowModel().rows.map((row) => (
+          {table.getRowModel().rows.map((row, index) => (
             <TableRow
               key={row.id}
               onClick={() => handleRowClick(row.original.address)}
-              className="border-b border-[rgba(255,255,255,0.06)] cursor-pointer hover:bg-[rgba(255,255,255,0.03)] transition-colors"
+              className="border-b border-[rgba(255,255,255,0.06)] cursor-pointer hover:bg-[rgba(59,130,246,0.08)] transition-all duration-200 animate-fade-in-up"
+              style={{ animationDelay: `${index * 50}ms` }}
             >
               {row.getVisibleCells().map((cell) => (
                 <TableCell key={cell.id}>

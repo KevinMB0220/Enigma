@@ -1,17 +1,18 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import Link from 'next/link';
-import { Plus, TrendingUp, Shield, Activity } from 'lucide-react';
+import { Plus, TrendingUp, Shield, Activity, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAgents, type AgentFilters } from '@/hooks/use-agents';
 import { AgentTable } from '@/components/scanner/agent-table';
-import { AgentTableSkeleton } from '@/components/scanner/agent-table-skeleton';
 import { EmptyState } from '@/components/scanner/empty-state';
 import { ErrorState } from '@/components/scanner/error-state';
 import { Filters, type FilterValues } from '@/components/scanner/filters';
 import { SearchBar } from '@/components/scanner/search-bar';
 import { cn } from '@/lib/utils/index';
+
+const MIN_LOADING_TIME = 800; // Minimum loading time in ms for smooth animation
 
 /**
  * Stats card component
@@ -102,6 +103,8 @@ export default function ScannerPage() {
   });
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
+  const [showContent, setShowContent] = useState(false);
+  const [minLoadingComplete, setMinLoadingComplete] = useState(false);
 
   // Build query filters
   const queryFilters: AgentFilters = {
@@ -118,6 +121,29 @@ export default function ScannerPage() {
 
   const agents = data?.agents || [];
   const pagination = data?.pagination;
+
+  // Minimum loading time effect
+  useEffect(() => {
+    if (isLoading) {
+      setShowContent(false);
+      setMinLoadingComplete(false);
+      const timer = setTimeout(() => {
+        setMinLoadingComplete(true);
+      }, MIN_LOADING_TIME);
+      return () => clearTimeout(timer);
+    }
+  }, [isLoading]);
+
+  // Show content when both API and min time are complete
+  useEffect(() => {
+    if (!isLoading && minLoadingComplete) {
+      // Small delay for smooth transition
+      const timer = setTimeout(() => setShowContent(true), 100);
+      return () => clearTimeout(timer);
+    }
+  }, [isLoading, minLoadingComplete]);
+
+  const isShowingLoader = isLoading || !minLoadingComplete;
 
   // Handle filter changes
   const handleFilterChange = useCallback((newFilters: FilterValues) => {
@@ -202,20 +228,32 @@ export default function ScannerPage() {
 
           {/* Agent Table */}
           <div className="flex-1 min-w-0 animate-fade-in-up" style={{ animationDelay: '300ms' }}>
-            {isLoading ? (
-              <AgentTableSkeleton rows={10} />
+            {isShowingLoader ? (
+              <div className="flex flex-col items-center justify-center py-20 animate-fade-in">
+                <div className="relative">
+                  <div className="absolute inset-0 rounded-full bg-primary/20 animate-ping" />
+                  <div className="relative h-16 w-16 rounded-full bg-gradient-to-r from-primary to-primary-dark flex items-center justify-center animate-pulse-glow">
+                    <Loader2 className="h-8 w-8 text-white animate-spin" />
+                  </div>
+                </div>
+                <p className="mt-6 text-text-secondary animate-pulse">Scanning agents...</p>
+              </div>
             ) : isError ? (
-              <ErrorState
-                message={error?.message}
-                onRetry={() => refetch()}
-              />
+              <div className="animate-scale-in">
+                <ErrorState
+                  message={error?.message}
+                  onRetry={() => refetch()}
+                />
+              </div>
             ) : agents.length === 0 ? (
-              <EmptyState
-                variant={getEmptyStateVariant()}
-                onResetFilters={handleResetFilters}
-              />
-            ) : (
-              <>
+              <div className="animate-scale-in">
+                <EmptyState
+                  variant={getEmptyStateVariant()}
+                  onResetFilters={handleResetFilters}
+                />
+              </div>
+            ) : showContent ? (
+              <div className="animate-fade-in">
                 <AgentTable agents={agents} />
                 {pagination && (
                   <Pagination
@@ -224,8 +262,8 @@ export default function ScannerPage() {
                     onPageChange={setPage}
                   />
                 )}
-              </>
-            )}
+              </div>
+            ) : null}
           </div>
         </div>
       </div>
