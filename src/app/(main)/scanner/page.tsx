@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import Link from 'next/link';
-import { Plus, TrendingUp, Shield, Activity, Loader2 } from 'lucide-react';
+import { Plus, TrendingUp, Shield, Activity } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAgents, type AgentFilters } from '@/hooks/use-agents';
 import { AgentTable } from '@/components/scanner/agent-table';
@@ -11,6 +11,7 @@ import { ErrorState } from '@/components/scanner/error-state';
 import { Filters, type FilterValues } from '@/components/scanner/filters';
 import { SearchBar } from '@/components/scanner/search-bar';
 import { cn } from '@/lib/utils/index';
+import { LoadingSpinner } from '@/components/shared/loading-spinner';
 
 const MIN_LOADING_TIME = 800; // Minimum loading time in ms for smooth animation
 
@@ -229,14 +230,8 @@ export default function ScannerPage() {
           {/* Agent Table */}
           <div className="flex-1 min-w-0 animate-fade-in-up" style={{ animationDelay: '300ms' }}>
             {isShowingLoader ? (
-              <div className="flex flex-col items-center justify-center py-20 animate-fade-in">
-                <div className="relative">
-                  <div className="absolute inset-0 rounded-full bg-primary/20 animate-ping" />
-                  <div className="relative h-16 w-16 rounded-full bg-gradient-to-r from-primary to-primary-dark flex items-center justify-center animate-pulse-glow">
-                    <Loader2 className="h-8 w-8 text-white animate-spin" />
-                  </div>
-                </div>
-                <p className="mt-6 text-text-secondary animate-pulse">Scanning agents...</p>
+              <div className="flex items-center justify-center py-20 animate-fade-in">
+                <LoadingSpinner size="lg" text="Scanning agents..." />
               </div>
             ) : isError ? (
               <div className="animate-scale-in">
