@@ -47,5 +47,8 @@ prisma/migrations/**/migration_lock.toml
 .claude/settings.local.json
 _bmad-output/
 
+# Supabase
+supabase/.temp/
+
 # Sentry
 .sentryclirc
