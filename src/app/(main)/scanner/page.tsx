@@ -105,7 +105,6 @@ export default function ScannerPage() {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [showContent, setShowContent] = useState(false);
-  const [minLoadingComplete, setMinLoadingComplete] = useState(false);
 
   // Build query filters
   const queryFilters: AgentFilters = {
@@ -123,28 +122,20 @@ export default function ScannerPage() {
   const agents = data?.agents || [];
   const pagination = data?.pagination;
 
-  // Minimum loading time effect
+  // Handle loading with minimum time
   useEffect(() => {
     if (isLoading) {
       setShowContent(false);
-      setMinLoadingComplete(false);
-      const timer = setTimeout(() => {
-        setMinLoadingComplete(true);
-      }, MIN_LOADING_TIME);
-      return () => clearTimeout(timer);
+      return;
     }
+
+    // When loading completes, wait minimum time before showing content
+    const timer = setTimeout(() => {
+      setShowContent(true);
+    }, MIN_LOADING_TIME);
+
+    return () => clearTimeout(timer);
   }, [isLoading]);
-
-  // Show content when both API and min time are complete
-  useEffect(() => {
-    if (!isLoading && minLoadingComplete) {
-      // Small delay for smooth transition
-      const timer = setTimeout(() => setShowContent(true), 100);
-      return () => clearTimeout(timer);
-    }
-  }, [isLoading, minLoadingComplete]);
-
-  const isShowingLoader = isLoading || !minLoadingComplete;
 
   // Handle filter changes
   const handleFilterChange = useCallback((newFilters: FilterValues) => {
@@ -229,7 +220,7 @@ export default function ScannerPage() {
 
           {/* Agent Table */}
           <div className="flex-1 min-w-0 animate-fade-in-up" style={{ animationDelay: '300ms' }}>
-            {isShowingLoader ? (
+            {isLoading ? (
               <div className="flex items-center justify-center py-20 animate-fade-in">
                 <LoadingSpinner size="lg" text="Scanning agents..." />
               </div>
@@ -240,6 +231,10 @@ export default function ScannerPage() {
                   onRetry={() => refetch()}
                 />
               </div>
+            ) : !showContent ? (
+              <div className="flex items-center justify-center py-20 animate-fade-in">
+                <LoadingSpinner size="lg" text="Scanning agents..." />
+              </div>
             ) : agents.length === 0 ? (
               <div className="animate-scale-in">
                 <EmptyState
@@ -247,7 +242,7 @@ export default function ScannerPage() {
                   onResetFilters={handleResetFilters}
                 />
               </div>
-            ) : showContent ? (
+            ) : (
               <div className="animate-fade-in">
                 <AgentTable agents={agents} />
                 {pagination && (
@@ -258,7 +253,7 @@ export default function ScannerPage() {
                   />
                 )}
               </div>
-            ) : null}
+            )}
           </div>
         </div>
       </div>
