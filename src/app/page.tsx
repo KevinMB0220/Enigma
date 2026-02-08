@@ -53,34 +53,34 @@ export default async function HomePage() {
         />
 
         <div className="relative z-10 max-w-4xl">
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-border-light bg-glass px-4 py-1.5 text-sm text-text-secondary">
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-border-light bg-glass px-4 py-1.5 text-sm text-text-secondary animate-fade-in-down">
             <span className="h-2 w-2 rounded-full bg-status-success animate-pulse" />
             Live on Avalanche
           </div>
 
-          <h1 className="mb-6 text-hero-mobile font-extrabold tracking-tight text-white lg:text-hero">
+          <h1 className="mb-6 text-hero-mobile font-extrabold tracking-tight text-white lg:text-hero animate-fade-in-up">
             Trust Score for{' '}
             <span className="bg-gradient-to-r from-primary to-[#60A5FA] bg-clip-text text-transparent">
               Autonomous Agents
             </span>
           </h1>
 
-          <p className="mx-auto mb-10 max-w-2xl text-lg leading-relaxed text-text-secondary">
+          <p className="mx-auto mb-10 max-w-2xl text-lg leading-relaxed text-text-secondary animate-fade-in-up" style={{ animationDelay: '100ms' }}>
             Discover, verify, and monitor autonomous smart contract agents on Avalanche.
             Enigma provides real-time trust scoring powered by on-chain analysis and community feedback.
           </p>
 
-          <div className="flex flex-wrap items-center justify-center gap-4">
+          <div className="flex flex-wrap items-center justify-center gap-4 animate-fade-in-up" style={{ animationDelay: '200ms' }}>
             <Link
               href="/scanner"
-              className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-primary to-primary-dark px-8 py-3.5 font-semibold text-white shadow-primary transition-all hover:-translate-y-0.5 hover:shadow-primary-hover"
+              className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-primary to-primary-dark px-8 py-3.5 font-semibold text-white shadow-primary transition-all hover:-translate-y-0.5 hover:shadow-primary-hover btn-press animate-pulse-glow"
             >
               Explore Agents
               <ArrowRight size={18} />
             </Link>
             <Link
               href="/scanner"
-              className="inline-flex items-center gap-2 rounded-lg border border-border-light bg-transparent px-8 py-3.5 font-semibold text-white transition-all hover:border-border-primary hover:bg-glass"
+              className="inline-flex items-center gap-2 rounded-lg border border-border-light bg-transparent px-8 py-3.5 font-semibold text-white transition-all hover:border-border-primary hover:bg-glass btn-press hover-glow"
             >
               <Search size={18} />
               Scanner
@@ -97,13 +97,14 @@ export default async function HomePage() {
             { label: 'Verified', value: stats.verifiedAgents, icon: Shield },
             { label: 'Volume 24h', value: stats.volumeDisplay, icon: BarChart3 },
             { label: 'Avg Trust Score', value: stats.avgTrustScore, icon: Activity },
-          ].map((stat) => (
+          ].map((stat, index) => (
             <div
               key={stat.label}
-              className="glass group p-6 text-center transition-all duration-300 hover:-translate-y-1 hover:border-[rgba(59,130,246,0.3)] hover:shadow-[0_12px_32px_rgba(0,0,0,0.3)]"
+              className="glass group p-6 text-center interactive-card animate-scale-in"
+              style={{ animationDelay: `${index * 100}ms` }}
             >
-              <stat.icon className="mx-auto mb-3 h-6 w-6 text-primary" />
-              <div className="text-stat font-bold text-white">{stat.value}</div>
+              <stat.icon className="mx-auto mb-3 h-6 w-6 text-primary transition-transform group-hover:scale-110" />
+              <div className="text-stat font-bold text-white number-animate">{stat.value}</div>
               <div className="mt-1 text-sm text-text-secondary">{stat.label}</div>
             </div>
           ))}
@@ -141,12 +142,13 @@ export default async function HomePage() {
               description:
                 'Continuous heartbeat checks, uptime tracking, and volume analysis ensure you always have the latest data on agent health.',
             },
-          ].map((feature) => (
+          ].map((feature, index) => (
             <div
               key={feature.title}
-              className="glass group p-8 transition-all duration-300 hover:-translate-y-1 hover:border-[rgba(59,130,246,0.3)]"
+              className="glass group p-8 interactive-card gradient-border"
+              style={{ animationDelay: `${index * 150}ms` }}
             >
-              <div className="mb-4 inline-flex rounded-lg bg-[rgba(59,130,246,0.1)] p-3">
+              <div className="mb-4 inline-flex rounded-lg bg-[rgba(59,130,246,0.1)] p-3 transition-all group-hover:bg-[rgba(59,130,246,0.2)] group-hover:scale-110">
                 <feature.icon className="h-6 w-6 text-primary" />
               </div>
               <h3 className="mb-2 text-lg font-semibold text-white">{feature.title}</h3>
@@ -190,8 +192,8 @@ export default async function HomePage() {
                 'Track agent health over time with heartbeat monitoring, volume analysis, and community ratings.',
             },
           ].map((item) => (
-            <div key={item.step} className="relative text-center">
-              <div className="mb-4 text-5xl font-extrabold text-primary/20">
+            <div key={item.step} className="relative text-center group hover-lift p-6">
+              <div className="mb-4 text-5xl font-extrabold text-primary/20 transition-all group-hover:text-primary/40 group-hover:scale-110 number-animate">
                 {item.step}
               </div>
               <h3 className="mb-2 text-lg font-semibold text-white">{item.title}</h3>
@@ -205,9 +207,9 @@ export default async function HomePage() {
 
       {/* =================== CTA =================== */}
       <section className="relative z-10 mx-auto max-w-4xl px-6 py-20">
-        <div className="glass overflow-hidden p-12 text-center">
+        <div className="glass overflow-hidden p-12 text-center interactive-card hover-glow">
           <div
-            className="pointer-events-none absolute inset-0"
+            className="pointer-events-none absolute inset-0 animate-pulse-glow"
             style={{
               background: 'radial-gradient(ellipse at center, rgba(59,130,246,0.08) 0%, transparent 70%)',
             }}
@@ -222,10 +224,10 @@ export default async function HomePage() {
             </p>
             <Link
               href="/scanner"
-              className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-primary to-primary-dark px-8 py-3.5 font-semibold text-white shadow-primary transition-all hover:-translate-y-0.5 hover:shadow-primary-hover"
+              className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-primary to-primary-dark px-8 py-3.5 font-semibold text-white shadow-primary transition-all hover:-translate-y-0.5 hover:shadow-primary-hover btn-press"
             >
               Launch Scanner
-              <ArrowRight size={18} />
+              <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
             </Link>
           </div>
         </div>
