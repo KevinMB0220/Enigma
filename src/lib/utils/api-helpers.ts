@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import * as Sentry from '@sentry/nextjs';
 import { AppError, InternalError, isAppError } from './errors';
 
 /**
@@ -93,11 +94,17 @@ export function errorResponse(error: AppError): NextResponse<ApiErrorResponse> {
  */
 export function handleError(error: unknown): NextResponse<ApiErrorResponse> {
   if (isAppError(error)) {
+    if (error.statusCode >= 500) {
+      Sentry.captureException(error, {
+        extra: { statusCode: error.statusCode, code: error.code },
+      });
+    }
     return errorResponse(error);
   }
 
-  // Log unexpected errors
+  // Log and capture unexpected errors
   console.error('Unexpected error:', error);
+  Sentry.captureException(error);
 
   // Return generic internal error for unknown errors
   return errorResponse(new InternalError());
