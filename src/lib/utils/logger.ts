@@ -5,7 +5,7 @@ const isDevelopment = process.env.NODE_ENV === 'development';
 /**
  * Centralized logger instance using Pino for structured logging
  *
- * Development: Pretty print with colors, debug level
+ * Development: Simple console logging (avoids worker thread issues in Next.js)
  * Production: JSON format, info level
  */
 export const logger = pino({
@@ -14,16 +14,8 @@ export const logger = pino({
     service: 'enigma',
     env: process.env.NODE_ENV || 'development',
   },
-  transport: isDevelopment
-    ? {
-        target: 'pino-pretty',
-        options: {
-          colorize: true,
-          translateTime: 'SYS:standard',
-          ignore: 'pid,hostname',
-        },
-      }
-    : undefined,
+  // Avoid using pino-pretty transport in Next.js dev mode
+  // as it uses worker threads that can crash
   formatters: {
     level: (label) => {
       return { level: label };
