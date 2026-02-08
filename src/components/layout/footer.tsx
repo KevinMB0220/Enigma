@@ -14,11 +14,6 @@ const footerLinks = {
   ],
   resources: [
     { href: '/docs', label: 'Documentation' },
-    {
-      href: 'https://github.com/Colombia-Blockchain/Enigma',
-      label: 'GitHub',
-      external: true,
-    },
   ],
   social: [
     {
@@ -93,10 +88,6 @@ export const Footer: FC<FooterProps> = ({ className }) => {
                   key={link.href}
                   href={link.href as '/'}
                   className="text-sm text-[#9CA3AF] transition-colors duration-200 hover:text-white"
-                  {...(link.external && {
-                    target: '_blank',
-                    rel: 'noopener noreferrer',
-                  })}
                 >
                   {link.label}
                 </Link>
