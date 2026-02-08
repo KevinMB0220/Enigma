@@ -265,28 +265,34 @@ body {
   }
 }
 
-/* Animation Classes */
+/* Animation Classes - start invisible, animate to visible */
 .animate-fade-in {
+  opacity: 0;
   animation: fade-in 0.5s ease-out forwards;
 }
 
 .animate-fade-in-up {
+  opacity: 0;
   animation: fade-in-up 0.6s ease-out forwards;
 }
 
 .animate-fade-in-down {
+  opacity: 0;
   animation: fade-in-down 0.6s ease-out forwards;
 }
 
 .animate-scale-in {
+  opacity: 0;
   animation: scale-in 0.4s ease-out forwards;
 }
 
 .animate-slide-in-left {
+  opacity: 0;
   animation: slide-in-left 0.5s ease-out forwards;
 }
 
 .animate-slide-in-right {
+  opacity: 0;
   animation: slide-in-right 0.5s ease-out forwards;
 }
 
@@ -317,13 +323,13 @@ body {
   animation: spin-slow 8s linear infinite;
 }
 
-/* Stagger Animation Delays */
-.stagger-1 { animation-delay: 0.1s; opacity: 0; }
-.stagger-2 { animation-delay: 0.2s; opacity: 0; }
-.stagger-3 { animation-delay: 0.3s; opacity: 0; }
-.stagger-4 { animation-delay: 0.4s; opacity: 0; }
-.stagger-5 { animation-delay: 0.5s; opacity: 0; }
-.stagger-6 { animation-delay: 0.6s; opacity: 0; }
+/* Stagger Animation Delays - use with animate-* classes */
+.stagger-1 { animation-delay: 0.1s; }
+.stagger-2 { animation-delay: 0.2s; }
+.stagger-3 { animation-delay: 0.3s; }
+.stagger-4 { animation-delay: 0.4s; }
+.stagger-5 { animation-delay: 0.5s; }
+.stagger-6 { animation-delay: 0.6s; }
 
 /* Hover Animations */
 .hover-lift {
