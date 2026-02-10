@@ -73,12 +73,17 @@ enum HeartbeatResult {
 
 /// Autonomous Agent registered on the platform
 model Agent {
-  address                 String       @id // Contract address (0x...)
+  address                 String       @id // Derived address from hash(registry + tokenId)
   name                    String
   type                    AgentType
   description             String?
   owner_address           String       // Wallet that registered
   billing_address         String?      // ERC-804 billing address
+
+  // ERC-8004 Identity Registry reference
+  registry_address        String?      // Registry contract address
+  token_id                Int?         @map("token_id") // NFT tokenId in registry
+  token_uri               String?      @map("token_uri") // tokenURI from registry
 
   // Status and verification
   status                  AgentStatus  @default(PENDING)
