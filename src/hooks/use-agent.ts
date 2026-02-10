@@ -23,6 +23,9 @@ export interface AgentDetail {
   description: string | null;
   ownerAddress: string;
   billingAddress: string | null;
+  registryAddress: string | null;
+  tokenId: number | null;
+  tokenUri: string | null;
   status: AgentStatus;
   createdAt: string;
   updatedAt: string;

@@ -15,6 +15,9 @@ export interface CreateAgentInput {
   description?: string;
   owner_address: string;
   billing_address?: string;
+  registry_address?: string;
+  token_id?: number;
+  token_uri?: string;
   status?: AgentStatus;
 }
 
