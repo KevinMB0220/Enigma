@@ -62,8 +62,10 @@ export default function AgentProfilePage() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  // Snowtrace link
-  const snowtraceUrl = `https://snowtrace.io/address/${address}`;
+  // Snowtrace link - points to NFT in Identity Registry
+  const snowtraceUrl = agent?.registryAddress && agent?.tokenId
+    ? `https://snowtrace.io/token/${agent.registryAddress}?a=${agent.tokenId}#inventory`
+    : `https://snowtrace.io/address/${address}`;
 
   // Loading state
   if (isLoading) {
@@ -155,28 +157,60 @@ export default function AgentProfilePage() {
                 {TYPE_LABELS[agent.type] || agent.type}
               </p>
 
-              {/* Address with copy */}
-              <div className="flex items-center gap-2">
-                <code className="px-3 py-1.5 bg-[rgba(255,255,255,0.05)] rounded text-sm font-mono text-purple-400">
-                  {address.slice(0, 10)}...{address.slice(-8)}
-                </code>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleCopy}
-                  className="h-8 w-8 p-0"
-                >
-                  {copied ? (
-                    <Check className="h-4 w-4 text-green-400" />
-                  ) : (
-                    <Copy className="h-4 w-4" />
-                  )}
-                </Button>
-                <Button variant="ghost" size="sm" asChild className="h-8 w-8 p-0">
-                  <a href={snowtraceUrl} target="_blank" rel="noopener noreferrer">
-                    <ExternalLink className="h-4 w-4" />
-                  </a>
-                </Button>
+              {/* ERC-8004 Identity Registry Info */}
+              <div className="space-y-2">
+                {agent.tokenId && agent.registryAddress && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-[rgba(255,255,255,0.4)]">ERC-8004 NFT:</span>
+                    <code className="px-2 py-0.5 bg-[rgba(255,255,255,0.05)] rounded text-xs font-mono text-purple-300">
+                      Token #{agent.tokenId}
+                    </code>
+                    <Button variant="ghost" size="sm" asChild className="h-6 w-6 p-0">
+                      <a href={snowtraceUrl} target="_blank" rel="noopener noreferrer" title="View on Snowtrace">
+                        <ExternalLink className="h-3 w-3" />
+                      </a>
+                    </Button>
+                  </div>
+                )}
+
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-[rgba(255,255,255,0.4)]">Address:</span>
+                  <code className="px-2 py-0.5 bg-[rgba(255,255,255,0.05)] rounded text-xs font-mono text-[rgba(255,255,255,0.6)]">
+                    {address.slice(0, 10)}...{address.slice(-8)}
+                  </code>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleCopy}
+                    className="h-6 w-6 p-0"
+                    title="Copy address"
+                  >
+                    {copied ? (
+                      <Check className="h-3 w-3 text-green-400" />
+                    ) : (
+                      <Copy className="h-3 w-3" />
+                    )}
+                  </Button>
+                </div>
+
+                {agent.ownerAddress && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-[rgba(255,255,255,0.4)]">Owner:</span>
+                    <code className="px-2 py-0.5 bg-[rgba(255,255,255,0.05)] rounded text-xs font-mono text-[rgba(255,255,255,0.6)]">
+                      {agent.ownerAddress.slice(0, 10)}...{agent.ownerAddress.slice(-8)}
+                    </code>
+                    <Button variant="ghost" size="sm" asChild className="h-6 w-6 p-0">
+                      <a
+                        href={`https://snowtrace.io/address/${agent.ownerAddress}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title="View owner on Snowtrace"
+                      >
+                        <ExternalLink className="h-3 w-3" />
+                      </a>
+                    </Button>
+                  </div>
+                )}
               </div>
 
               {agent.description && (

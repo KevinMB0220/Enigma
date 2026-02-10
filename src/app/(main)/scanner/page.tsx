@@ -2,9 +2,10 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import Link from 'next/link';
-import { Plus, TrendingUp, Shield, Activity } from 'lucide-react';
+import { Plus, TrendingUp, Shield, Activity, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAgents, type AgentFilters } from '@/hooks/use-agents';
+import { useAgentStats } from '@/hooks/use-agent-stats';
 import { AgentTable } from '@/components/scanner/agent-table';
 import { EmptyState } from '@/components/scanner/empty-state';
 import { ErrorState } from '@/components/scanner/error-state';
@@ -105,6 +106,7 @@ export default function ScannerPage() {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [showContent, setShowContent] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
 
   // Build query filters
   const queryFilters: AgentFilters = {
@@ -116,8 +118,9 @@ export default function ScannerPage() {
     limit: 20,
   };
 
-  // Fetch agents
+  // Fetch agents and stats
   const { data, isLoading, isError, error, refetch } = useAgents(queryFilters);
+  const { data: stats } = useAgentStats();
 
   const agents = data?.agents || [];
   const pagination = data?.pagination;
@@ -161,6 +164,31 @@ export default function ScannerPage() {
     return 'no-agents';
   };
 
+  // Handle sync button click - syncs agents from on-chain Identity Registry
+  // Also automatically calculates trust scores for new agents
+  const handleSync = useCallback(async () => {
+    setIsSyncing(true);
+    try {
+      const response = await fetch('/api/v1/indexer/refresh', {
+        method: 'POST',
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log('Indexer refresh completed:', result.data);
+
+        // Refresh agents list after successful sync
+        await refetch();
+      } else {
+        console.error('Sync failed:', await response.text());
+      }
+    } catch (error) {
+      console.error('Sync error:', error);
+    } finally {
+      setIsSyncing(false);
+    }
+  }, [refetch]);
+
   return (
     <div className="min-h-[calc(100vh-200px)] py-8 px-4">
       <div className="max-w-7xl mx-auto">
@@ -172,12 +200,23 @@ export default function ScannerPage() {
               Discover and verify autonomous agents on Avalanche
             </p>
           </div>
-          <Button asChild className="btn-press hover-lift">
-            <Link href="/register">
-              <Plus className="mr-2 h-4 w-4" />
-              Register Agent
-            </Link>
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={handleSync}
+              disabled={isSyncing}
+              className="btn-press"
+            >
+              <RefreshCw className={cn("mr-2 h-4 w-4", isSyncing && "animate-spin")} />
+              {isSyncing ? 'Syncing...' : 'Sync'}
+            </Button>
+            <Button asChild className="btn-press hover-lift">
+              <Link href="/register">
+                <Plus className="mr-2 h-4 w-4" />
+                Register Agent
+              </Link>
+            </Button>
+          </div>
         </div>
 
         {/* Stats Bar */}
@@ -185,19 +224,19 @@ export default function ScannerPage() {
           <StatCard
             icon={Shield}
             label="Total Agents"
-            value={pagination?.total || 0}
+            value={stats?.total || 0}
             delay={100}
           />
           <StatCard
             icon={TrendingUp}
             label="Verified"
-            value={agents.filter((a) => a.status === 'VERIFIED').length}
+            value={stats?.verified || 0}
             delay={200}
           />
           <StatCard
             icon={Activity}
             label="Active (24h)"
-            value={agents.length}
+            value={stats?.active24h || 0}
             delay={300}
           />
         </div>
