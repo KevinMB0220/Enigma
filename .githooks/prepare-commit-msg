@@ -1,0 +1,31 @@
+#!/bin/bash
+# Hook: Auto-add real developer as Co-authored-by
+# The repo uses snowrailsnowrail@gmail.com as the commit author (local config).
+# This hook reads the developer's GLOBAL git identity and appends it as co-author.
+
+COMMIT_MSG_FILE="$1"
+COMMIT_SOURCE="$2"
+
+# Skip for merges, amends, squashes, etc.
+if [ "$COMMIT_SOURCE" = "merge" ] || [ "$COMMIT_SOURCE" = "squash" ]; then
+  exit 0
+fi
+
+# Get the real developer identity from global git config
+REAL_NAME=$(git config --global user.name)
+REAL_EMAIL=$(git config --global user.email)
+
+# Skip if no global config or if it's the same as the repo author
+REPO_EMAIL=$(git config user.email)
+if [ -z "$REAL_EMAIL" ] || [ "$REAL_EMAIL" = "$REPO_EMAIL" ]; then
+  exit 0
+fi
+
+# Skip if Co-authored-by is already present for this user
+if grep -q "Co-authored-by:.*<${REAL_EMAIL}>" "$COMMIT_MSG_FILE" 2>/dev/null; then
+  exit 0
+fi
+
+# Append Co-authored-by trailer
+echo "" >> "$COMMIT_MSG_FILE"
+echo "Co-authored-by: ${REAL_NAME} <${REAL_EMAIL}>" >> "$COMMIT_MSG_FILE"
