@@ -6,6 +6,7 @@ import { recalculateAllScores } from '@/services/trust-score-service';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300; // 5 minutes max
+export const runtime = 'nodejs'; // Ensure Node.js runtime for viem compatibility
 
 const logger = createLogger('api-indexer-refresh');
 
