@@ -1,6 +1,6 @@
 <div align="center">
 
-# Enigma
+# ERC-8004 Scan.
 
 **Discovery, Verification, and Trust Scoring Platform for Autonomous Agents on Avalanche**
 
@@ -33,14 +33,14 @@ In the emerging ecosystem of autonomous agents on blockchain:
 
 Enigma provides:
 
-| Feature | Description |
-|---------|-------------|
-| **Scanner/Directory** | Table view with filters, search, and ranking of all ERC-804 agents |
-| **Trust Score** | Composite score (0-100) based on multiple verifiable signals |
-| **Centinela Engine** | Active verification that detects proxies, verifies uptime, and analyzes code |
-| **Public Profiles** | Each agent has its page with metrics, history, and reputation |
-| **REST API** | Programmatic queries for agents evaluating other agents |
-| **Feedback System** | Community ratings and reports |
+| Feature               | Description                                                                  |
+| --------------------- | ---------------------------------------------------------------------------- |
+| **Scanner/Directory** | Table view with filters, search, and ranking of all ERC-804 agents           |
+| **Trust Score**       | Composite score (0-100) based on multiple verifiable signals                 |
+| **Centinela Engine**  | Active verification that detects proxies, verifies uptime, and analyzes code |
+| **Public Profiles**   | Each agent has its page with metrics, history, and reputation                |
+| **REST API**          | Programmatic queries for agents evaluating other agents                      |
+| **Feedback System**   | Community ratings and reports                                                |
 
 ---
 
@@ -52,29 +52,29 @@ The Trust Score is a weighted composite of five verifiable signals:
 Trust Score = (Volume × 0.25) + (Proxy × 0.20) + (Uptime × 0.25) + (OZ Match × 0.15) + (Community × 0.15)
 ```
 
-| Component | Weight | Description |
-|-----------|--------|-------------|
-| **Volume** | 25% | Transaction activity ranking |
-| **Proxy** | 20% | Proxy transparency (100 if none or declared, 0 if hidden) |
-| **Uptime** | 25% | Heartbeat response rate (last 24h) |
-| **OZ Match** | 15% | OpenZeppelin bytecode similarity |
-| **Community** | 15% | Average user ratings (1-5 stars × 20) |
+| Component     | Weight | Description                                               |
+| ------------- | ------ | --------------------------------------------------------- |
+| **Volume**    | 25%    | Transaction activity ranking                              |
+| **Proxy**     | 20%    | Proxy transparency (100 if none or declared, 0 if hidden) |
+| **Uptime**    | 25%    | Heartbeat response rate (last 24h)                        |
+| **OZ Match**  | 15%    | OpenZeppelin bytecode similarity                          |
+| **Community** | 15%    | Average user ratings (1-5 stars × 20)                     |
 
 ---
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|------------|
-| **Framework** | Next.js 14 (App Router) |
-| **Language** | TypeScript 5.x |
-| **Styling** | TailwindCSS + shadcn/ui |
-| **State** | TanStack Query |
-| **Database** | Supabase (PostgreSQL) + Prisma ORM |
-| **Blockchain** | Wagmi 2.x + Viem 2.x |
-| **Network** | Avalanche C-Chain (Mainnet/Fuji Testnet) |
-| **Auth** | Wallet signature verification |
-| **Hosting** | Vercel |
+| Layer          | Technology                               |
+| -------------- | ---------------------------------------- |
+| **Framework**  | Next.js 14 (App Router)                  |
+| **Language**   | TypeScript 5.x                           |
+| **Styling**    | TailwindCSS + shadcn/ui                  |
+| **State**      | TanStack Query                           |
+| **Database**   | Supabase (PostgreSQL) + Prisma ORM       |
+| **Blockchain** | Wagmi 2.x + Viem 2.x                     |
+| **Network**    | Avalanche C-Chain (Mainnet/Fuji Testnet) |
+| **Auth**       | Wallet signature verification            |
+| **Hosting**    | Vercel                                   |
 
 ---
 
@@ -164,29 +164,29 @@ See [Folder Structure](./docs/architecture/folder-structure.md) for complete doc
 
 ## Available Scripts
 
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Start development server |
-| `npm run build` | Build for production |
-| `npm run start` | Start production server |
-| `npm run lint` | Run ESLint |
-| `npm run format` | Format code with Prettier |
-| `npx prisma studio` | Open Prisma database GUI |
-| `npx prisma migrate dev` | Run database migrations |
+| Command                  | Description               |
+| ------------------------ | ------------------------- |
+| `npm run dev`            | Start development server  |
+| `npm run build`          | Build for production      |
+| `npm run start`          | Start production server   |
+| `npm run lint`           | Run ESLint                |
+| `npm run format`         | Format code with Prettier |
+| `npx prisma studio`      | Open Prisma database GUI  |
+| `npx prisma migrate dev` | Run database migrations   |
 
 ---
 
 ## API Endpoints
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/api/v1/health` | Health check |
-| `GET` | `/api/v1/agents` | List agents with filters |
-| `GET` | `/api/v1/agents/:address` | Get agent details |
-| `POST` | `/api/v1/agents/register` | Register new agent |
-| `GET` | `/api/v1/agents/:address/trust-score` | Get trust score breakdown |
-| `GET` | `/api/v1/agents/:address/heartbeats` | Get heartbeat history |
-| `POST` | `/api/v1/agents/:address/ratings` | Submit rating |
+| Method | Endpoint                              | Description               |
+| ------ | ------------------------------------- | ------------------------- |
+| `GET`  | `/api/v1/health`                      | Health check              |
+| `GET`  | `/api/v1/agents`                      | List agents with filters  |
+| `GET`  | `/api/v1/agents/:address`             | Get agent details         |
+| `POST` | `/api/v1/agents/register`             | Register new agent        |
+| `GET`  | `/api/v1/agents/:address/trust-score` | Get trust score breakdown |
+| `GET`  | `/api/v1/agents/:address/heartbeats`  | Get heartbeat history     |
+| `POST` | `/api/v1/agents/:address/ratings`     | Submit rating             |
 
 See [API Documentation](./docs/api/endpoints.md) for complete reference.
 
@@ -213,15 +213,15 @@ We welcome contributions! Please follow these steps:
 
 ## Documentation
 
-| Document | Description |
-|----------|-------------|
-| [Project Overview](./docs/context/overview.md) | What is Enigma, problem & solution |
-| [Architecture](./docs/architecture/overview.md) | System design and data flows |
-| [Tech Stack](./docs/architecture/tech-stack.md) | Technologies and dependencies |
-| [API Reference](./docs/api/endpoints.md) | REST API documentation |
-| [Design System](./docs/design/overview.md) | UI/UX guidelines |
-| [Trust Score](./docs/backend/trust-score.md) | Scoring formula details |
-| [Roadmap](./docs/business/roadmap.md) | Development phases |
+| Document                                        | Description                        |
+| ----------------------------------------------- | ---------------------------------- |
+| [Project Overview](./docs/context/overview.md)  | What is Enigma, problem & solution |
+| [Architecture](./docs/architecture/overview.md) | System design and data flows       |
+| [Tech Stack](./docs/architecture/tech-stack.md) | Technologies and dependencies      |
+| [API Reference](./docs/api/endpoints.md)        | REST API documentation             |
+| [Design System](./docs/design/overview.md)      | UI/UX guidelines                   |
+| [Trust Score](./docs/backend/trust-score.md)    | Scoring formula details            |
+| [Roadmap](./docs/business/roadmap.md)           | Development phases                 |
 
 ---
 
