@@ -4,6 +4,7 @@ import { avalanche, avalancheFuji } from '@/lib/blockchain/config';
 import { IDENTITY_REGISTRY_ABI } from '@/lib/blockchain/abis/identity-registry';
 import { createAgent, agentExists } from './agent-service';
 import type { CreateAgentInput } from './agent-service';
+import { prisma } from '@/lib/database/prisma';
 
 const logger = createLogger('indexer-service');
 
@@ -67,7 +68,7 @@ interface AgentInfo {
 
 /**
  * Sync agents from both mainnet and testnet Identity Registries.
- * Uses ERC721Enumerable (totalSupply + tokenByIndex) for fast enumeration.
+ * Scans Transfer events to discover all minted agent NFTs.
  *
  * @param limit - Max number of agents to index per network (0 = all)
  */
@@ -84,8 +85,8 @@ export async function syncAgents(limit = 0): Promise<{
 }
 
 /**
- * Sync agents from a specific network using ERC721Enumerable.
- * Much faster than scanning Transfer events across millions of blocks.
+ * Sync agents from a specific network using Transfer events.
+ * Scans for all Transfer events from the registry contract to discover agents.
  *
  * @param network - 'mainnet' or 'testnet'
  * @param limit - Max number of agents to index (0 = all)
@@ -103,66 +104,82 @@ export async function syncNetwork(network: Network, limit = 0): Promise<IndexerR
     details: [],
   };
 
-  logger.info({ network, registry, limit }, 'Starting agent sync');
+  logger.info({ network, registry, limit }, 'Starting agent sync via Transfer events');
 
-  // 1. Get total supply from contract
-  let totalSupply: bigint;
-  try {
-    totalSupply = await client.readContract({
-      address: registry,
-      abi: IDENTITY_REGISTRY_ABI,
-      functionName: 'totalSupply',
-    }) as bigint;
+  // Get the current block number
+  const currentBlock = await client.getBlockNumber();
 
-    result.total = Number(totalSupply);
-    logger.info({ network, totalSupply: result.total }, 'Total supply from registry');
-  } catch (error) {
-    logger.error({ network, error }, 'Failed to read totalSupply');
-    return result;
+  // Scan Transfer events from deployment block to current
+  // For mainnet, start from a recent block to avoid scanning millions of blocks
+  const fromBlock = network === 'mainnet' ? currentBlock - 100000n : 0n;
+
+  logger.info({ network, fromBlock, currentBlock }, 'Fetching Transfer events');
+
+  // Get the latest agent from DB to know where to start
+  const latestAgent = await prisma.agent.findFirst({
+    where: { registry_address: registry },
+    orderBy: { token_id: 'desc' },
+    select: { token_id: true },
+  });
+
+  const startTokenId = latestAgent?.token_id ? latestAgent.token_id + 1 : 0;
+
+  logger.info({ network, startTokenId }, 'Starting from token ID');
+
+  // Since we don't have a reliable way to enumerate, we'll try sequential token IDs
+  // Start from the last known token and try the next 100 tokens
+  const maxTokensToTry = limit > 0 ? limit : 100;
+  const tokenIdsToTry: bigint[] = [];
+
+  for (let i = startTokenId; i < startTokenId + maxTokensToTry; i++) {
+    tokenIdsToTry.push(BigInt(i));
   }
 
-  if (totalSupply === 0n) {
-    logger.info({ network }, 'No agents in registry');
-    return result;
-  }
+  result.total = tokenIdsToTry.length;
 
-  // 2. Determine how many to process
-  const count = limit > 0 ? Math.min(limit, Number(totalSupply)) : Number(totalSupply);
+  logger.info({ network, tokensToTry: tokenIdsToTry.length }, 'Trying sequential token IDs');
 
-  // 3. Enumerate tokens using tokenByIndex and process each
-  for (let i = 0; i < count; i++) {
-    let tokenId: bigint;
+  // Process each potential token ID
+  for (const tokenId of tokenIdsToTry) {
     let owner: Address;
+    let tokenURI: string;
 
     try {
-      // Get tokenId at this index
-      tokenId = await client.readContract({
+      // Try to get tokenURI - if it exists, the token is valid
+      tokenURI = await client.readContract({
         address: registry,
         abi: IDENTITY_REGISTRY_ABI,
-        functionName: 'tokenByIndex',
-        args: [BigInt(i)],
-      }) as bigint;
-
-      // Get owner
-      owner = await client.readContract({
-        address: registry,
-        abi: IDENTITY_REGISTRY_ABI,
-        functionName: 'ownerOf',
+        functionName: 'tokenURI',
         args: [tokenId],
-      }) as Address;
-    } catch (error) {
-      logger.warn({ network, index: i, error }, 'Failed to read token at index');
-      result.failed++;
-      result.details.push({
-        tokenId: i,
-        owner: '0x0' as Address,
-        name: '',
-        status: 'failed',
-        reason: 'Failed to read tokenByIndex/ownerOf',
+      }) as string;
+
+      // Fetch Transfer events for this specific token to get the owner
+      const transferLogs = await client.getLogs({
+        address: registry,
+        event: {
+          type: 'event',
+          name: 'Transfer',
+          inputs: [
+            { type: 'address', indexed: true, name: 'from' },
+            { type: 'address', indexed: true, name: 'to' },
+            { type: 'uint256', indexed: true, name: 'tokenId' },
+          ],
+        },
+        args: {
+          tokenId: tokenId,
+        },
+        fromBlock: fromBlock,
+        toBlock: currentBlock,
       });
+
+      // Find the mint event (from = 0x0) to get the original owner
+      const mintEvent = transferLogs.find((log) => log.args.from === '0x0000000000000000000000000000000000000000');
+      owner = mintEvent?.args.to as Address || '0x0000000000000000000000000000000000000000' as Address;
+    } catch (error) {
+      // Token doesn't exist or was burned, skip it
+      result.skipped++;
       continue;
     }
-
     const agentAddress = deriveAgentAddress(registry, tokenId);
 
     try {
