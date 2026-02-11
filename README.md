@@ -15,9 +15,9 @@
 
 ---
 
-## What is Enigma?
+## What is ERC 8004 Scan?
 
-**Enigma** is the "CoinMarketCap for Autonomous Agents" on Avalanche. A Web3 platform that discovers, verifies, ranks, and scores the trustworthiness of AI/autonomous software agents (ERC-804) deployed on Avalanche C-Chain.
+**ERC 8004 Scan** is the "CoinMarketCap for Autonomous Agents" on Avalanche. A Web3 platform that discovers, verifies, ranks, and scores the trustworthiness of AI/autonomous software agents (ERC 8004) deployed on Avalanche C-Chain.
 
 ### The Problem
 
