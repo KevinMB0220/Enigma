@@ -2,6 +2,9 @@
 # Hook: Auto-add real developer as Co-authored-by
 # The repo uses snowrailsnowrail@gmail.com as the commit author (local config).
 # This hook reads the developer's GLOBAL git identity and appends it as co-author.
+#
+# IMPORTANT: Co-authored-by MUST be the last line(s) of the commit message
+# for GitHub to properly parse and link the co-author avatars.
 
 COMMIT_MSG_FILE="$1"
 COMMIT_SOURCE="$2"
@@ -26,6 +29,9 @@ if grep -q "Co-authored-by:.*<${REAL_EMAIL}>" "$COMMIT_MSG_FILE" 2>/dev/null; th
   exit 0
 fi
 
-# Append Co-authored-by trailer
+# Remove trailing blank lines from the commit message
+sed -i '' -e :a -e '/^\n*$/{$d;N;ba' -e '}' "$COMMIT_MSG_FILE"
+
+# Append Co-authored-by as the LAST line (required by GitHub for proper linking)
 echo "" >> "$COMMIT_MSG_FILE"
 echo "Co-authored-by: ${REAL_NAME} <${REAL_EMAIL}>" >> "$COMMIT_MSG_FILE"
