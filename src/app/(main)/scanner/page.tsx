@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import Link from 'next/link';
-import { Plus, TrendingUp, Shield, Activity, RefreshCw } from 'lucide-react';
+import { Plus, TrendingUp, Shield, Activity, RefreshCw, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAgents, type AgentFilters } from '@/hooks/use-agents';
 import { useAgentStats } from '@/hooks/use-agent-stats';
@@ -72,6 +72,15 @@ function Pagination({
       <Button
         variant="outline"
         size="sm"
+        onClick={() => onPageChange(1)}
+        disabled={page <= 1}
+        title="First page"
+      >
+        <ChevronsLeft className="h-4 w-4" />
+      </Button>
+      <Button
+        variant="outline"
+        size="sm"
         onClick={() => onPageChange(page - 1)}
         disabled={page <= 1}
       >
@@ -87,6 +96,15 @@ function Pagination({
         disabled={page >= totalPages}
       >
         Next
+      </Button>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => onPageChange(totalPages)}
+        disabled={page >= totalPages}
+        title="Last page"
+      >
+        <ChevronsRight className="h-4 w-4" />
       </Button>
     </div>
   );
@@ -241,15 +259,6 @@ export default function ScannerPage() {
           />
         </div>
 
-        {/* Search Bar */}
-        <div className="mb-6 animate-fade-in-up" style={{ animationDelay: '150ms' }}>
-          <SearchBar
-            value={search}
-            onChange={setSearch}
-            className="max-w-md"
-          />
-        </div>
-
         {/* Main Content */}
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Filters Sidebar */}
@@ -257,8 +266,19 @@ export default function ScannerPage() {
             <Filters values={filters} onChange={handleFilterChange} />
           </aside>
 
-          {/* Agent Table */}
-          <div className="flex-1 min-w-0 animate-fade-in-up" style={{ animationDelay: '300ms' }}>
+          {/* Search + Table Column */}
+          <div className="flex-1 min-w-0 space-y-6">
+            {/* Search Bar */}
+            <div className="animate-fade-in-up" style={{ animationDelay: '150ms' }}>
+              <SearchBar
+                value={search}
+                onChange={setSearch}
+                className="max-w-md"
+              />
+            </div>
+
+            {/* Agent Table */}
+            <div className="animate-fade-in-up" style={{ animationDelay: '300ms' }}>
             {isLoading ? (
               <div className="flex items-center justify-center py-20 animate-fade-in">
                 <LoadingSpinner size="lg" text="Scanning agents..." />
@@ -293,6 +313,7 @@ export default function ScannerPage() {
                 )}
               </div>
             )}
+            </div>
           </div>
         </div>
       </div>
