@@ -2,7 +2,7 @@ import { createPublicClient, http, keccak256, encodePacked, type Address, type P
 import { createLogger } from '@/lib/utils/logger';
 import { avalanche, avalancheFuji } from '@/lib/blockchain/config';
 import { IDENTITY_REGISTRY_ABI } from '@/lib/blockchain/abis/identity-registry';
-import { createAgent, agentExists } from './agent-service';
+import { createAgent } from './agent-service';
 import type { CreateAgentInput } from './agent-service';
 import { prisma } from '@/lib/database/prisma';
 
@@ -10,8 +10,13 @@ const logger = createLogger('indexer-service');
 
 // ── Registry addresses per network ─────────────────────────────────
 const REGISTRY_ADDRESSES = {
-  mainnet: '0x8004A169FB4a3325136EB29fA0ceB6D2e539a432' as Address,
+  mainnet: '0x8004A818BFB912233c491871b3d84c89A494BD9e' as Address,
   testnet: '0x8004A818BFB912233c491871b3d84c89A494BD9e' as Address,
+};
+
+const REPUTATION_REGISTRY = {
+  mainnet: '0x8004B663056A597Dffe9eCcC1965A193B7388713' as Address,
+  testnet: '0x8004B663056A597Dffe9eCcC1965A193B7388713' as Address, // TODO: Add testnet address when deployed
 };
 
 // ── Dedicated RPC clients (independent of app's CHAIN_ENV) ─────────
@@ -110,93 +115,108 @@ export async function syncNetwork(network: Network, limit = 0): Promise<IndexerR
   const currentBlock = await client.getBlockNumber();
 
   // Scan Transfer events from deployment block to current
-  // For mainnet, start from a recent block to avoid scanning millions of blocks
-  const fromBlock = network === 'mainnet' ? currentBlock - 100000n : 0n;
+  // For testnet: scan ALL blocks from genesis (block 0)
+  // For mainnet: limit to recent 100k blocks for performance
+  const startBlock = network === 'mainnet' ? currentBlock - 100000n : 0n;
 
-  logger.info({ network, fromBlock, currentBlock }, 'Fetching Transfer events');
+  const totalBlocks = currentBlock - startBlock;
+  logger.info({ network, startBlock, currentBlock, totalBlocks }, 'Starting Transfer events scan');
 
-  // Get the latest agent from DB to know where to start
-  const latestAgent = await prisma.agent.findFirst({
+  // Fetch ALL Transfer events to discover minted tokens
+  // RPC nodes have a limit on block range (typically 2048 blocks)
+  // So we need to fetch in chunks
+  const BLOCK_CHUNK_SIZE = 2000n;
+  const transferLogs = [];
+
+  const totalChunks = Number((totalBlocks + BLOCK_CHUNK_SIZE - 1n) / BLOCK_CHUNK_SIZE);
+  let currentChunk = 0;
+
+  for (let fromBlock = startBlock; fromBlock <= currentBlock; fromBlock += BLOCK_CHUNK_SIZE) {
+    const toBlock = fromBlock + BLOCK_CHUNK_SIZE - 1n > currentBlock
+      ? currentBlock
+      : fromBlock + BLOCK_CHUNK_SIZE - 1n;
+
+    currentChunk++;
+    const progress = ((currentChunk / totalChunks) * 100).toFixed(1);
+
+    logger.info({
+      network,
+      fromBlock,
+      toBlock,
+      chunk: `${currentChunk}/${totalChunks}`,
+      progress: `${progress}%`
+    }, 'Fetching Transfer events chunk');
+
+    const logs = await client.getLogs({
+      address: registry,
+      event: {
+        type: 'event',
+        name: 'Transfer',
+        inputs: [
+          { type: 'address', indexed: true, name: 'from' },
+          { type: 'address', indexed: true, name: 'to' },
+          { type: 'uint256', indexed: true, name: 'tokenId' },
+        ],
+      },
+      fromBlock,
+      toBlock,
+    });
+
+    transferLogs.push(...logs);
+    logger.info({
+      network,
+      chunkLogs: logs.length,
+      totalSoFar: transferLogs.length,
+      progress: `${progress}%`
+    }, 'Chunk fetched');
+  }
+
+  logger.info({ network, totalEvents: transferLogs.length }, 'Completed Transfer events scan');
+
+  // Extract all unique minted token IDs (from = 0x0 means mint)
+  const mintEvents = transferLogs.filter(
+    (log) => log.args.from === '0x0000000000000000000000000000000000000000'
+  );
+
+  // Group by tokenId to get the original owner (first mint event)
+  const tokenMap = new Map<bigint, Address>();
+  for (const event of mintEvents) {
+    const tokenId = event.args.tokenId as bigint;
+    const owner = event.args.to as Address;
+    if (!tokenMap.has(tokenId)) {
+      tokenMap.set(tokenId, owner);
+    }
+  }
+
+  logger.info({ network, uniqueTokens: tokenMap.size }, 'Found unique minted tokens');
+
+  // Get existing agents from DB to skip duplicates
+  const existingAgents = await prisma.agent.findMany({
     where: { registry_address: registry },
-    orderBy: { token_id: 'desc' },
     select: { token_id: true },
   });
 
-  const startTokenId = latestAgent?.token_id ? latestAgent.token_id + 1 : 0;
+  const existingTokenIds = new Set(existingAgents.map((a) => a.token_id));
 
-  logger.info({ network, startTokenId }, 'Starting from token ID');
+  // Filter tokens to process (only new ones)
+  let tokensToProcess = Array.from(tokenMap.entries()).filter(
+    ([tokenId]) => !existingTokenIds.has(Number(tokenId))
+  );
 
-  // Since we don't have a reliable way to enumerate, we'll try sequential token IDs
-  // Start from the last known token and try the next 100 tokens
-  const maxTokensToTry = limit > 0 ? limit : 100;
-  const tokenIdsToTry: bigint[] = [];
-
-  for (let i = startTokenId; i < startTokenId + maxTokensToTry; i++) {
-    tokenIdsToTry.push(BigInt(i));
+  // Apply limit if specified
+  if (limit > 0) {
+    tokensToProcess = tokensToProcess.slice(0, limit);
   }
 
-  result.total = tokenIdsToTry.length;
+  result.total = tokensToProcess.length;
 
-  logger.info({ network, tokensToTry: tokenIdsToTry.length }, 'Trying sequential token IDs');
+  logger.info({ network, tokensToProcess: tokensToProcess.length }, 'Processing new tokens');
 
-  // Process each potential token ID
-  for (const tokenId of tokenIdsToTry) {
-    let owner: Address;
-    let tokenURI: string;
-
-    try {
-      // Try to get tokenURI - if it exists, the token is valid
-      tokenURI = await client.readContract({
-        address: registry,
-        abi: IDENTITY_REGISTRY_ABI,
-        functionName: 'tokenURI',
-        args: [tokenId],
-      }) as string;
-
-      // Fetch Transfer events for this specific token to get the owner
-      const transferLogs = await client.getLogs({
-        address: registry,
-        event: {
-          type: 'event',
-          name: 'Transfer',
-          inputs: [
-            { type: 'address', indexed: true, name: 'from' },
-            { type: 'address', indexed: true, name: 'to' },
-            { type: 'uint256', indexed: true, name: 'tokenId' },
-          ],
-        },
-        args: {
-          tokenId: tokenId,
-        },
-        fromBlock: fromBlock,
-        toBlock: currentBlock,
-      });
-
-      // Find the mint event (from = 0x0) to get the original owner
-      const mintEvent = transferLogs.find((log) => log.args.from === '0x0000000000000000000000000000000000000000');
-      owner = mintEvent?.args.to as Address || '0x0000000000000000000000000000000000000000' as Address;
-    } catch (error) {
-      // Token doesn't exist or was burned, skip it
-      result.skipped++;
-      continue;
-    }
+  // Process each token
+  for (const [tokenId, owner] of tokensToProcess) {
     const agentAddress = deriveAgentAddress(registry, tokenId);
 
     try {
-      // Check if already in DB
-      const exists = await agentExists(agentAddress);
-      if (exists) {
-        result.skipped++;
-        result.details.push({
-          tokenId: Number(tokenId),
-          owner,
-          name: '',
-          status: 'skipped',
-          reason: 'Already exists',
-        });
-        continue;
-      }
-
       // Read tokenURI
       let tokenURI = '';
       try {
