@@ -1,8 +1,17 @@
 'use client';
 
-import { useMemo } from 'react';
-import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
-import { Progress } from '@/components/ui/progress';
+import React, { useMemo } from 'react';
+import {
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  BarChart3,
+  Shield,
+  Activity,
+  ShieldCheck,
+  Star,
+  type LucideIcon,
+} from 'lucide-react';
 import { TrustScoreBadge, getScoreRange } from '@/components/shared/trust-score-badge';
 import { cn } from '@/lib/utils/index';
 
@@ -38,40 +47,48 @@ interface TrustScoreBreakdownProps {
 }
 
 /**
- * Component labels and descriptions
+ * Component labels, descriptions and icons
  */
-const COMPONENT_INFO: Record<keyof TrustScoreData['breakdown'], { label: string; description: string }> = {
+const COMPONENT_INFO: Record<
+  keyof TrustScoreData['breakdown'],
+  { label: string; description: string; icon: LucideIcon }
+> = {
   volume: {
     label: 'Transaction Volume',
     description: 'Based on 24h transaction activity',
+    icon: BarChart3,
   },
   proxy: {
     label: 'Proxy Transparency',
     description: 'Contract proxy detection and declaration',
+    icon: Shield,
   },
   uptime: {
     label: 'Uptime',
     description: 'Heartbeat response rate (24h)',
+    icon: Activity,
   },
   ozMatch: {
     label: 'Security Patterns',
     description: 'OpenZeppelin bytecode similarity',
+    icon: ShieldCheck,
   },
   ratings: {
     label: 'Community Rating',
     description: 'Average user rating score',
+    icon: Star,
   },
 };
 
 /**
- * Get color class based on score
+ * Get progress bar fill color and score badge color based on score
  */
-function getProgressColor(score: number): string {
-  if (score >= 80) return 'bg-green-400/50';
-  if (score >= 60) return 'bg-blue-400/50';
-  if (score >= 40) return 'bg-yellow-400/50';
-  if (score >= 20) return 'bg-orange-400/50';
-  return 'bg-red-400/50';
+function getScoreStyles(score: number): { bar: string; badge: string } {
+  if (score >= 80) return { bar: 'bg-emerald-500', badge: 'text-emerald-400' };
+  if (score >= 60) return { bar: 'bg-blue-500', badge: 'text-blue-400' };
+  if (score >= 40) return { bar: 'bg-amber-500', badge: 'text-amber-400' };
+  if (score >= 20) return { bar: 'bg-orange-500', badge: 'text-orange-400' };
+  return { bar: 'bg-rose-500', badge: 'text-rose-400' };
 }
 
 /**
@@ -105,8 +122,9 @@ export function TrustScoreBreakdown({
   return (
     <div
       className={cn(
-        'rounded-lg bg-[rgba(15,17,23,0.6)] backdrop-blur-xl',
-        'border border-[rgba(255,255,255,0.06)] p-6',
+        'rounded-xl bg-[rgba(15,17,23,0.8)] backdrop-blur-xl',
+        'border border-white/[0.08] shadow-lg shadow-black/20',
+        'p-6',
         className
       )}
     >
@@ -121,26 +139,24 @@ export function TrustScoreBreakdown({
             </p>
           </div>
         </div>
-
-        {/* Trend indicator */}
         {trend && (
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1.5">
             {trend.direction === 'up' && (
               <>
-                <TrendingUp className="h-4 w-4 text-green-400" />
-                <span className="text-sm text-green-400">+{trend.value}</span>
+                <TrendingUp className="h-4 w-4 text-emerald-400" />
+                <span className="text-sm font-medium text-emerald-400">+{trend.value}</span>
               </>
             )}
             {trend.direction === 'down' && (
               <>
-                <TrendingDown className="h-4 w-4 text-red-400" />
-                <span className="text-sm text-red-400">-{trend.value}</span>
+                <TrendingDown className="h-4 w-4 text-rose-400" />
+                <span className="text-sm font-medium text-rose-400">-{trend.value}</span>
               </>
             )}
             {trend.direction === 'stable' && (
               <>
-                <Minus className="h-4 w-4 text-[rgba(255,255,255,0.5)]" />
-                <span className="text-sm text-[rgba(255,255,255,0.5)]">No change</span>
+                <Minus className="h-4 w-4 text-white/50" />
+                <span className="text-sm text-white/50">No change</span>
               </>
             )}
           </div>
@@ -148,59 +164,63 @@ export function TrustScoreBreakdown({
       </div>
 
       {/* Component breakdown */}
-      <div className="space-y-4">
+      <div className="space-y-5">
         {(Object.keys(breakdown) as Array<keyof typeof breakdown>).map((key) => {
           const component = breakdown[key];
           const info = COMPONENT_INFO[key];
-          const progressColor = getProgressColor(component.score);
+          const { bar: barColor, badge: badgeColor } = getScoreStyles(component.score);
           const weightPercent = Math.round(component.weight * 100);
+          const Icon = info.icon;
 
           return (
-            <div key={key} className="space-y-2">
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-white">
-                      {info.label}
-                    </span>
-                    <span className="text-xs text-[rgba(255,255,255,0.4)]">
-                      ({weightPercent}%)
-                    </span>
+            <div key={key} className="space-y-2.5">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex min-w-0 flex-1 gap-3">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/[0.06] text-white/70">
+                    <Icon className="h-4 w-4" />
                   </div>
-                  <p className="text-xs text-[rgba(255,255,255,0.5)]">
-                    {info.description}
-                  </p>
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-baseline gap-1.5">
+                      <span className="text-sm font-medium text-white">
+                        {info.label}
+                      </span>
+                      <span className="text-xs text-white/40">
+                        {weightPercent}%
+                      </span>
+                    </div>
+                    <p className="mt-0.5 text-xs text-white/50">
+                      {info.description}
+                    </p>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <span className="text-sm font-semibold text-white">
-                    {component.score}
-                  </span>
-                  <span className="text-xs text-[rgba(255,255,255,0.5)]">/100</span>
+                <div className={cn('shrink-0 text-right text-sm font-semibold tabular-nums', badgeColor)}>
+                  {component.score}
+                  <span className="font-normal text-white/50">/100</span>
                 </div>
               </div>
 
-              <div className="relative">
-                <Progress
-                  value={component.score}
-                  className="h-2 bg-[rgba(31,41,55,0.6)]"
-                />
-                {/* Overlay with custom color */}
+              {/* Custom progress bar - single element, no indeterminate */}
+              <div
+                className="h-2.5 w-full overflow-hidden rounded-full bg-white/[0.06]"
+                role="progressbar"
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={component.score}
+              >
                 <div
-                  className={cn('absolute top-0 left-0 h-2 rounded-full transition-all duration-500', progressColor)}
-                  style={{ width: `${component.score}%` }}
+                  className={cn('h-full rounded-full transition-[width] duration-500 ease-out', barColor)}
+                  style={{ width: `${Math.max(0, Math.min(100, component.score))}%` }}
                 />
               </div>
 
-              {/* Component-specific details */}
               <ComponentDetails component={key} details={component.details} />
             </div>
           );
         })}
       </div>
 
-      {/* Last updated */}
-      <div className="mt-6 pt-4 border-t border-[rgba(255,255,255,0.06)]">
-        <p className="text-xs text-[rgba(255,255,255,0.4)] text-center">
+      <div className="mt-6 pt-4 border-t border-white/[0.06]">
+        <p className="text-xs text-white/40 text-center">
           Last updated: {new Date(lastUpdated).toLocaleString()}
         </p>
       </div>
@@ -268,7 +288,7 @@ function ComponentDetails({
   if (!content) return null;
 
   return (
-    <p className="text-xs text-[rgba(255,255,255,0.4)] pl-2 border-l-2 border-[rgba(255,255,255,0.1)]">
+    <p className="text-xs text-white/45 rounded-md bg-white/[0.04] px-2.5 py-1.5 border border-white/[0.06]">
       {content}
     </p>
   );
