@@ -85,7 +85,7 @@ export function Filters({ values, onChange, className }: FiltersProps) {
   return (
     <div
       className={cn(
-        'bg-[rgba(15,17,23,0.6)] backdrop-blur-[20px] rounded-lg border border-[rgba(255,255,255,0.06)]',
+        'bg-[rgba(15,17,23,0.98)] backdrop-blur-[20px] rounded-lg border border-[rgba(255,255,255,0.06)]',
         className
       )}
     >
