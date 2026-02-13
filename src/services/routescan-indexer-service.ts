@@ -1,18 +1,18 @@
 /**
- * Index ALL agents from Routescan API
- * Fetches all transfers, identifies unique tokens, reads current owners from blockchain
+ * Routescan-based indexer service
+ * Uses Routescan API to fetch all historical Transfer events and index agents
+ * This is more efficient and comprehensive than scanning blockchain events directly
  */
-import { PrismaClient } from '@prisma/client';
-import {
-  createPublicClient,
-  http,
-  keccak256,
-  encodePacked,
-  type Address,
-} from 'viem';
+import { createPublicClient, http, keccak256, encodePacked, type Address } from 'viem';
+import { createLogger } from '@/lib/utils/logger';
 import { avalanche } from 'viem/chains';
+import { createAgent } from './agent-service';
+import type { CreateAgentInput } from './agent-service';
+import { prisma } from '@/lib/database/prisma';
 
-const prisma = new PrismaClient();
+const logger = createLogger('routescan-indexer');
+
+// Registry address on mainnet
 const REGISTRY = '0x8004A169FB4a3325136EB29fA0ceB6D2e539a432' as Address;
 const ROUTESCAN_API = 'https://api.routescan.io/v2/network/mainnet/evm/43114/erc721-transfers';
 
@@ -48,8 +48,21 @@ interface Transfer {
   blockNumber: string;
 }
 
-async function main() {
-  console.log('=== Indexing ALL Agents from Routescan API ===\n');
+export interface RoutesScanIndexerResult {
+  indexed: number;
+  skipped: number;
+  failed: number;
+  total: number;
+}
+
+/**
+ * Sync agents from Routescan API
+ * Fetches all Transfer events, identifies unique tokens, and indexes new agents
+ *
+ * @param maxPages - Maximum number of pages to fetch (0 = all pages, default: 20 for quick sync)
+ */
+export async function syncAgentsFromRoutescan(maxPages = 20): Promise<RoutesScanIndexerResult> {
+  logger.info({ registry: REGISTRY, maxPages }, 'Starting Routescan indexer');
 
   let indexed = 0;
   let skipped = 0;
@@ -65,21 +78,23 @@ async function main() {
       ? `${ROUTESCAN_API}?tokenAddress=${REGISTRY}&limit=50&nextToken=${nextToken}`
       : `${ROUTESCAN_API}?tokenAddress=${REGISTRY}&limit=50&count=true`;
 
-    console.log(`\n[Page ${page}] Fetching transfers...`);
+    logger.info({ page, maxPages }, 'Fetching transfers from Routescan');
+
     const response = await fetch(url);
     if (!response.ok) {
-      console.error('  API error:', response.status);
+      logger.error({ status: response.status }, 'Routescan API error');
       break;
     }
 
     const data = await response.json();
-    console.log(`  Fetched ${data.items.length} transfers`);
+    logger.info({ page, transfers: data.items.length }, 'Fetched transfers');
 
     // Find minted tokens in this page (from = 0x0)
     const mints = data.items.filter((t: Transfer) =>
       t.from === '0x0000000000000000000000000000000000000000'
     );
-    console.log(`  Found ${mints.length} mints in this page`);
+
+    logger.info({ page, mints: mints.length }, 'Found mints in page');
 
     // Process each minted token
     for (const mint of mints) {
@@ -115,7 +130,7 @@ async function main() {
         }) as Address;
         owner = owner.toLowerCase();
       } catch (error) {
-        console.error(`  ✗ Token #${tokenId}: No current owner (burned?)`);
+        logger.warn({ tokenId: Number(tokenId) }, 'Token has no current owner (burned?)');
         failed++;
         continue;
       }
@@ -138,32 +153,38 @@ async function main() {
 
       // Insert to database
       try {
-        await prisma.agent.create({
-          data: {
-            address: agentAddress,
-            name: agentInfo.name,
-            type: 'CUSTOM',
-            description: agentInfo.description,
-            owner_address: owner,
-            registry_address: REGISTRY,
-            token_id: Number(tokenId),
-            token_uri: tokenURI,
-            status: 'VERIFIED',
-          },
-        });
+        const agentData: CreateAgentInput = {
+          address: agentAddress,
+          name: agentInfo.name,
+          type: 'CUSTOM',
+          description: agentInfo.description,
+          owner_address: owner,
+          registry_address: REGISTRY,
+          token_id: Number(tokenId),
+          token_uri: tokenURI,
+          status: 'VERIFIED',
+        };
+
+        await createAgent(agentData);
         indexed++;
-        console.log(`  ✓ Indexed: ${agentInfo.name} (Token #${tokenId})`);
+        logger.info({ tokenId: Number(tokenId), name: agentInfo.name }, 'Agent indexed');
       } catch (error) {
         failed++;
-        console.error(`  ✗ Failed Token #${tokenId}:`, error instanceof Error ? error.message : 'Unknown');
+        logger.error({ tokenId: Number(tokenId), error }, 'Failed to index agent');
       }
     }
 
-    console.log(`  Page summary: ${indexed} indexed, ${skipped} skipped, ${failed} failed`);
+    logger.info({ page, indexed, skipped, failed }, 'Page processed');
 
     // Pagination
     nextToken = data.link?.nextToken;
     page++;
+
+    // Check if we've reached maxPages (0 means no limit)
+    if (maxPages > 0 && page > maxPages) {
+      logger.info({ maxPages }, 'Reached max pages limit');
+      break;
+    }
 
     // Rate limiting
     if (nextToken) {
@@ -172,24 +193,16 @@ async function main() {
 
   } while (nextToken);
 
-  console.log('\n=== Final Summary ===');
-  console.log(`Total indexed: ${indexed}`);
-  console.log(`Total skipped: ${skipped}`);
-  console.log(`Total failed: ${failed}`);
-  console.log(`Unique tokens processed: ${processedTokens.size}`);
+  const result = {
+    indexed,
+    skipped,
+    failed,
+    total: processedTokens.size,
+  };
 
-  // Calculate trust scores for newly indexed agents
-  if (indexed > 0) {
-    console.log('\n=== Calculating Trust Scores ===');
-    console.log(`Calculating trust scores for ${indexed} new agents...`);
+  logger.info(result, 'Routescan indexer completed');
 
-    const { recalculateAllScores } = await import('../src/services/trust-score-service');
-    const updatedCount = await recalculateAllScores();
-
-    console.log(`✓ Updated ${updatedCount} trust scores`);
-  }
-
-  await prisma.$disconnect();
+  return result;
 }
 
 function deriveAgentAddress(registry: Address, tokenId: bigint): string {
@@ -212,7 +225,9 @@ function resolveAgentInfo(tokenURI: string, tokenId: number): { name: string; de
         const name = pathName.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
         return { name, description: `Autonomous agent "${name}" (Token #${tokenId})` };
       }
-    } catch {}
+    } catch {
+      // Invalid URL
+    }
   }
 
   if (tokenURI.startsWith('data:application/json;base64,')) {
@@ -223,7 +238,9 @@ function resolveAgentInfo(tokenURI: string, tokenId: number): { name: string; de
         name: json.name || defaultName,
         description: json.description || defaultDesc,
       };
-    } catch {}
+    } catch {
+      // Invalid base64 or JSON
+    }
   }
 
   if (tokenURI.startsWith('data:application/json,')) {
@@ -234,14 +251,10 @@ function resolveAgentInfo(tokenURI: string, tokenId: number): { name: string; de
         name: json.name || defaultName,
         description: json.description || defaultDesc,
       };
-    } catch {}
+    } catch {
+      // Invalid JSON
+    }
   }
 
   return { name: defaultName, description: defaultDesc };
 }
-
-main().catch((error) => {
-  console.error('Fatal error:', error);
-  prisma.$disconnect();
-  process.exit(1);
-});

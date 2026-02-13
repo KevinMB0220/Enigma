@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import { successResponse, handleError } from '@/lib/utils/api-helpers';
 import { createLogger } from '@/lib/utils/logger';
-import { syncAgents } from '@/services/indexer-service';
+import { syncAgentsFromRoutescan } from '@/services/routescan-indexer-service';
 import { recalculateAllScores } from '@/services/trust-score-service';
 
 export const dynamic = 'force-dynamic';
@@ -13,42 +13,35 @@ const logger = createLogger('api-indexer-refresh');
 /**
  * POST /api/v1/indexer/refresh
  *
- * Triggers a manual refresh of the agent index
- * - Syncs agents from both mainnet and testnet Identity Registries
+ * Triggers a manual refresh of the agent index using Routescan API
+ * - Syncs agents from mainnet Identity Registry via Routescan
  * - Automatically calculates trust scores for new agents
+ * - Fetches up to 20 pages (1000 transfers) for quick sync
  *
- * This can be called manually or scheduled via cron
+ * This can be called manually from the Scanner page
  */
 export async function POST(_request: NextRequest) {
   try {
-    logger.info('Starting manual indexer refresh');
+    logger.info('Starting manual indexer refresh via Routescan');
 
     const startTime = Date.now();
 
-    // Sync agents from both networks
-    const { mainnet, testnet } = await syncAgents();
+    // Sync agents from Routescan API (max 20 pages for quick refresh)
+    const result = await syncAgentsFromRoutescan(20);
 
-    // Recalculate trust scores for all agents
-    const updatedScores = await recalculateAllScores();
+    // Recalculate trust scores if new agents were indexed
+    let updatedScores = 0;
+    if (result.indexed > 0) {
+      updatedScores = await recalculateAllScores();
+    }
 
     const duration = Date.now() - startTime;
 
     const stats = {
-      mainnet: {
-        indexed: mainnet.indexed,
-        skipped: mainnet.skipped,
-        failed: mainnet.failed,
-        total: mainnet.total,
-      },
-      testnet: {
-        indexed: testnet.indexed,
-        skipped: testnet.skipped,
-        failed: testnet.failed,
-        total: testnet.total,
-      },
-      totalIndexed: mainnet.indexed + testnet.indexed,
-      totalSkipped: mainnet.skipped + testnet.skipped,
-      totalFailed: mainnet.failed + testnet.failed,
+      indexed: result.indexed,
+      skipped: result.skipped,
+      failed: result.failed,
+      total: result.total,
       trustScoresUpdated: updatedScores,
       duration: `${(duration / 1000).toFixed(2)}s`,
     };
