@@ -15,11 +15,19 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { TrustScoreBadge } from '@/components/shared/trust-score-badge';
-import { TrustScoreBreakdown } from '@/components/agent/trust-score-breakdown';
 import { RatingForm } from '@/components/agent/rating-form';
 import { ReportModal } from '@/components/agent/report-modal';
+import { ReputationContract } from '@/components/agent/reputation-contract';
 import { useAgent, type AgentDetail } from '@/hooks/use-agent';
 import { cn } from '@/lib/utils/index';
+import {
+  BarChart3,
+  Activity,
+  ShieldCheck,
+  Star,
+  TrendingUp as TrendingUpIcon,
+  Calculator,
+} from 'lucide-react';
 
 /**
  * Status badge colors
@@ -247,28 +255,11 @@ export default function AgentProfilePage() {
 
           {/* Overview Tab */}
           <TabsContent value="overview" className="space-y-6">
-            <div className="grid md:grid-cols-2 gap-6">
-              {/* Trust Score Breakdown */}
-              <TrustScoreBreakdown
-                data={{
-                  score: agent.trustScore.score,
-                  breakdown: agent.trustScore.breakdown,
-                  lastUpdated: agent.trustScore.lastUpdated,
-                }}
-              />
+            {/* Smart Contract Analysis - Full Width */}
+            <ReputationContract agent={agent} />
 
-              {/* Volume Stats */}
-              <div className="rounded-lg bg-[rgba(15,17,23,0.6)] backdrop-blur-xl border border-[rgba(255,255,255,0.06)] p-6">
-                <h3 className="text-lg font-semibold text-white mb-4">
-                  Transaction Volume
-                </h3>
-                <div className="space-y-4">
-                  <VolumeCard label="24 Hours" data={agent.volumes.day} />
-                  <VolumeCard label="7 Days" data={agent.volumes.week} />
-                  <VolumeCard label="30 Days" data={agent.volumes.month} />
-                </div>
-              </div>
-            </div>
+            {/* Trust Score Calculation */}
+            <TrustScoreCalculation agent={agent} />
           </TabsContent>
 
           {/* Verification Tab */}
@@ -286,34 +277,6 @@ export default function AgentProfilePage() {
             <RatingsTab agent={agent} agentAddress={address} />
           </TabsContent>
         </Tabs>
-      </div>
-    </div>
-  );
-}
-
-/**
- * Volume card component
- */
-function VolumeCard({ label, data }: { label: string; data?: { txCount: number; volumeAvax: string; volumeUsd: string } }) {
-  if (!data) {
-    return (
-      <div className="flex items-center justify-between py-3 border-b border-[rgba(255,255,255,0.06)] last:border-0">
-        <span className="text-sm text-[rgba(255,255,255,0.6)]">{label}</span>
-        <span className="text-sm text-[rgba(255,255,255,0.4)]">No data</span>
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex items-center justify-between py-3 border-b border-[rgba(255,255,255,0.06)] last:border-0">
-      <span className="text-sm text-[rgba(255,255,255,0.6)]">{label}</span>
-      <div className="text-right">
-        <p className="text-sm font-medium text-white">
-          {parseFloat(data.volumeAvax).toFixed(2)} AVAX
-        </p>
-        <p className="text-xs text-[rgba(255,255,255,0.5)]">
-          ${parseFloat(data.volumeUsd).toLocaleString()} • {data.txCount} txs
-        </p>
       </div>
     </div>
   );
@@ -438,6 +401,204 @@ function StatCard({ label, value, color }: { label: string; value: string; color
     <div className="p-4 bg-[rgba(255,255,255,0.03)] rounded-lg">
       <p className="text-sm text-[rgba(255,255,255,0.6)]">{label}</p>
       <p className={cn('text-2xl font-bold', valueColor)}>{value}</p>
+    </div>
+  );
+}
+
+/**
+ * Trust Score Calculation Display
+ */
+function TrustScoreCalculation({ agent }: { agent: AgentDetail }) {
+  const components = [
+    {
+      key: 'volume',
+      label: 'Transaction Volume',
+      icon: BarChart3,
+      score: agent.trustScore.breakdown.volume.score,
+      weight: agent.trustScore.breakdown.volume.weight,
+      color: 'cyan',
+    },
+    {
+      key: 'proxy',
+      label: 'Proxy Transparency',
+      icon: Shield,
+      score: agent.trustScore.breakdown.proxy.score,
+      weight: agent.trustScore.breakdown.proxy.weight,
+      color: 'emerald',
+    },
+    {
+      key: 'uptime',
+      label: 'Uptime',
+      icon: Activity,
+      score: agent.trustScore.breakdown.uptime.score,
+      weight: agent.trustScore.breakdown.uptime.weight,
+      color: 'amber',
+    },
+    {
+      key: 'ozMatch',
+      label: 'Security Patterns',
+      icon: ShieldCheck,
+      score: agent.trustScore.breakdown.ozMatch.score,
+      weight: agent.trustScore.breakdown.ozMatch.weight,
+      color: 'purple',
+    },
+    {
+      key: 'ratings',
+      label: 'Community Rating',
+      icon: Star,
+      score: agent.trustScore.breakdown.ratings.score,
+      weight: agent.trustScore.breakdown.ratings.weight,
+      color: 'rose',
+    },
+  ];
+
+  const colorClasses = {
+    cyan: {
+      bg: 'bg-cyan-500/10',
+      text: 'text-cyan-400',
+      border: 'border-cyan-500/30',
+      bar: 'bg-gradient-to-r from-cyan-500 to-cyan-600',
+      glow: 'shadow-cyan-500/20',
+    },
+    emerald: {
+      bg: 'bg-emerald-500/10',
+      text: 'text-emerald-400',
+      border: 'border-emerald-500/30',
+      bar: 'bg-gradient-to-r from-emerald-500 to-emerald-600',
+      glow: 'shadow-emerald-500/20',
+    },
+    amber: {
+      bg: 'bg-amber-500/10',
+      text: 'text-amber-400',
+      border: 'border-amber-500/30',
+      bar: 'bg-gradient-to-r from-amber-500 to-amber-600',
+      glow: 'shadow-amber-500/20',
+    },
+    purple: {
+      bg: 'bg-purple-500/10',
+      text: 'text-purple-400',
+      border: 'border-purple-500/30',
+      bar: 'bg-gradient-to-r from-purple-500 to-purple-600',
+      glow: 'shadow-purple-500/20',
+    },
+    rose: {
+      bg: 'bg-rose-500/10',
+      text: 'text-rose-400',
+      border: 'border-rose-500/30',
+      bar: 'bg-gradient-to-r from-rose-500 to-rose-600',
+      glow: 'shadow-rose-500/20',
+    },
+  };
+
+  return (
+    <div className="rounded-2xl overflow-hidden bg-gradient-to-br from-[#0F1117] via-[#1A1625] to-[#0F1117] border border-purple-500/20">
+      {/* Header */}
+      <div className="border-b border-white/5 bg-gradient-to-r from-purple-500/5 via-transparent to-blue-500/5 p-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="relative h-12 w-12 rounded-xl bg-gradient-to-br from-purple-500 to-blue-600 p-0.5">
+              <div className="h-full w-full rounded-xl bg-[#0F1117] flex items-center justify-center">
+                <Calculator className="h-6 w-6 text-purple-400" />
+              </div>
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-white mb-0.5">Trust Score Formula</h3>
+              <p className="text-sm text-white/50">Weighted calculation breakdown</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3 px-4 py-2 rounded-xl bg-white/5 border border-white/10">
+            <span className="text-xs text-white/50 font-medium">Final Score</span>
+            <div className="flex items-baseline gap-1">
+              <span className="text-3xl font-bold text-white">{agent.trustScore.score}</span>
+              <span className="text-lg text-white/40">/100</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Components Grid */}
+      <div className="p-6">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {components.map((component) => {
+            const Icon = component.icon;
+            const colors = colorClasses[component.color as keyof typeof colorClasses];
+            const weightPercent = Math.round(component.weight * 100);
+            const contribution = (component.score * component.weight).toFixed(1);
+
+            return (
+              <div
+                key={component.key}
+                className={cn(
+                  'group relative overflow-hidden rounded-xl p-4 border-2 transition-all hover:scale-[1.02] cursor-pointer',
+                  colors.border,
+                  colors.bg,
+                  'shadow-lg',
+                  colors.glow
+                )}
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-black/40 to-black/20" />
+                <div className="relative">
+                  {/* Icon and Label */}
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className={cn('p-2 rounded-lg', colors.bg, 'border', colors.border)}>
+                      <Icon className={cn('h-4 w-4', colors.text)} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs text-white/80 font-medium">{component.label}</p>
+                      <p className="text-[10px] text-white/40">Weight: {weightPercent}%</p>
+                    </div>
+                  </div>
+
+                  {/* Score Display */}
+                  <div className="mb-3">
+                    <div className="flex items-baseline gap-2 mb-1">
+                      <span className={cn('text-3xl font-bold', colors.text)}>
+                        {component.score}
+                      </span>
+                      <span className="text-sm text-white/40">/100</span>
+                    </div>
+                    <p className="text-xs text-white/50">
+                      Contributes: <span className={cn('font-semibold', colors.text)}>{contribution}</span> points
+                    </p>
+                  </div>
+
+                  {/* Animated Progress Bar */}
+                  <div className="relative h-2 w-full overflow-hidden rounded-full bg-black/30">
+                    <div
+                      className={cn('h-full rounded-full transition-all duration-700 ease-out', colors.bar)}
+                      style={{
+                        width: `${component.score}%`,
+                        boxShadow: '0 0 10px currentColor',
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Formula Explanation */}
+        <div className="mt-6 p-4 bg-white/[0.02] rounded-xl border border-white/5">
+          <div className="flex items-start gap-3">
+            <TrendingUpIcon className="h-5 w-5 text-purple-400 shrink-0 mt-0.5" />
+            <div>
+              <h4 className="text-sm font-semibold text-white mb-2">How it works</h4>
+              <p className="text-xs text-white/60 leading-relaxed">
+                Each metric is scored 0-100 and multiplied by its weight. The final trust score is the sum of all weighted scores.
+                Higher weights mean that metric has more influence on the overall score.
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {components.map((c) => (
+                  <span key={c.key} className="text-[10px] text-white/40 px-2 py-1 bg-white/5 rounded">
+                    {c.label}: {Math.round(c.weight * 100)}%
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
