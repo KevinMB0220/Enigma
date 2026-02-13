@@ -16,3 +16,8 @@ export {
   type AgentDetail,
   type ScoreComponent,
 } from './use-agent';
+export {
+  useVisitorTracking,
+  useVisitorStats,
+  type VisitorStats,
+} from './use-visitor-tracking';
