@@ -3,6 +3,7 @@ import { Search, ArrowRight } from 'lucide-react';
 import { Header, Footer } from '@/components/layout';
 import { prisma } from '@/lib/database/prisma';
 import { StatsSection, FeaturesSection, HowItWorksSection, CTASection } from '@/components/home';
+import { VisitorStats } from '@/components/shared/visitor-stats';
 
 export const dynamic = 'force-dynamic';
 
@@ -103,6 +104,11 @@ export default async function HomePage() {
       <HowItWorksSection />
 
       <CTASection />
+
+      {/* Visitor Statistics */}
+      <section className="flex justify-center px-6 py-12">
+        <VisitorStats />
+      </section>
 
       <Footer />
     </>

@@ -340,6 +340,19 @@ model DailyMetric {
   @@map("daily_metrics")
 }
 
+/// Visitor tracking for homepage analytics
+model Visitor {
+  id           Int      @id @default(autoincrement())
+  ipAddress    String   @unique @map("ip_address")
+  visitCount   Int      @default(1) @map("visit_count")
+  firstVisitAt DateTime @default(now()) @map("first_visit_at")
+  lastVisitAt  DateTime @updatedAt @map("last_visit_at")
+
+  @@index([ipAddress])
+  @@index([firstVisitAt])
+  @@map("visitors")
+}
+
 // ============================================
 // CENTINELA VERIFICATION
 // ============================================
