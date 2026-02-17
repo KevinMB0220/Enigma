@@ -162,9 +162,29 @@ export default function AgentProfilePage() {
                 </span>
               </div>
 
-              <p className="text-sm text-[rgba(255,255,255,0.5)] mb-3">
-                {TYPE_LABELS[agent.type] || agent.type}
-              </p>
+              {agent.metadata?.services && agent.metadata.services.length > 0 ? (
+                <div className="flex flex-wrap gap-1.5 mb-3">
+                  {agent.metadata.services.map((svc) => (
+                    <span
+                      key={svc.name}
+                      className={cn(
+                        'px-2 py-0.5 rounded text-xs font-medium',
+                        svc.name.toLowerCase() === 'mcp' && 'bg-emerald-500/15 text-emerald-400',
+                        svc.name.toLowerCase() === 'a2a' && 'bg-yellow-500/15 text-yellow-400',
+                        svc.name.toLowerCase() === 'web' && 'bg-blue-500/15 text-blue-400',
+                        svc.name.toLowerCase() === 'oasf' && 'bg-purple-500/15 text-purple-400',
+                        !['mcp', 'a2a', 'web', 'oasf'].includes(svc.name.toLowerCase()) && 'bg-[rgba(255,255,255,0.1)] text-[rgba(255,255,255,0.6)]',
+                      )}
+                    >
+                      {svc.name}{svc.version ? ` v${svc.version}` : ''}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-[rgba(255,255,255,0.5)] mb-3">
+                  {TYPE_LABELS[agent.type] || agent.type}
+                </p>
+              )}
 
               {/* ERC-8004 Identity Registry Info */}
               <div className="space-y-2">
