@@ -16,6 +16,7 @@ export interface Agent {
   is_proxy: boolean;
   proxy_type: string;
   owner_address: string;
+  services: string[];
   created_at: string;
   updated_at: string;
 }

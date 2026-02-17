@@ -80,19 +80,28 @@ export async function GET(request: NextRequest) {
     const result = await getAgents(filters, pagination);
 
     // Format response
-    const formattedAgents = result.agents.map((agent) => ({
-      address: agent.address,
-      name: agent.name,
-      type: agent.type,
-      description: agent.description,
-      status: agent.status,
-      trust_score: agent.trust_score,
-      is_proxy: agent.is_proxy,
-      proxy_type: agent.proxy_type,
-      owner_address: agent.owner_address,
-      created_at: agent.created_at.toISOString(),
-      updated_at: agent.updated_at.toISOString(),
-    }));
+    const formattedAgents = result.agents.map((agent) => {
+      // Extract service names from metadata
+      const meta = agent.metadata as Record<string, unknown> | null;
+      const services = Array.isArray(meta?.services)
+        ? (meta.services as Array<{ name: string }>).map((s) => s.name)
+        : [];
+
+      return {
+        address: agent.address,
+        name: agent.name,
+        type: agent.type,
+        description: agent.description,
+        status: agent.status,
+        trust_score: agent.trust_score,
+        is_proxy: agent.is_proxy,
+        proxy_type: agent.proxy_type,
+        owner_address: agent.owner_address,
+        services,
+        created_at: agent.created_at.toISOString(),
+        updated_at: agent.updated_at.toISOString(),
+      };
+    });
 
     logger.info({
       total: result.pagination.total,
