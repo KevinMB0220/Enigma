@@ -67,6 +67,7 @@ interface AgentInfo {
   name: string;
   description: string;
   tokenURI: string;
+  metadata?: Record<string, unknown>;
 }
 
 // ── Main sync function ─────────────────────────────────────────────
@@ -243,6 +244,7 @@ export async function syncNetwork(network: Network, limit = 0): Promise<IndexerR
         registry_address: registry,
         token_id: Number(tokenId),
         token_uri: tokenURI,
+        metadata: agentInfo.metadata,
         status: 'VERIFIED',
       };
 
@@ -369,6 +371,7 @@ function parseAgentJson(
       (json.description as string) ||
       `Autonomous agent registered in Identity Registry (Token #${id})`,
     tokenURI,
+    metadata: json, // Store full metadata
   };
 }
 

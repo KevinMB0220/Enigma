@@ -18,6 +18,7 @@ export interface CreateAgentInput {
   registry_address?: string;
   token_id?: number;
   token_uri?: string;
+  metadata?: Record<string, unknown>;
   status?: AgentStatus;
 }
 
@@ -83,6 +84,10 @@ export async function createAgent(data: CreateAgentInput): Promise<Agent> {
         description: data.description,
         owner_address: data.owner_address.toLowerCase(),
         billing_address: data.billing_address?.toLowerCase(),
+        registry_address: data.registry_address?.toLowerCase(),
+        token_id: data.token_id,
+        token_uri: data.token_uri,
+        metadata: data.metadata as Prisma.InputJsonValue,
         status: data.status || 'PENDING',
       },
     });

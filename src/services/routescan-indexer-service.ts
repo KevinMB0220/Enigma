@@ -3,6 +3,7 @@
  * Uses Routescan API to fetch all historical Transfer events and index agents
  * This is more efficient and comprehensive than scanning blockchain events directly
  */
+import { type Prisma } from '@prisma/client';
 import { createPublicClient, http, keccak256, encodePacked, type Address } from 'viem';
 import { createLogger } from '@/lib/utils/logger';
 import { avalanche } from 'viem/chains';
@@ -110,32 +111,12 @@ export async function syncAgentsFromRoutescan(maxPages = 20): Promise<RoutesScan
       const agentAddress = deriveAgentAddress(REGISTRY, tokenId);
 
       // Check if exists in DB
-      const exists = await prisma.agent.findUnique({
+      const existing = await prisma.agent.findUnique({
         where: { address: agentAddress },
+        select: { metadata: true, token_uri: true, token_id: true },
       });
 
-      if (exists) {
-        skipped++;
-        continue;
-      }
-
-      // Read current owner from blockchain
-      let owner: string;
-      try {
-        owner = await client.readContract({
-          address: REGISTRY,
-          abi: ABI,
-          functionName: 'ownerOf',
-          args: [tokenId],
-        }) as Address;
-        owner = owner.toLowerCase();
-      } catch (error) {
-        logger.warn({ tokenId: Number(tokenId) }, 'Token has no current owner (burned?)');
-        failed++;
-        continue;
-      }
-
-      // Read tokenURI
+      // Read tokenURI from blockchain
       let tokenURI = '';
       try {
         tokenURI = await client.readContract({
@@ -148,29 +129,74 @@ export async function syncAgentsFromRoutescan(maxPages = 20): Promise<RoutesScan
         // tokenURI may not exist
       }
 
-      // Resolve agent info
-      const agentInfo = resolveAgentInfo(tokenURI, Number(tokenId));
+      // If agent exists and already has metadata + token_id, skip
+      if (existing && existing.metadata && existing.token_id) {
+        skipped++;
+        continue;
+      }
 
-      // Insert to database
-      try {
-        const agentData: CreateAgentInput = {
-          address: agentAddress,
-          name: agentInfo.name,
-          type: 'CUSTOM',
-          description: agentInfo.description,
-          owner_address: owner,
-          registry_address: REGISTRY,
-          token_id: Number(tokenId),
-          token_uri: tokenURI,
-          status: 'VERIFIED',
-        };
+      // Resolve agent info from tokenURI
+      const agentInfo = await resolveAgentInfo(tokenURI, Number(tokenId));
 
-        await createAgent(agentData);
-        indexed++;
-        logger.info({ tokenId: Number(tokenId), name: agentInfo.name }, 'Agent indexed');
-      } catch (error) {
-        failed++;
-        logger.error({ tokenId: Number(tokenId), error }, 'Failed to index agent');
+      if (existing) {
+        // Update existing agent with metadata + registry info
+        try {
+          await prisma.agent.update({
+            where: { address: agentAddress },
+            data: {
+              name: agentInfo.name,
+              description: agentInfo.description,
+              registry_address: REGISTRY,
+              token_id: Number(tokenId),
+              token_uri: tokenURI || undefined,
+              metadata: agentInfo.metadata as Prisma.InputJsonValue,
+            },
+          });
+          indexed++;
+          logger.info({ tokenId: Number(tokenId), name: agentInfo.name }, 'Agent metadata updated');
+        } catch (error) {
+          failed++;
+          logger.error({ tokenId: Number(tokenId), error }, 'Failed to update agent metadata');
+        }
+      } else {
+        // Read current owner from blockchain
+        let owner: string;
+        try {
+          owner = await client.readContract({
+            address: REGISTRY,
+            abi: ABI,
+            functionName: 'ownerOf',
+            args: [tokenId],
+          }) as Address;
+          owner = owner.toLowerCase();
+        } catch {
+          logger.warn({ tokenId: Number(tokenId) }, 'Token has no current owner (burned?)');
+          failed++;
+          continue;
+        }
+
+        // Insert new agent
+        try {
+          const agentData: CreateAgentInput = {
+            address: agentAddress,
+            name: agentInfo.name,
+            type: 'CUSTOM',
+            description: agentInfo.description,
+            owner_address: owner,
+            registry_address: REGISTRY,
+            token_id: Number(tokenId),
+            token_uri: tokenURI,
+            metadata: agentInfo.metadata,
+            status: 'VERIFIED',
+          };
+
+          await createAgent(agentData);
+          indexed++;
+          logger.info({ tokenId: Number(tokenId), name: agentInfo.name }, 'Agent indexed');
+        } catch (error) {
+          failed++;
+          logger.error({ tokenId: Number(tokenId), error }, 'Failed to index agent');
+        }
       }
     }
 
@@ -210,26 +236,16 @@ function deriveAgentAddress(registry: Address, tokenId: bigint): string {
   return hash.slice(0, 42);
 }
 
-function resolveAgentInfo(tokenURI: string, tokenId: number): { name: string; description: string } {
+async function resolveAgentInfo(
+  tokenURI: string,
+  tokenId: number
+): Promise<{ name: string; description: string; metadata?: Record<string, unknown> }> {
   const defaultName = `Agent #${tokenId}`;
   const defaultDesc = `Autonomous agent registered in ERC-8004 Identity Registry (Token #${tokenId})`;
 
   if (!tokenURI) return { name: defaultName, description: defaultDesc };
 
-  if (tokenURI.startsWith('http')) {
-    try {
-      const url = new URL(tokenURI);
-      const parts = url.pathname.split('/').filter(Boolean);
-      const pathName = parts.find(p => p !== 'agent.json' && !p.endsWith('.json'));
-      if (pathName) {
-        const name = pathName.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-        return { name, description: `Autonomous agent "${name}" (Token #${tokenId})` };
-      }
-    } catch {
-      // Invalid URL
-    }
-  }
-
+  // Data URIs (base64)
   if (tokenURI.startsWith('data:application/json;base64,')) {
     try {
       const b64 = tokenURI.replace('data:application/json;base64,', '');
@@ -237,12 +253,14 @@ function resolveAgentInfo(tokenURI: string, tokenId: number): { name: string; de
       return {
         name: json.name || defaultName,
         description: json.description || defaultDesc,
+        metadata: json,
       };
     } catch {
       // Invalid base64 or JSON
     }
   }
 
+  // Data URIs (plain)
   if (tokenURI.startsWith('data:application/json,')) {
     try {
       const raw = tokenURI.replace('data:application/json,', '');
@@ -250,9 +268,47 @@ function resolveAgentInfo(tokenURI: string, tokenId: number): { name: string; de
       return {
         name: json.name || defaultName,
         description: json.description || defaultDesc,
+        metadata: json,
       };
     } catch {
       // Invalid JSON
+    }
+  }
+
+  // HTTP URIs - try fetch
+  if (tokenURI.startsWith('http')) {
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5000);
+      const response = await fetch(tokenURI, { signal: controller.signal });
+      clearTimeout(timeout);
+
+      if (response.ok) {
+        const json = await response.json();
+        return {
+          name: json.name || defaultName,
+          description: json.description || defaultDesc,
+          metadata: json,
+        };
+      }
+    } catch {
+      // URI not accessible, extract name from URL path
+    }
+
+    // Fallback: extract name from URL path
+    try {
+      const url = new URL(tokenURI);
+      const parts = url.pathname.split('/').filter(Boolean);
+      const pathName = parts.find((p) => p !== 'agent.json' && !p.endsWith('.json'));
+      if (pathName) {
+        const name = pathName
+          .split('-')
+          .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+          .join(' ');
+        return { name, description: `Autonomous agent "${name}" (Token #${tokenId})` };
+      }
+    } catch {
+      // Invalid URL
     }
   }
 
