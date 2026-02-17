@@ -73,39 +73,40 @@ enum HeartbeatResult {
 
 /// Autonomous Agent registered on the platform
 model Agent {
-  address                 String       @id // Derived address from hash(registry + tokenId)
-  name                    String
-  type                    AgentType
-  description             String?
-  owner_address           String       // Wallet that registered
-  billing_address         String?      // ERC-804 billing address
+  address         String    @id // Derived address from hash(registry + tokenId)
+  name            String
+  type            AgentType
+  description     String?
+  owner_address   String // Wallet that registered
+  billing_address String? // ERC-804 billing address
 
   // ERC-8004 Identity Registry reference
-  registry_address        String?      // Registry contract address
-  token_id                Int?         @map("token_id") // NFT tokenId in registry
-  token_uri               String?      @map("token_uri") // tokenURI from registry
+  registry_address String? // Registry contract address
+  token_id         Int?    @map("token_id") // NFT tokenId in registry
+  token_uri        String? @map("token_uri") // tokenURI from registry
+  metadata         Json? // Full metadata JSON from tokenURI
 
   // Status and verification
-  status                  AgentStatus  @default(PENDING)
-  trust_score             Int          @default(0) // 0-100
+  status      AgentStatus @default(PENDING)
+  trust_score Int         @default(0) // 0-100
 
   // Proxy detection
-  is_proxy                Boolean      @default(false)
-  proxy_type              ProxyType    @default(NONE)
-  implementation_address  String?
+  is_proxy               Boolean   @default(false)
+  proxy_type             ProxyType @default(NONE)
+  implementation_address String?
 
   // Timestamps
-  created_at              DateTime     @default(now())
-  updated_at              DateTime     @updatedAt
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
   // Relations (keeping existing relations for compatibility)
-  trustScores         TrustScore[]
-  ratings             Rating[]
-  reports             Report[]
-  scannerResults      ScannerResult[]
-  watchlistItems      WatchlistItem[]
-  heartbeatLogs       HeartbeatLog[]
-  transactionVolumes  TransactionVolume[]
+  trustScores        TrustScore[]
+  ratings            Rating[]
+  reports            Report[]
+  scannerResults     ScannerResult[]
+  watchlistItems     WatchlistItem[]
+  heartbeatLogs      HeartbeatLog[]
+  transactionVolumes TransactionVolume[]
 
   @@index([type])
   @@index([status])
@@ -116,23 +117,23 @@ model Agent {
 
 /// Trust Score calculation snapshot
 model TrustScore {
-  id             String   @id @default(uuid())
-  agentId        String   @map("agent_id")
+  id      String @id @default(uuid())
+  agentId String @map("agent_id")
 
   // Score components (0.0 - 1.0)
-  overallScore   Float    @map("overall_score")
-  volumeScore    Float    @map("volume_score")
-  proxyScore     Float    @map("proxy_score")
-  uptimeScore    Float    @map("uptime_score")
-  ozMatchScore   Float    @map("oz_match_score")
-  communityScore Float    @map("community_score")
+  overallScore   Float @map("overall_score")
+  volumeScore    Float @map("volume_score")
+  proxyScore     Float @map("proxy_score")
+  uptimeScore    Float @map("uptime_score")
+  ozMatchScore   Float @map("oz_match_score")
+  communityScore Float @map("community_score")
 
   // Calculation metadata
-  calculatedAt   DateTime @default(now()) @map("calculated_at")
-  snapshotData   Json?    @map("snapshot_data")
+  calculatedAt DateTime @default(now()) @map("calculated_at")
+  snapshotData Json?    @map("snapshot_data")
 
   // Relations
-  agent          Agent    @relation(fields: [agentId], references: [address], onDelete: Cascade)
+  agent Agent @relation(fields: [agentId], references: [address], onDelete: Cascade)
 
   @@index([agentId])
   @@index([calculatedAt])
@@ -142,23 +143,23 @@ model TrustScore {
 
 /// User rating and review for an agent
 model Rating {
-  id          String   @id @default(uuid())
-  agentId     String   @map("agent_id")
-  userAddress String   @map("user_address")
+  id          String @id @default(uuid())
+  agentId     String @map("agent_id")
+  userAddress String @map("user_address")
 
   // Rating (1-5)
-  rating      Int
-  review      String?
+  rating Int
+  review String?
 
   // Blockchain reference
-  txHash      String?  @map("tx_hash")
+  txHash String? @map("tx_hash")
 
   // Timestamps
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
-  agent       Agent    @relation(fields: [agentId], references: [address], onDelete: Cascade)
+  agent Agent @relation(fields: [agentId], references: [address], onDelete: Cascade)
 
   @@unique([agentId, userAddress])
   @@index([userAddress])
@@ -168,21 +169,21 @@ model Rating {
 
 /// Report for flagging suspicious agents
 model Report {
-  id               String       @id @default(uuid())
-  agentId          String       @map("agent_id")
-  reporterAddress  String       @map("reporter_address")
+  id              String @id @default(uuid())
+  agentId         String @map("agent_id")
+  reporterAddress String @map("reporter_address")
 
   // Report details
-  reason           ReportReason
-  description      String
-  status           ReportStatus @default(OPEN)
+  reason      ReportReason
+  description String
+  status      ReportStatus @default(OPEN)
 
   // Timestamps
-  createdAt        DateTime     @default(now()) @map("created_at")
-  updatedAt        DateTime     @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
-  agent            Agent        @relation(fields: [agentId], references: [address], onDelete: Cascade)
+  agent Agent @relation(fields: [agentId], references: [address], onDelete: Cascade)
 
   @@unique([agentId, reporterAddress])
   @@index([agentId])
@@ -198,21 +199,21 @@ model Report {
 
 /// Platform user (wallet-based)
 model User {
-  id            String    @id @default(uuid())
-  walletAddress String    @unique @map("wallet_address")
-  displayName   String?   @map("display_name")
-  avatarUrl     String?   @map("avatar_url")
+  id            String  @id @default(uuid())
+  walletAddress String  @unique @map("wallet_address")
+  displayName   String? @map("display_name")
+  avatarUrl     String? @map("avatar_url")
 
   // Permissions
-  isAdmin       Boolean   @default(false) @map("is_admin")
+  isAdmin Boolean @default(false) @map("is_admin")
 
   // Timestamps
-  createdAt     DateTime  @default(now()) @map("created_at")
-  updatedAt     DateTime  @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
-  watchlists    Watchlist[]
-  apiKeys       ApiKey[]
+  watchlists Watchlist[]
+  apiKeys    ApiKey[]
 
   @@index([walletAddress])
   @@map("users")
@@ -220,17 +221,17 @@ model User {
 
 /// User's watchlist for tracking agents
 model Watchlist {
-  id        String          @id @default(uuid())
-  userId    String          @map("user_id")
-  name      String
+  id     String @id @default(uuid())
+  userId String @map("user_id")
+  name   String
 
   // Timestamps
-  createdAt DateTime        @default(now()) @map("created_at")
-  updatedAt DateTime        @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
-  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  items     WatchlistItem[]
+  user  User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items WatchlistItem[]
 
   @@index([userId])
   @@map("watchlists")
@@ -238,14 +239,14 @@ model Watchlist {
 
 /// Agent in a watchlist
 model WatchlistItem {
-  id          String    @id @default(uuid())
-  watchlistId String    @map("watchlist_id")
-  agentId     String    @map("agent_id")
-  addedAt     DateTime  @default(now()) @map("added_at")
+  id          String   @id @default(uuid())
+  watchlistId String   @map("watchlist_id")
+  agentId     String   @map("agent_id")
+  addedAt     DateTime @default(now()) @map("added_at")
 
   // Relations
-  watchlist   Watchlist @relation(fields: [watchlistId], references: [id], onDelete: Cascade)
-  agent       Agent     @relation(fields: [agentId], references: [address], onDelete: Cascade)
+  watchlist Watchlist @relation(fields: [watchlistId], references: [id], onDelete: Cascade)
+  agent     Agent     @relation(fields: [agentId], references: [address], onDelete: Cascade)
 
   @@unique([watchlistId, agentId])
   @@map("watchlist_items")
@@ -257,22 +258,22 @@ model WatchlistItem {
 
 /// Security scan result for an agent
 model ScannerResult {
-  id          String    @id @default(uuid())
-  agentId     String    @map("agent_id")
+  id      String @id @default(uuid())
+  agentId String @map("agent_id")
 
   // Scan metadata
-  scanType    String    @map("scan_type") // bytecode, transaction, pattern, full
-  status      String    @default("pending") // pending, running, completed, failed
+  scanType String @map("scan_type") // bytecode, transaction, pattern, full
+  status   String @default("pending") // pending, running, completed, failed
 
   // Results
-  findings    Json?
+  findings Json?
 
   // Timestamps
   startedAt   DateTime  @default(now()) @map("started_at")
   completedAt DateTime? @map("completed_at")
 
   // Relations
-  agent       Agent     @relation(fields: [agentId], references: [address], onDelete: Cascade)
+  agent Agent @relation(fields: [agentId], references: [address], onDelete: Cascade)
 
   @@index([agentId])
   @@index([status])
@@ -286,27 +287,27 @@ model ScannerResult {
 
 /// API Key for external integrations
 model ApiKey {
-  id          String    @id @default(uuid())
-  userId      String    @map("user_id")
-  name        String
-  keyHash     String    @unique @map("key_hash")
+  id      String @id @default(uuid())
+  userId  String @map("user_id")
+  name    String
+  keyHash String @unique @map("key_hash")
 
   // Permissions
   permissions String[]
 
   // Rate limiting
-  rateLimit   Int       @default(1000) @map("rate_limit")
+  rateLimit Int @default(1000) @map("rate_limit")
 
   // Status
-  isActive    Boolean   @default(true) @map("is_active")
-  lastUsedAt  DateTime? @map("last_used_at")
-  expiresAt   DateTime? @map("expires_at")
+  isActive   Boolean   @default(true) @map("is_active")
+  lastUsedAt DateTime? @map("last_used_at")
+  expiresAt  DateTime? @map("expires_at")
 
   // Timestamps
-  createdAt   DateTime  @default(now()) @map("created_at")
+  createdAt DateTime @default(now()) @map("created_at")
 
   // Relations
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([keyHash])
@@ -319,21 +320,21 @@ model ApiKey {
 
 /// Daily metrics snapshot
 model DailyMetric {
-  id              String   @id @default(uuid())
-  date            DateTime @db.Date
+  id   String   @id @default(uuid())
+  date DateTime @db.Date
 
   // Platform metrics
-  totalAgents     Int      @map("total_agents")
-  newAgents       Int      @map("new_agents")
-  verifiedAgents  Int      @map("verified_agents")
-  totalScans      Int      @map("total_scans")
-  totalRatings    Int      @map("total_ratings")
-  activeUsers     Int      @map("active_users")
+  totalAgents    Int @map("total_agents")
+  newAgents      Int @map("new_agents")
+  verifiedAgents Int @map("verified_agents")
+  totalScans     Int @map("total_scans")
+  totalRatings   Int @map("total_ratings")
+  activeUsers    Int @map("active_users")
 
   // Trust score distribution
-  avgTrustScore   Float    @map("avg_trust_score")
+  avgTrustScore Float @map("avg_trust_score")
 
-  createdAt       DateTime @default(now()) @map("created_at")
+  createdAt DateTime @default(now()) @map("created_at")
 
   @@unique([date])
   @@index([date])
@@ -359,8 +360,8 @@ model Visitor {
 
 /// Heartbeat log for agent uptime monitoring
 model HeartbeatLog {
-  id             Int             @id @default(autoincrement())
-  agentAddress   String          @map("agent_address")
+  id           Int    @id @default(autoincrement())
+  agentAddress String @map("agent_address")
 
   // Heartbeat data
   timestamp      DateTime        @default(now())
@@ -370,7 +371,7 @@ model HeartbeatLog {
   errorMessage   String?         @map("error_message")
 
   // Relations
-  agent          Agent           @relation(fields: [agentAddress], references: [address], onDelete: Cascade)
+  agent Agent @relation(fields: [agentAddress], references: [address], onDelete: Cascade)
 
   @@index([agentAddress, timestamp])
   @@index([agentAddress])
@@ -393,22 +394,22 @@ enum VolumePeriod {
 
 /// Transaction volume data for an agent
 model TransactionVolume {
-  id           Int          @id @default(autoincrement())
-  agentAddress String       @map("agent_address")
+  id           Int    @id @default(autoincrement())
+  agentAddress String @map("agent_address")
 
   // Period for this volume snapshot
-  period       VolumePeriod
+  period VolumePeriod
 
   // Volume metrics
-  txCount      Int          @map("tx_count")
-  volumeAvax   Decimal      @map("volume_avax") @db.Decimal(36, 18)
-  volumeUsd    Decimal      @map("volume_usd") @db.Decimal(18, 2)
+  txCount    Int     @map("tx_count")
+  volumeAvax Decimal @map("volume_avax") @db.Decimal(36, 18)
+  volumeUsd  Decimal @map("volume_usd") @db.Decimal(18, 2)
 
   // Timestamps
-  updatedAt    DateTime     @updatedAt @map("updated_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
-  agent        Agent        @relation(fields: [agentAddress], references: [address], onDelete: Cascade)
+  agent Agent @relation(fields: [agentAddress], references: [address], onDelete: Cascade)
 
   @@unique([agentAddress, period])
   @@index([agentAddress])
