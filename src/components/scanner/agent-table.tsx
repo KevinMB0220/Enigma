@@ -92,6 +92,24 @@ function formatRelativeTime(dateString: string): string {
 }
 
 /**
+ * Get color style for service badge
+ */
+function getServiceStyle(service: string): string {
+  switch (service.toLowerCase()) {
+    case 'mcp':
+      return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
+    case 'a2a':
+      return 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20';
+    case 'web':
+      return 'bg-blue-500/10 text-blue-400 border-blue-500/20';
+    case 'oasf':
+      return 'bg-purple-500/10 text-purple-400 border-purple-500/20';
+    default:
+      return 'bg-[rgba(255,255,255,0.05)] border-[rgba(255,255,255,0.1)]';
+  }
+}
+
+/**
  * Truncate address for display
  */
 function truncateAddress(address: string): string {
@@ -136,15 +154,33 @@ const columns: ColumnDef<Agent>[] = [
   {
     accessorKey: 'type',
     header: 'Type',
-    cell: ({ row }) => (
-      <Badge
-        variant="outline"
-        className="bg-[rgba(255,255,255,0.05)] border-[rgba(255,255,255,0.1)]"
-      >
-        {row.original.type}
-      </Badge>
-    ),
-    size: 100,
+    cell: ({ row }) => {
+      const services = row.original.services;
+      if (services && services.length > 0) {
+        return (
+          <div className="flex flex-wrap gap-1">
+            {services.map((svc) => (
+              <Badge
+                key={svc}
+                variant="outline"
+                className={cn('text-[10px] px-1.5 py-0', getServiceStyle(svc))}
+              >
+                {svc}
+              </Badge>
+            ))}
+          </div>
+        );
+      }
+      return (
+        <Badge
+          variant="outline"
+          className="bg-[rgba(255,255,255,0.05)] border-[rgba(255,255,255,0.1)]"
+        >
+          {row.original.type}
+        </Badge>
+      );
+    },
+    size: 140,
   },
   {
     accessorKey: 'trust_score',
