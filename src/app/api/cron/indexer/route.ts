@@ -13,9 +13,9 @@ const logger = createLogger('cron-indexer');
 /**
  * GET /api/cron/indexer
  *
- * Scheduled job that runs every hour to:
- * 1. Index new agents from the ERC-8004 registry via Routescan API
- * 2. Calculate trust scores for new agents
+ * Scheduled job that runs every 3 hours to:
+ * 1. Index new agents + update metadata from the ERC-8004 registry via Routescan API
+ * 2. Recalculate trust scores for ALL agents
  *
  * Protected by Vercel Cron Secret in production
  */
@@ -32,18 +32,15 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    logger.info('Starting scheduled indexer job via Routescan');
+    logger.info('Starting scheduled indexer + score refresh job');
 
     const startTime = Date.now();
 
-    // Sync agents from Routescan API (max 10 pages for hourly cron)
-    const result = await syncAgentsFromRoutescan(10);
+    // Sync agents + update metadata from Routescan API
+    const result = await syncAgentsFromRoutescan();
 
-    // Recalculate trust scores if new agents were indexed
-    let updatedScores = 0;
-    if (result.indexed > 0) {
-      updatedScores = await recalculateAllScores();
-    }
+    // Always recalculate trust scores for all agents
+    const updatedScores = await recalculateAllScores();
 
     const duration = Date.now() - startTime;
 
@@ -56,7 +53,7 @@ export async function GET(request: NextRequest) {
       duration: `${(duration / 1000).toFixed(2)}s`,
     };
 
-    logger.info(stats, 'Scheduled indexer job completed successfully');
+    logger.info(stats, 'Scheduled job completed successfully');
 
     return successResponse(
       {
@@ -67,7 +64,7 @@ export async function GET(request: NextRequest) {
     );
 
   } catch (error) {
-    logger.error({ error }, 'Error during scheduled indexer job');
+    logger.error({ error }, 'Error during scheduled job');
     return handleError(error);
   }
 }
