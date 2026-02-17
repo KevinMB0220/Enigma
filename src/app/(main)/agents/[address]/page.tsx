@@ -18,6 +18,7 @@ import { TrustScoreBadge } from '@/components/shared/trust-score-badge';
 import { RatingForm } from '@/components/agent/rating-form';
 import { ReportModal } from '@/components/agent/report-modal';
 import { ReputationContract } from '@/components/agent/reputation-contract';
+import { AgentMetadataDisplay } from '@/components/agent/agent-metadata';
 import { useAgent, type AgentDetail } from '@/hooks/use-agent';
 import { cn } from '@/lib/utils/index';
 import {
@@ -248,6 +249,7 @@ export default function AgentProfilePage() {
         <Tabs defaultValue="overview" className="w-full">
           <TabsList className="w-full justify-start bg-[rgba(15,17,23,0.6)] border border-[rgba(255,255,255,0.06)] mb-6">
             <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="metadata">Metadata</TabsTrigger>
             <TabsTrigger value="verification">Verification</TabsTrigger>
             <TabsTrigger value="heartbeat">Heartbeat</TabsTrigger>
             <TabsTrigger value="ratings">Ratings</TabsTrigger>
@@ -260,6 +262,11 @@ export default function AgentProfilePage() {
 
             {/* Trust Score Calculation */}
             <TrustScoreCalculation agent={agent} />
+          </TabsContent>
+
+          {/* Metadata Tab */}
+          <TabsContent value="metadata">
+            <AgentMetadataDisplay metadata={agent.metadata} />
           </TabsContent>
 
           {/* Verification Tab */}
