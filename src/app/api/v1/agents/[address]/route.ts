@@ -96,6 +96,7 @@ export async function GET(
       registryAddress: agent.registry_address,
       tokenId: agent.token_id,
       tokenUri: agent.token_uri,
+      metadata: agent.metadata,
       status: agent.status,
       createdAt: agent.created_at.toISOString(),
       updatedAt: agent.updated_at.toISOString(),

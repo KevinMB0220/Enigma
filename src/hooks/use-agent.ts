@@ -4,6 +4,29 @@ import { useQuery } from '@tanstack/react-query';
 import type { AgentType, AgentStatus, ProxyType } from '@prisma/client';
 
 /**
+ * Agent metadata structure (ERC-8004 + EIP standard)
+ */
+export interface AgentMetadata {
+  type?: string;
+  name?: string;
+  description?: string;
+  image?: string;
+  services?: Array<{
+    name: string;
+    endpoint: string;
+    version?: string;
+  }>;
+  x402Support?: boolean;
+  active?: boolean;
+  registrations?: Array<{
+    agentId: number;
+    agentRegistry: string;
+  }>;
+  supportedTrust?: string[];
+  [key: string]: unknown;
+}
+
+/**
  * Trust score component data from API
  */
 export interface ScoreComponent {
@@ -26,6 +49,7 @@ export interface AgentDetail {
   registryAddress: string | null;
   tokenId: number | null;
   tokenUri: string | null;
+  metadata: AgentMetadata | null;
   status: AgentStatus;
   createdAt: string;
   updatedAt: string;
