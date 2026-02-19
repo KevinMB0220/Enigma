@@ -3,7 +3,7 @@
 import { useParams } from 'next/navigation';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft, ExternalLink, GitBranch } from 'lucide-react';
+import { ArrowLeft, ExternalLink, GitBranch, Bot } from 'lucide-react';
 import Link from 'next/link';
 import { RatingForm } from '@/components/agent/rating-form';
 import { ReportModal } from '@/components/agent/report-modal';
@@ -255,7 +255,30 @@ export default function AgentProfilePage() {
 
       {/* ── Header ── */}
       <div className="flex items-start justify-between gap-6">
-        <div className="min-w-0 flex-1">
+        <div className="flex min-w-0 flex-1 items-start gap-4">
+
+          {/* Agent avatar */}
+          <div className="shrink-0">
+            {agent.metadata?.image ? (
+              <img
+                src={agent.metadata.image}
+                alt={agent.name}
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                  e.currentTarget.nextElementSibling?.removeAttribute('hidden');
+                }}
+                className="h-16 w-16 rounded-xl object-cover ring-1 ring-[rgba(255,255,255,0.08)]"
+              />
+            ) : null}
+            <div
+              hidden={!!agent.metadata?.image}
+              className="flex h-16 w-16 items-center justify-center rounded-xl bg-[rgba(255,255,255,0.04)] ring-1 ring-[rgba(255,255,255,0.08)]"
+            >
+              <Bot className="h-7 w-7 text-[#475569]" />
+            </div>
+          </div>
+
+          <div className="min-w-0 flex-1">
           <div className="mb-2 flex flex-wrap items-center gap-2">
             <h1 className="text-3xl font-bold tracking-tight text-white">{agent.name}</h1>
             <span className="rounded border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.04)] px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-[#475569]">
@@ -287,6 +310,7 @@ export default function AgentProfilePage() {
             </button>
             <span>·</span>
             <span>Owner {truncateAddress(agent.ownerAddress)}</span>
+          </div>
           </div>
         </div>
 
