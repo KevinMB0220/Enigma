@@ -11,6 +11,7 @@ import {
 } from '@tanstack/react-table';
 import { ArrowUpDown, Clock, Shield, ShieldAlert, ShieldCheck, ShieldX } from 'lucide-react';
 import { useState } from 'react';
+import { LineChart, Line, ResponsiveContainer } from 'recharts';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -22,113 +23,111 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { type Agent } from '@/hooks/use-agents';
+import { type SparklineMap } from '@/hooks/use-agent-sparklines';
 import { cn } from '@/lib/utils/index';
 
 interface AgentTableProps {
   agents: Agent[];
+  sparklines?: SparklineMap;
   onSortChange?: (sortBy: string, sortOrder: 'asc' | 'desc') => void;
 }
 
-/**
- * Get trust score color based on value
- */
 function getTrustScoreColor(score: number): string {
-  if (score >= 90) return 'text-green-400 bg-green-400/10';
-  if (score >= 70) return 'text-blue-400 bg-blue-400/10';
-  if (score >= 50) return 'text-yellow-400 bg-yellow-400/10';
-  return 'text-red-400 bg-red-400/10';
+  if (score >= 80) return 'text-[#4ADE80] bg-[rgba(74,222,128,0.1)]';
+  if (score >= 60) return 'text-[#22D3EE] bg-[rgba(34,211,238,0.1)]';
+  if (score >= 40) return 'text-[#FCD34D] bg-[rgba(252,211,77,0.1)]';
+  return 'text-[#FB7185] bg-[rgba(251,113,133,0.1)]';
 }
 
-/**
- * Get status badge variant and icon
- */
+function getTrustScoreLineColor(score: number): string {
+  if (score >= 80) return '#4ADE80';
+  if (score >= 60) return '#22D3EE';
+  if (score >= 40) return '#FCD34D';
+  return '#FB7185';
+}
+
 function getStatusConfig(status: string) {
   const configs = {
-    VERIFIED: {
-      variant: 'default' as const,
-      icon: ShieldCheck,
-      className: 'bg-green-500/10 text-green-400 border-green-500/20',
-    },
-    PENDING: {
-      variant: 'secondary' as const,
-      icon: Clock,
-      className: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
-    },
-    FLAGGED: {
-      variant: 'destructive' as const,
-      icon: ShieldAlert,
-      className: 'bg-orange-500/10 text-orange-400 border-orange-500/20',
-    },
-    SUSPENDED: {
-      variant: 'destructive' as const,
-      icon: ShieldX,
-      className: 'bg-red-500/10 text-red-400 border-red-500/20',
-    },
+    VERIFIED:  { icon: ShieldCheck, className: 'bg-[rgba(74,222,128,0.1)] text-[#4ADE80] border-[rgba(74,222,128,0.2)]' },
+    PENDING:   { icon: Clock,       className: 'bg-[rgba(252,211,77,0.1)] text-[#FCD34D] border-[rgba(252,211,77,0.2)]' },
+    FLAGGED:   { icon: ShieldAlert, className: 'bg-[rgba(251,113,133,0.1)] text-[#FB7185] border-[rgba(251,113,133,0.2)]' },
+    SUSPENDED: { icon: ShieldX,     className: 'bg-[rgba(251,113,133,0.08)] text-[#FB7185] border-[rgba(251,113,133,0.15)]' },
   };
-
   return configs[status as keyof typeof configs] || {
-    variant: 'secondary' as const,
     icon: Shield,
-    className: 'bg-gray-500/10 text-gray-400 border-gray-500/20',
+    className: 'bg-[rgba(255,255,255,0.05)] text-[#64748B] border-[rgba(255,255,255,0.1)]',
   };
 }
 
-/**
- * Format relative time
- */
 function formatRelativeTime(dateString: string): string {
-  const date = new Date(dateString);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
+  const diffMs = Date.now() - new Date(dateString).getTime();
   const diffMins = Math.floor(diffMs / 60000);
   const diffHours = Math.floor(diffMins / 60);
   const diffDays = Math.floor(diffHours / 24);
-
   if (diffMins < 1) return 'Just now';
   if (diffMins < 60) return `${diffMins}m ago`;
   if (diffHours < 24) return `${diffHours}h ago`;
   if (diffDays < 30) return `${diffDays}d ago`;
-  return date.toLocaleDateString();
+  return new Date(dateString).toLocaleDateString();
 }
 
-/**
- * Get color style for service badge
- */
-function getServiceStyle(service: string): string {
-  switch (service.toLowerCase()) {
-    case 'mcp':
-      return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
-    case 'a2a':
-      return 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20';
-    case 'web':
-      return 'bg-blue-500/10 text-blue-400 border-blue-500/20';
-    case 'oasf':
-      return 'bg-purple-500/10 text-purple-400 border-purple-500/20';
-    default:
-      return 'bg-[rgba(255,255,255,0.05)] border-[rgba(255,255,255,0.1)]';
-  }
-}
-
-/**
- * Truncate address for display
- */
 function truncateAddress(address: string): string {
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
 }
 
-/**
- * Column definitions for the agent table
- */
+function mockSparkData(address: string, score: number) {
+  const seed = address.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
+  return Array.from({ length: 8 }, (_, i) => {
+    const v = ((seed * (i + 1) * 7919) % 21) - 10;
+    return { v: Math.max(0, Math.min(100, score + v)) };
+  });
+}
+
+function MiniSparkline({ address, score, realData }: {
+  address: string;
+  score: number;
+  realData?: { v: number }[];
+}) {
+  const data = (realData && realData.length >= 2) ? realData : mockSparkData(address, score);
+  const color = getTrustScoreLineColor(score);
+  return (
+    <div className="h-8 w-16">
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart data={data} margin={{ top: 2, right: 2, bottom: 2, left: 2 }}>
+          <Line type="monotone" dataKey="v" stroke={color} strokeWidth={1.5} dot={false} isAnimationActive={false} />
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
+function getServiceStyle(service: string): string {
+  switch (service.toLowerCase()) {
+    case 'mcp':  return 'bg-[rgba(74,222,128,0.1)] text-[#4ADE80] border-[rgba(74,222,128,0.2)]';
+    case 'a2a':  return 'bg-[rgba(252,211,77,0.1)] text-[#FCD34D] border-[rgba(252,211,77,0.2)]';
+    case 'web':  return 'bg-[rgba(34,211,238,0.1)] text-[#22D3EE] border-[rgba(34,211,238,0.2)]';
+    case 'oasf': return 'bg-[rgba(167,139,250,0.1)] text-[#A78BFA] border-[rgba(167,139,250,0.2)]';
+    default:     return 'bg-[rgba(255,255,255,0.05)] border-[rgba(255,255,255,0.1)] text-[#64748B]';
+  }
+}
+
+// X (Twitter) share icon SVG
+const XIcon = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.736l7.737-8.843L1.254 2.25H8.08l4.259 5.632zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+  </svg>
+);
+
+// ── Static column definitions ─────────────────────────────────────────────────
+
 const columns: ColumnDef<Agent>[] = [
   {
     id: 'rank',
     header: '#',
     cell: ({ row }) => (
-      <span className="text-[rgba(255,255,255,0.5)] font-mono text-sm">
-        {row.index + 1}
-      </span>
+      <span className="font-data text-xs text-[#475569]">{row.index + 1}</span>
     ),
-    size: 60,
+    size: 44,
   },
   {
     accessorKey: 'name',
@@ -136,16 +135,16 @@ const columns: ColumnDef<Agent>[] = [
       <Button
         variant="ghost"
         onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        className="h-auto p-0 font-medium hover:bg-transparent"
+        className="h-auto p-0 text-[10px] font-semibold uppercase tracking-widest text-[#475569] hover:bg-transparent hover:text-white"
       >
         Name
-        <ArrowUpDown className="ml-2 h-4 w-4" />
+        <ArrowUpDown className="ml-1.5 h-3 w-3" />
       </Button>
     ),
     cell: ({ row }) => (
       <div className="flex flex-col">
         <span className="font-medium text-white">{row.original.name}</span>
-        <span className="text-xs text-[rgba(255,255,255,0.5)] font-mono">
+        <span className="font-data text-[10px] text-[#475569]">
           {truncateAddress(row.original.address)}
         </span>
       </div>
@@ -153,18 +152,16 @@ const columns: ColumnDef<Agent>[] = [
   },
   {
     accessorKey: 'type',
-    header: 'Type',
+    header: () => (
+      <span className="text-[10px] font-semibold uppercase tracking-widest text-[#475569]">Type</span>
+    ),
     cell: ({ row }) => {
       const services = row.original.services;
       if (services && services.length > 0) {
         return (
           <div className="flex flex-wrap gap-1">
             {services.map((svc) => (
-              <Badge
-                key={svc}
-                variant="outline"
-                className={cn('text-[10px] px-1.5 py-0', getServiceStyle(svc))}
-              >
+              <Badge key={svc} variant="outline" className={cn('text-[10px] px-1.5 py-0', getServiceStyle(svc))}>
                 {svc}
               </Badge>
             ))}
@@ -172,10 +169,7 @@ const columns: ColumnDef<Agent>[] = [
         );
       }
       return (
-        <Badge
-          variant="outline"
-          className="bg-[rgba(255,255,255,0.05)] border-[rgba(255,255,255,0.1)]"
-        >
+        <Badge variant="outline" className="text-[10px] bg-[rgba(255,255,255,0.04)] border-[rgba(255,255,255,0.08)] text-[#64748B]">
           {row.original.type}
         </Badge>
       );
@@ -188,107 +182,137 @@ const columns: ColumnDef<Agent>[] = [
       <Button
         variant="ghost"
         onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        className="h-auto p-0 font-medium hover:bg-transparent"
+        className="h-auto p-0 text-[10px] font-semibold uppercase tracking-widest text-[#475569] hover:bg-transparent hover:text-white"
       >
-        Trust Score
-        <ArrowUpDown className="ml-2 h-4 w-4" />
+        Score
+        <ArrowUpDown className="ml-1.5 h-3 w-3" />
       </Button>
     ),
     cell: ({ row }) => {
       const score = row.original.trust_score;
       return (
-        <div
-          className={cn(
-            'inline-flex items-center justify-center px-3 py-1.5 rounded-md font-bold text-sm',
-            getTrustScoreColor(score)
-          )}
-        >
+        <span className={cn('font-data inline-flex items-center justify-center rounded-md px-2 py-1 text-sm font-bold', getTrustScoreColor(score))}>
           {score}
-        </div>
+        </span>
       );
     },
-    size: 120,
+    size: 80,
   },
   {
     accessorKey: 'status',
-    header: 'Status',
+    header: () => (
+      <span className="text-[10px] font-semibold uppercase tracking-widest text-[#475569]">Status</span>
+    ),
     cell: ({ row }) => {
       const config = getStatusConfig(row.original.status);
       const Icon = config.icon;
       return (
-        <Badge variant={config.variant} className={cn('gap-1', config.className)}>
+        <Badge variant="outline" className={cn('gap-1 text-[10px]', config.className)}>
           <Icon className="h-3 w-3" />
           {row.original.status}
         </Badge>
       );
     },
-    size: 100,
+    size: 110,
   },
   {
     accessorKey: 'updated_at',
-    header: 'Last Update',
+    header: () => (
+      <span className="text-[10px] font-semibold uppercase tracking-widest text-[#475569]">Updated</span>
+    ),
     cell: ({ row }) => (
-      <span className="text-sm text-[rgba(255,255,255,0.6)]">
+      <span className="font-data text-xs text-[#475569]">
         {formatRelativeTime(row.original.updated_at)}
       </span>
     ),
-    size: 120,
+    size: 110,
   },
 ];
 
-/**
- * AgentTable component with TanStack Table
- * Displays list of agents with sorting and navigation
- */
-export function AgentTable({ agents, onSortChange }: AgentTableProps) {
+// ── AgentTable ────────────────────────────────────────────────────────────────
+
+export function AgentTable({ agents, sparklines = {}, onSortChange }: AgentTableProps) {
   const router = useRouter();
   const [sorting, setSorting] = useState<SortingState>([]);
 
+  // Trend column closes over `sparklines` prop
+  const trendColumn: ColumnDef<Agent> = {
+    id: 'trend',
+    header: () => (
+      <span className="text-[10px] font-semibold uppercase tracking-widest text-[#475569]">Trend</span>
+    ),
+    cell: ({ row }) => (
+      <MiniSparkline
+        address={row.original.address}
+        score={row.original.trust_score}
+        realData={sparklines[row.original.address]}
+      />
+    ),
+    size: 80,
+  };
+
+  // Share column — opens X/Twitter directly, no modal
+  const shareColumn: ColumnDef<Agent> = {
+    id: 'share',
+    header: () => null,
+    cell: ({ row }) => {
+      const agent = row.original;
+      const handleShare = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        const url  = `${window.location.origin}/agents/${agent.address}`;
+        const text = [
+          `\uD83D\uDD0D ${agent.name} — Trust Score: ${agent.trust_score}/100`,
+          `\u2705 ${agent.status} | ${agent.type}`,
+          ``,
+          `Verified on Enigma \u00B7 Avalanche`,
+        ].join('\n');
+        window.open(
+          `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`,
+          '_blank',
+          'noopener,noreferrer,width=600,height=500',
+        );
+      };
+      return (
+        <button
+          onClick={handleShare}
+          title="Share on X"
+          className="flex items-center justify-center rounded-lg p-1.5 text-[#475569] transition-colors hover:bg-[rgba(29,161,242,0.08)] hover:text-[#1D9BF0]"
+        >
+          <XIcon />
+        </button>
+      );
+    },
+    size: 40,
+  };
+
   const table = useReactTable({
     data: agents,
-    columns,
+    columns: [...columns, trendColumn, shareColumn],
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     onSortingChange: (updater) => {
       const newSorting = typeof updater === 'function' ? updater(sorting) : updater;
       setSorting(newSorting);
-
-      // Notify parent of sort change
       if (onSortChange && newSorting.length > 0) {
         const { id, desc } = newSorting[0];
         onSortChange(id, desc ? 'desc' : 'asc');
       }
     },
-    state: {
-      sorting,
-    },
+    state: { sorting },
   });
 
-  const handleRowClick = (address: string) => {
-    router.push(`/agents/${address}`);
-  };
-
   return (
-    <div className="rounded-md border border-[rgba(255,255,255,0.06)] overflow-hidden">
+    <div className="overflow-hidden rounded-md border border-[rgba(255,255,255,0.06)]">
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow
               key={headerGroup.id}
-              className="border-b border-[rgba(255,255,255,0.06)] hover:bg-transparent bg-[rgba(255,255,255,0.02)]"
+              className="border-b border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.02)] hover:bg-transparent"
             >
               {headerGroup.headers.map((header) => (
-                <TableHead
-                  key={header.id}
-                  style={{ width: header.getSize() }}
-                  className="text-[rgba(255,255,255,0.7)]"
-                >
-                  {header.isPlaceholder
-                    ? null
-                    : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext()
-                      )}
+                <TableHead key={header.id} style={{ width: header.getSize() }} className="py-2.5 text-[rgba(255,255,255,0.5)]">
+                  {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
                 </TableHead>
               ))}
             </TableRow>
@@ -298,12 +322,13 @@ export function AgentTable({ agents, onSortChange }: AgentTableProps) {
           {table.getRowModel().rows.map((row, index) => (
             <TableRow
               key={row.id}
-              onClick={() => handleRowClick(row.original.address)}
-              className="border-b border-[rgba(255,255,255,0.06)] cursor-pointer hover:bg-[rgba(59,130,246,0.08)] transition-all duration-200 animate-fade-in-up"
-              style={{ animationDelay: `${index * 50}ms` }}
+              data-href={`/agents/${row.original.address}`}
+              onClick={() => router.push(`/agents/${row.original.address}`)}
+              className="cursor-pointer border-b border-[rgba(255,255,255,0.04)] transition-colors duration-150 hover:bg-[rgba(74,222,128,0.03)]"
+              style={{ animationDelay: `${index * 30}ms` }}
             >
               {row.getVisibleCells().map((cell) => (
-                <TableCell key={cell.id}>
+                <TableCell key={cell.id} className="py-2.5">
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
                 </TableCell>
               ))}

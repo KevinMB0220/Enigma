@@ -10,15 +10,15 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Enigma Design System Colors
+        // Enigma Design System Colors — Fintech Glassmorphism
         background: "var(--bg-base)",
         foreground: "var(--text-primary)",
 
         primary: {
-          DEFAULT: "#3B82F6",
-          dark: "#2563EB",
-          deeper: "#1E40AF",
-          foreground: "#FFFFFF",
+          DEFAULT: "#4ADE80",   // Green — brand primary
+          dark: "#22C55E",
+          deeper: "#16A34A",
+          foreground: "#0B0F14",
         },
 
         // shadcn semantic tokens — Enigma dark theme
@@ -27,51 +27,51 @@ const config: Config = {
           foreground: "#9CA3AF",
         },
         accent: {
-          DEFAULT: "rgba(255, 255, 255, 0.08)",
+          DEFAULT: "rgba(255, 255, 255, 0.06)",
           foreground: "#FFFFFF",
         },
         popover: {
-          DEFAULT: "#1a1d25",
-          foreground: "#FFFFFF",
+          DEFAULT: "#0E141B",
+          foreground: "#E5E7EB",
         },
         secondary: {
           DEFAULT: "rgba(31, 41, 55, 0.5)",
           foreground: "#FFFFFF",
         },
         destructive: {
-          DEFAULT: "#EF4444",
+          DEFAULT: "#FB7185",
           foreground: "#FFFFFF",
         },
-        input: "rgba(255, 255, 255, 0.1)",
-        ring: "rgba(59, 130, 246, 0.5)",
+        input: "rgba(255, 255, 255, 0.08)",
+        ring: "rgba(74, 222, 128, 0.4)",
 
         glass: {
-          DEFAULT: "rgba(15, 17, 23, 0.6)",
-          dark: "rgba(17, 24, 39, 0.8)",
+          DEFAULT: "rgba(255, 255, 255, 0.04)",
+          dark: "rgba(255, 255, 255, 0.02)",
         },
 
         status: {
-          success: "#10B981",
-          warning: "#F59E0B",
-          error: "#EF4444",
+          success: "#4ADE80",
+          warning: "#FCD34D",
+          error: "#FB7185",
         },
 
         text: {
-          primary: "#FFFFFF",
-          secondary: "#9CA3AF",
-          muted: "#6B7280",
+          primary: "#E5E7EB",
+          secondary: "#94A3B8",
+          muted: "#64748B",
         },
 
         border: {
-          subtle: "rgba(255, 255, 255, 0.06)",
-          light: "rgba(255, 255, 255, 0.1)",
-          primary: "rgba(59, 130, 246, 0.3)",
+          subtle: "rgba(255, 255, 255, 0.05)",
+          light: "rgba(255, 255, 255, 0.08)",
+          primary: "rgba(74, 222, 128, 0.3)",
         },
       },
 
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"],
-        mono: ["SF Mono", "Fira Code", "Consolas", "monospace"],
+        mono: ["JetBrains Mono", "SF Mono", "Fira Code", "Consolas", "monospace"],
       },
 
       fontSize: {
@@ -81,7 +81,7 @@ const config: Config = {
       },
 
       borderRadius: {
-        "glass": "16px",
+        "glass": "12px",
       },
 
       backdropBlur: {
@@ -89,9 +89,10 @@ const config: Config = {
       },
 
       boxShadow: {
-        "glass": "0 4px 24px rgba(0, 0, 0, 0.4)",
-        "primary": "0 4px 12px rgba(59, 130, 246, 0.3)",
-        "primary-hover": "0 6px 20px rgba(59, 130, 246, 0.4)",
+        "glass": "0 8px 32px rgba(0, 0, 0, 0.35)",
+        "glass-premium": "0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255,255,255,0.05)",
+        "primary": "0 4px 12px rgba(74, 222, 128, 0.25)",
+        "primary-hover": "0 6px 20px rgba(74, 222, 128, 0.35)",
       },
 
       animation: {

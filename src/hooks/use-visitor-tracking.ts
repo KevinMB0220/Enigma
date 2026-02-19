@@ -65,7 +65,7 @@ export function useVisitorTracking() {
   const statsQuery = useQuery({
     queryKey: ['visitor-stats'],
     queryFn: fetchVisitorStats,
-    refetchInterval: 30 * 1000, // Refetch every 30 seconds
+    staleTime: 5 * 60 * 1000, // 5 minutes — visitor counts don't need frequent updates
   });
 
   // Track visitor on mount
@@ -87,7 +87,6 @@ export function useVisitorStats() {
   return useQuery({
     queryKey: ['visitor-stats'],
     queryFn: fetchVisitorStats,
-    refetchInterval: 30 * 1000, // Refetch every 30 seconds
-    staleTime: 15 * 1000, // 15 seconds
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 }

@@ -1,15 +1,6 @@
 'use client';
 
-import { useState } from 'react';
-import { ChevronDown, Filter, RotateCcw } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { RotateCcw } from 'lucide-react';
 import { Slider } from '@/components/ui/slider';
 import { cn } from '@/lib/utils/index';
 
@@ -17,184 +8,162 @@ export interface FilterValues {
   type: string | undefined;
   status: string | undefined;
   minTrustScore: number;
+  sortBy?: 'trust_score' | 'created_at' | 'name';
+  sortOrder?: 'asc' | 'desc';
 }
 
 interface FiltersProps {
   values: FilterValues;
   onChange: (filters: FilterValues) => void;
-  className?: string;
 }
 
-const AGENT_TYPES = [
-  { value: 'ALL', label: 'All Types' },
-  { value: 'TRADING', label: 'Trading' },
-  { value: 'LENDING', label: 'Lending' },
-  { value: 'GOVERNANCE', label: 'Governance' },
-  { value: 'ORACLE', label: 'Oracle' },
-  { value: 'CUSTOM', label: 'Custom' },
+// ---- option lists -------------------------------------------------------
+const TYPES = [
+  { value: 'ALL',        label: 'All types'   },
+  { value: 'TRADING',    label: 'Trading'     },
+  { value: 'LENDING',    label: 'Lending'     },
+  { value: 'GOVERNANCE', label: 'Governance'  },
+  { value: 'ORACLE',     label: 'Oracle'      },
+  { value: 'CUSTOM',     label: 'Custom'      },
 ];
 
-const AGENT_STATUSES = [
-  { value: 'ALL', label: 'All Statuses' },
-  { value: 'VERIFIED', label: 'Verified' },
-  { value: 'PENDING', label: 'Pending' },
-  { value: 'FLAGGED', label: 'Flagged' },
+const STATUSES = [
+  { value: 'ALL',       label: 'All statuses' },
+  { value: 'VERIFIED',  label: 'Verified'     },
+  { value: 'PENDING',   label: 'Pending'      },
+  { value: 'FLAGGED',   label: 'Flagged'      },
+  { value: 'SUSPENDED', label: 'Suspended'    },
 ];
 
-/**
- * Filters component for the Scanner page
- * Provides controls for filtering agents by type, status, and trust score
- */
-export function Filters({ values, onChange, className }: FiltersProps) {
-  const [isExpanded, setIsExpanded] = useState(true);
+const SORT_FIELDS = [
+  { value: 'trust_score', label: 'Trust score' },
+  { value: 'created_at',  label: 'Date added'  },
+  { value: 'name',        label: 'Name'         },
+];
 
-  const handleTypeChange = (value: string) => {
-    onChange({
-      ...values,
-      type: value === 'ALL' ? undefined : value,
-    });
-  };
+const SORT_ORDERS = [
+  { value: 'desc', label: 'High → Low' },
+  { value: 'asc',  label: 'Low → High' },
+];
 
-  const handleStatusChange = (value: string) => {
-    onChange({
-      ...values,
-      status: value === 'ALL' ? undefined : value,
-    });
-  };
+// ---- tiny select --------------------------------------------------------
+function FilterSelect({
+  label,
+  value,
+  options,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  options: { value: string; label: string }[];
+  onChange: (v: string) => void;
+}) {
+  return (
+    <div className="space-y-1.5">
+      <p className="text-[10px] font-semibold uppercase tracking-widest text-[#475569]">{label}</p>
+      <div className="grid grid-cols-1 gap-1">
+        {options.map((opt) => (
+          <button
+            key={opt.value}
+            onClick={() => onChange(opt.value)}
+            className={cn(
+              'w-full rounded-md px-3 py-1.5 text-left text-xs font-medium transition-all duration-100',
+              value === opt.value
+                ? 'bg-[rgba(74,222,128,0.1)] text-primary border border-[rgba(74,222,128,0.25)]'
+                : 'text-[#94A3B8] hover:bg-[rgba(255,255,255,0.04)] hover:text-white border border-transparent',
+            )}
+          >
+            {opt.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
 
-  const handleTrustScoreChange = (value: number[]) => {
-    onChange({
-      ...values,
-      minTrustScore: value[0],
-    });
-  };
+// ---- main component -----------------------------------------------------
+export function Filters({ values, onChange }: FiltersProps) {
+  const hasActive =
+    !!values.type ||
+    !!values.status ||
+    values.minTrustScore > 0 ||
+    !!values.sortBy;
 
-  const handleReset = () => {
-    onChange({
-      type: undefined,
-      status: undefined,
-      minTrustScore: 0,
-    });
-  };
-
-  const hasActiveFilters =
-    values.type !== undefined ||
-    values.status !== undefined ||
-    values.minTrustScore > 0;
+  const set = (patch: Partial<FilterValues>) => onChange({ ...values, ...patch });
 
   return (
-    <div
-      className={cn(
-        'bg-[rgba(15,17,23,0.98)] backdrop-blur-[20px] rounded-lg border border-[rgba(255,255,255,0.06)]',
-        className
-      )}
-    >
-      {/* Header - Collapsible on mobile */}
-      <button
-        onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between p-4 md:cursor-default"
-      >
-        <div className="flex items-center gap-2">
-          <Filter className="h-4 w-4 text-[rgba(255,255,255,0.6)]" />
-          <span className="font-medium text-white">Filters</span>
-          {hasActiveFilters && (
-            <span className="px-2 py-0.5 text-xs bg-purple-500/20 text-purple-400 rounded-full">
-              Active
-            </span>
-          )}
+    <div className="flex flex-col gap-5">
+
+      {/* Type */}
+      <FilterSelect
+        label="Agent Type"
+        value={values.type ?? 'ALL'}
+        options={TYPES}
+        onChange={(v) => set({ type: v === 'ALL' ? undefined : v })}
+      />
+
+      {/* Status */}
+      <FilterSelect
+        label="Status"
+        value={values.status ?? 'ALL'}
+        options={STATUSES}
+        onChange={(v) => set({ status: v === 'ALL' ? undefined : v })}
+      />
+
+      {/* Sort by */}
+      <FilterSelect
+        label="Sort By"
+        value={values.sortBy ?? 'trust_score'}
+        options={SORT_FIELDS}
+        onChange={(v) => set({ sortBy: v as FilterValues['sortBy'] })}
+      />
+
+      {/* Sort order */}
+      <FilterSelect
+        label="Order"
+        value={values.sortOrder ?? 'desc'}
+        options={SORT_ORDERS}
+        onChange={(v) => set({ sortOrder: v as 'asc' | 'desc' })}
+      />
+
+      {/* Min trust score */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#475569]">
+            Min Trust Score
+          </p>
+          <span className="font-data text-xs font-semibold text-white">
+            {values.minTrustScore}
+          </span>
         </div>
-        <ChevronDown
-          className={cn(
-            'h-4 w-4 text-[rgba(255,255,255,0.4)] transition-transform md:hidden',
-            isExpanded && 'rotate-180'
-          )}
+        <Slider
+          value={[values.minTrustScore]}
+          onValueChange={([v]) => set({ minTrustScore: v })}
+          max={100}
+          step={5}
+          className="w-full"
         />
-      </button>
-
-      {/* Filter Controls */}
-      <div
-        className={cn(
-          'px-4 pb-4 space-y-4 transition-all',
-          !isExpanded && 'hidden md:block'
-        )}
-      >
-        {/* Type Filter */}
-        <div className="space-y-2">
-          <label className="text-sm text-[rgba(255,255,255,0.6)]">Type</label>
-          <Select
-            value={values.type || 'ALL'}
-            onValueChange={handleTypeChange}
-          >
-            <SelectTrigger className="w-full bg-[rgba(255,255,255,0.05)] border-[rgba(255,255,255,0.1)]">
-              <SelectValue placeholder="All Types" />
-            </SelectTrigger>
-            <SelectContent>
-              {AGENT_TYPES.map((type) => (
-                <SelectItem key={type.value} value={type.value}>
-                  {type.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        <div className="flex justify-between font-data text-[10px] text-[#334155]">
+          <span>0</span>
+          <span>50</span>
+          <span>100</span>
         </div>
-
-        {/* Status Filter */}
-        <div className="space-y-2">
-          <label className="text-sm text-[rgba(255,255,255,0.6)]">Status</label>
-          <Select
-            value={values.status || 'ALL'}
-            onValueChange={handleStatusChange}
-          >
-            <SelectTrigger className="w-full bg-[rgba(255,255,255,0.05)] border-[rgba(255,255,255,0.1)]">
-              <SelectValue placeholder="All Statuses" />
-            </SelectTrigger>
-            <SelectContent>
-              {AGENT_STATUSES.map((status) => (
-                <SelectItem key={status.value} value={status.value}>
-                  {status.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Trust Score Slider */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <label className="text-sm text-[rgba(255,255,255,0.6)]">
-              Min Trust Score
-            </label>
-            <span className="text-sm font-medium text-white">
-              {values.minTrustScore}
-            </span>
-          </div>
-          <Slider
-            value={[values.minTrustScore]}
-            onValueChange={handleTrustScoreChange}
-            max={100}
-            step={5}
-            className="w-full"
-          />
-          <div className="flex justify-between text-xs text-[rgba(255,255,255,0.4)]">
-            <span>0</span>
-            <span>50</span>
-            <span>100</span>
-          </div>
-        </div>
-
-        {/* Reset Button */}
-        {hasActiveFilters && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleReset}
-            className="w-full text-[rgba(255,255,255,0.6)] hover:text-white"
-          >
-            <RotateCcw className="mr-2 h-4 w-4" />
-            Reset Filters
-          </Button>
-        )}
       </div>
+
+      {/* Reset */}
+      {hasActive && (
+        <button
+          onClick={() => onChange({ type: undefined, status: undefined, minTrustScore: 0, sortBy: undefined, sortOrder: undefined })}
+          className={cn(
+            'flex w-full items-center justify-center gap-1.5 rounded-md py-2 text-xs font-medium transition-all',
+            'border border-[rgba(251,113,133,0.2)] text-[#FB7185]',
+            'hover:bg-[rgba(251,113,133,0.08)]',
+          )}
+        >
+          <RotateCcw className="h-3 w-3" />
+          Clear filters
+        </button>
+      )}
     </div>
   );
 }

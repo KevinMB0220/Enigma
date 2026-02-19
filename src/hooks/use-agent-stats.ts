@@ -68,6 +68,6 @@ export function useAgentStats() {
   return useQuery({
     queryKey: ['agent-stats'],
     queryFn: fetchStats,
-    refetchInterval: 60 * 1000, // Refetch every 60 seconds
+    refetchInterval: 5 * 60 * 1000, // Refetch every 5 minutes
   });
 }
