@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Bot, ShieldCheck, Activity, Star } from 'lucide-react';
-import { type AgentType, type AgentStatus } from '@prisma/client';
+import { type AgentStatus } from '@prisma/client';
 import { useAgents } from '@/hooks/use-agents';
 import { useAgentStats } from '@/hooks/use-agent-stats';
 import { KpiCard } from '@/components/scanner/kpi-card';
@@ -17,7 +17,7 @@ import { ErrorState } from '@/components/scanner/error-state';
 import { AgentTableSkeleton } from '@/components/scanner/agent-table-skeleton';
 import { cn } from '@/lib/utils';
 
-const DEFAULT_FILTERS: FilterValues = { type: undefined, status: undefined, minTrustScore: 0 };
+const DEFAULT_FILTERS: FilterValues = { service: undefined, status: undefined, trustScoreRange: [0, 100] };
 
 function TablePagination({ page, meta, onPage }: {
   page: number;
@@ -60,12 +60,13 @@ export default function ScannerPage() {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
 
-  const isFiltered = !!filters.type || !!filters.status || filters.minTrustScore > 0;
+  const isFiltered = !!filters.service || !!filters.status || filters.trustScoreRange[0] > 0 || filters.trustScoreRange[1] < 100;
 
   const { data, isLoading, isError, refetch } = useAgents({
-    ...(filters.type          && { type: filters.type as AgentType }),
+    ...(filters.service       && { service: filters.service }),
     ...(filters.status        && { status: filters.status as AgentStatus }),
-    ...(filters.minTrustScore > 0 && { minTrustScore: filters.minTrustScore }),
+    ...(filters.trustScoreRange[0] > 0  && { minTrustScore: filters.trustScoreRange[0] }),
+    ...(filters.trustScoreRange[1] < 100 && { maxTrustScore: filters.trustScoreRange[1] }),
     ...(search                && { search }),
     ...(filters.sortBy        && { sortBy: filters.sortBy }),
     ...(filters.sortOrder     && { sortOrder: filters.sortOrder }),

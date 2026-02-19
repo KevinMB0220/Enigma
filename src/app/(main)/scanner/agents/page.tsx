@@ -13,9 +13,9 @@ import { ErrorState } from '@/components/scanner/error-state';
 import { AgentTableSkeleton } from '@/components/scanner/agent-table-skeleton';
 import { Spinner } from '@/components/shared/spinner';
 import { cn } from '@/lib/utils';
-import { type AgentType, type AgentStatus } from '@prisma/client';
+import { type AgentStatus } from '@prisma/client';
 
-const DEFAULT_FILTERS: FilterValues = { type: undefined, status: undefined, minTrustScore: 0 };
+const DEFAULT_FILTERS: FilterValues = { service: undefined, status: undefined, trustScoreRange: [0, 100] };
 
 type ViewMode = 'list' | 'grid';
 
@@ -77,12 +77,13 @@ export default function AgentsPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>('list');
 
-  const isFiltered = !!filters.type || !!filters.status || filters.minTrustScore > 0;
+  const isFiltered = !!filters.service || !!filters.status || filters.trustScoreRange[0] > 0 || filters.trustScoreRange[1] < 100;
 
   const { data, isLoading, isError, refetch } = useAgents({
-    ...(filters.type          && { type: filters.type as AgentType }),
+    ...(filters.service       && { service: filters.service }),
     ...(filters.status        && { status: filters.status as AgentStatus }),
-    ...(filters.minTrustScore > 0 && { minTrustScore: filters.minTrustScore }),
+    ...(filters.trustScoreRange[0] > 0  && { minTrustScore: filters.trustScoreRange[0] }),
+    ...(filters.trustScoreRange[1] < 100 && { maxTrustScore: filters.trustScoreRange[1] }),
     ...(search                && { search }),
     ...(filters.sortBy        && { sortBy: filters.sortBy }),
     ...(filters.sortOrder     && { sortOrder: filters.sortOrder }),

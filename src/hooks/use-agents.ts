@@ -61,6 +61,8 @@ export interface AgentFilters {
   type?: AgentType;
   status?: AgentStatus;
   minTrustScore?: number;
+  maxTrustScore?: number;
+  service?: string;
   search?: string;
   sortBy?: 'trust_score' | 'created_at' | 'name';
   sortOrder?: 'asc' | 'desc';
@@ -77,6 +79,8 @@ function buildQueryString(filters: AgentFilters): string {
   if (filters.type) params.set('type', filters.type);
   if (filters.status) params.set('status', filters.status);
   if (filters.minTrustScore !== undefined) params.set('minTrustScore', String(filters.minTrustScore));
+  if (filters.maxTrustScore !== undefined) params.set('maxTrustScore', String(filters.maxTrustScore));
+  if (filters.service) params.set('service', filters.service);
   if (filters.search) params.set('search', filters.search);
   if (filters.sortBy) params.set('sortBy', filters.sortBy);
   if (filters.sortOrder) params.set('sortOrder', filters.sortOrder);

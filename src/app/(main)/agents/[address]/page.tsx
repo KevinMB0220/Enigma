@@ -60,6 +60,18 @@ function statusClass(status: string): string {
   return 'text-[#475569] border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.04)]';
 }
 
+// ─── Service tag colors ──────────────────────────────────────────────────────
+
+function getServiceTagStyle(name: string): string {
+  switch (name.toLowerCase()) {
+    case 'mcp':  return 'bg-[rgba(74,222,128,0.1)] text-[#4ADE80] border-[rgba(74,222,128,0.2)]';
+    case 'a2a':  return 'bg-[rgba(252,211,77,0.1)] text-[#FCD34D] border-[rgba(252,211,77,0.2)]';
+    case 'web':  return 'bg-[rgba(34,211,238,0.1)] text-[#22D3EE] border-[rgba(34,211,238,0.2)]';
+    case 'oasf': return 'bg-[rgba(167,139,250,0.1)] text-[#A78BFA] border-[rgba(167,139,250,0.2)]';
+    default:     return 'bg-[rgba(255,255,255,0.05)] text-[#64748B] border-[rgba(255,255,255,0.1)]';
+  }
+}
+
 // ─── Known protocols ─────────────────────────────────────────────────────────
 
 const KNOWN_PROTOCOLS = ['MCP', 'A2A', 'x402', 'web', 'github', 'attestations'] as const;
@@ -291,6 +303,11 @@ export default function AgentProfilePage() {
             <span className={cn('rounded border px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider', statusClass(agent.status))}>
               {formatEnumValue(agent.status)}
             </span>
+            {(agent.metadata?.services ?? []).map((svc) => (
+              <span key={svc.name} className={cn('rounded border px-2 py-0.5 text-[10px] font-semibold', getServiceTagStyle(svc.name))}>
+                {svc.name}
+              </span>
+            ))}
           </div>
 
           {agent.description && (
