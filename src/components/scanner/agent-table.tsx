@@ -9,7 +9,7 @@ import {
   type ColumnDef,
   type SortingState,
 } from '@tanstack/react-table';
-import { ArrowUpDown, Clock, Shield, ShieldAlert, ShieldCheck, ShieldX } from 'lucide-react';
+import { ArrowUpDown, Clock, Database, Shield, ShieldAlert, ShieldCheck, ShieldX } from 'lucide-react';
 import { useState } from 'react';
 import { LineChart, Line, ResponsiveContainer } from 'recharts';
 import { Badge } from '@/components/ui/badge';
@@ -141,14 +141,50 @@ const columns: ColumnDef<Agent>[] = [
         <ArrowUpDown className="ml-1.5 h-3 w-3" />
       </Button>
     ),
-    cell: ({ row }) => (
-      <div className="flex flex-col">
-        <span className="font-medium text-white">{row.original.name}</span>
-        <span className="font-data text-[10px] text-[#475569]">
-          {truncateAddress(row.original.address)}
-        </span>
-      </div>
-    ),
+    cell: ({ row }) => {
+      const image = row.original.metadata?.image;
+      return (
+        <div className="flex items-center gap-3">
+          {/* Avatar */}
+          <div className="relative h-8 w-8 shrink-0">
+            {image ? (
+              <img
+                src={image}
+                alt={row.original.name}
+                className="h-8 w-8 rounded-lg object-cover ring-1 ring-[rgba(255,255,255,0.08)]"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                  const fallback = e.currentTarget.nextElementSibling as HTMLElement | null;
+                  if (fallback) { fallback.classList.remove('hidden'); fallback.classList.add('flex'); }
+                }}
+              />
+            ) : null}
+            <div
+              className={cn(
+                'h-8 w-8 items-center justify-center rounded-lg bg-[rgba(255,255,255,0.04)] text-[10px] font-bold text-[#475569] ring-1 ring-[rgba(255,255,255,0.08)]',
+                image ? 'hidden' : 'flex',
+              )}
+            >
+              {row.original.name.slice(0, 2).toUpperCase()}
+            </div>
+          </div>
+          {/* Name + address */}
+          <div className="flex flex-col">
+            <div className="flex items-center gap-1.5">
+              <span className="font-medium text-white">{row.original.name}</span>
+              {row.original.metadata && (
+                <span title="Has on-chain metadata">
+                  <Database className="h-2.5 w-2.5 shrink-0 text-[#475569]" />
+                </span>
+              )}
+            </div>
+            <span className="font-data text-[10px] text-[#475569]">
+              {truncateAddress(row.original.address)}
+            </span>
+          </div>
+        </div>
+      );
+    },
   },
   {
     accessorKey: 'type',
@@ -302,7 +338,7 @@ export function AgentTable({ agents, sparklines = {}, onSortChange }: AgentTable
   });
 
   return (
-    <div className="overflow-hidden rounded-md border border-[rgba(255,255,255,0.06)]">
+    <div className="overflow-x-auto rounded-md border border-[rgba(255,255,255,0.06)]">
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (

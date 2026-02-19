@@ -6,6 +6,16 @@ import { type AgentType, type AgentStatus } from '@prisma/client';
 /**
  * Agent data from API
  */
+export interface AgentMetadata {
+  image?: string;
+  x402Support?: boolean;
+  active?: boolean;
+  supportedTrust?: string[];
+  services?: Array<{ name: string; endpoint: string; version?: string }>;
+  registrations?: Array<{ agentId: number; agentRegistry: string }>;
+  [key: string]: unknown;
+}
+
 export interface Agent {
   address: string;
   name: string;
@@ -17,6 +27,7 @@ export interface Agent {
   proxy_type: string;
   owner_address: string;
   services: string[];
+  metadata: AgentMetadata | null;
   created_at: string;
   updated_at: string;
 }

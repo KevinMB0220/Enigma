@@ -12,6 +12,7 @@ const navLinks = [
   { href: '/',               label: 'Home',    exact: true  },
   { href: '/scanner',        label: 'Scanner', exact: true  },
   { href: '/scanner/agents', label: 'Agents',  exact: false },
+  { href: '/docs',           label: 'Docs',    exact: false },
   { href: '/register',       label: 'Register',exact: true  },
 ] as const;
 

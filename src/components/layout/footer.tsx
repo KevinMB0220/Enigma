@@ -10,11 +10,13 @@ interface FooterProps {
 
 const footerLinks = {
   product: [
-    { href: '/scanner', label: 'Scanner' },
-    { href: '/docs/api', label: 'API Docs' },
+    { href: '/scanner',        label: 'Scanner'        },
+    { href: '/scanner/agents', label: 'Agent Registry' },
+    { href: '/register',       label: 'Register Agent' },
   ],
   resources: [
-    { href: '/docs', label: 'Documentation' },
+    { href: '/docs',           label: 'Documentation'  },
+    { href: '/docs/api',       label: 'API Reference'  },
   ],
   social: [
     {

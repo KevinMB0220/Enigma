@@ -3,7 +3,7 @@
 import { useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Search, RefreshCw, Bell, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Search, RefreshCw, Bell, CheckCircle2, Menu } from 'lucide-react';
 import Image from 'next/image';
 import { WalletConnectButton } from '@/components/shared/wallet-connect-button';
 import { cn } from '@/lib/utils';
@@ -30,7 +30,11 @@ function ChainStatusPill({ status }: { status: ChainStatus }) {
   );
 }
 
-export function DashboardNavbar() {
+interface DashboardNavbarProps {
+  onMenuToggle?: () => void;
+}
+
+export function DashboardNavbar({ onMenuToggle }: DashboardNavbarProps) {
   const router = useRouter();
   const [search, setSearch] = useState('');
   const [isSyncing, setIsSyncing] = useState(false);
@@ -60,8 +64,16 @@ export function DashboardNavbar() {
       'relative z-50',
     )}>
 
-      {/* Left — Logo + Chain Status */}
+      {/* Left — Hamburger (mobile) + Logo + Chain Status */}
       <div className="flex items-center gap-3">
+        {/* Mobile menu toggle */}
+        <button
+          onClick={onMenuToggle}
+          className="flex h-8 w-8 items-center justify-center rounded-lg text-[#94A3B8] hover:bg-[rgba(255,255,255,0.06)] hover:text-white lg:hidden"
+          aria-label="Open menu"
+        >
+          <Menu className="h-4 w-4" />
+        </button>
         <Link href="/" className="flex items-center gap-2 group">
           <Image
             src="/enigma.png"

@@ -83,7 +83,7 @@ function IdentityRow({ label, value, mono }: { label: string; value: string; mon
 
 // ─── Tab types ────────────────────────────────────────────────────────────────
 
-type Tab = 'overview' | 'activity' | 'community';
+type Tab = 'overview' | 'activity' | 'community' | 'metadata';
 
 // ─── Main page ────────────────────────────────────────────────────────────────
 
@@ -238,11 +238,12 @@ export default function AgentProfilePage() {
     { id: 'overview',  label: 'Overview' },
     { id: 'activity',  label: 'Activity',  count: allEvents.length },
     { id: 'community', label: 'Community', count: agent.ratings.count },
+    ...(agent.metadata ? [{ id: 'metadata' as const, label: 'Metadata' }] : []),
   ];
 
   // ─── Render ───────────────────────────────────────────────────────────────────
   return (
-    <div className="mx-auto flex max-w-5xl flex-col gap-6 px-6 py-8">
+    <div className="mx-auto flex max-w-5xl flex-col gap-6 px-4 py-6 sm:px-6 sm:py-8">
 
       {/* Back */}
       <Link
@@ -254,7 +255,7 @@ export default function AgentProfilePage() {
       </Link>
 
       {/* ── Header ── */}
-      <div className="flex items-start justify-between gap-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
         <div className="flex min-w-0 flex-1 items-start gap-4">
 
           {/* Agent avatar */}
@@ -265,14 +266,17 @@ export default function AgentProfilePage() {
                 alt={agent.name}
                 onError={(e) => {
                   e.currentTarget.style.display = 'none';
-                  e.currentTarget.nextElementSibling?.removeAttribute('hidden');
+                  const fb = e.currentTarget.nextElementSibling as HTMLElement | null;
+                  if (fb) { fb.classList.remove('hidden'); fb.classList.add('flex'); }
                 }}
                 className="h-16 w-16 rounded-xl object-cover ring-1 ring-[rgba(255,255,255,0.08)]"
               />
             ) : null}
             <div
-              hidden={!!agent.metadata?.image}
-              className="flex h-16 w-16 items-center justify-center rounded-xl bg-[rgba(255,255,255,0.04)] ring-1 ring-[rgba(255,255,255,0.08)]"
+              className={cn(
+                'h-16 w-16 items-center justify-center rounded-xl bg-[rgba(255,255,255,0.04)] ring-1 ring-[rgba(255,255,255,0.08)]',
+                agent.metadata?.image ? 'hidden' : 'flex',
+              )}
             >
               <Bot className="h-7 w-7 text-[#475569]" />
             </div>
@@ -315,7 +319,7 @@ export default function AgentProfilePage() {
         </div>
 
         {/* Score */}
-        <div className="shrink-0 text-right">
+        <div className="shrink-0 sm:text-right">
           <p className="font-data text-5xl font-bold leading-none text-[#4ADE80]">
             {agent.trustScore.score}
           </p>
@@ -519,6 +523,7 @@ export default function AgentProfilePage() {
               ))}
             </div>
           </div>
+
         </div>
       )}
 
@@ -578,6 +583,129 @@ export default function AgentProfilePage() {
           )}
         </div>
       )}
+
+      {/* ── Tab: Metadata ── */}
+      {activeTab === 'metadata' && agent.metadata && (() => {
+        const SKIP_KEYS = new Set(['name', 'description', 'image', 'type', 'services', 'x402Support', 'active', 'registrations', 'supportedTrust']);
+        const extraEntries = Object.entries(agent.metadata).filter(
+          ([k, v]) => !SKIP_KEYS.has(k) && v !== undefined && v !== null,
+        );
+        return (
+          <div className="flex flex-col gap-4">
+
+            {/* Services */}
+            {(agent.metadata.services ?? []).length > 0 && (
+              <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.02)] p-5">
+                <p className="mb-3 text-[10px] font-semibold uppercase tracking-widest text-[#475569]">Services</p>
+                <div className="flex flex-col gap-2">
+                  {agent.metadata.services!.map((svc, i) => (
+                    <div key={i} className="rounded-lg border border-[rgba(255,255,255,0.05)] bg-[rgba(255,255,255,0.02)] px-4 py-3">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <span className="text-xs font-semibold text-white">{svc.name}</span>
+                        {svc.version && (
+                          <span className="rounded bg-[rgba(255,255,255,0.06)] px-1.5 py-0.5 font-data text-[10px] text-[#475569]">
+                            v{svc.version}
+                          </span>
+                        )}
+                      </div>
+                      {svc.endpoint && (
+                        <p className="mt-1 break-all font-data text-[11px] text-[#475569]">{svc.endpoint}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Flags */}
+            {(agent.metadata.x402Support !== undefined || agent.metadata.active !== undefined) && (
+              <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.02)] p-5">
+                <p className="mb-3 text-[10px] font-semibold uppercase tracking-widest text-[#475569]">Capabilities</p>
+                <div className="flex flex-wrap gap-2">
+                  {agent.metadata.x402Support !== undefined && (
+                    <span className={cn(
+                      'rounded-full border px-3 py-1 text-[11px] font-semibold',
+                      agent.metadata.x402Support
+                        ? 'border-[rgba(74,222,128,0.25)] bg-[rgba(74,222,128,0.08)] text-[#4ADE80]'
+                        : 'border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.04)] text-[#475569]',
+                    )}>
+                      x402 {agent.metadata.x402Support ? 'Supported' : 'Not supported'}
+                    </span>
+                  )}
+                  {agent.metadata.active !== undefined && (
+                    <span className={cn(
+                      'rounded-full border px-3 py-1 text-[11px] font-semibold',
+                      agent.metadata.active
+                        ? 'border-[rgba(74,222,128,0.25)] bg-[rgba(74,222,128,0.08)] text-[#4ADE80]'
+                        : 'border-[rgba(251,113,133,0.25)] bg-[rgba(251,113,133,0.08)] text-[#FB7185]',
+                    )}>
+                      {agent.metadata.active ? 'Active' : 'Inactive'}
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Supported Trust */}
+            {(agent.metadata.supportedTrust ?? []).length > 0 && (
+              <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.02)] p-5">
+                <p className="mb-3 text-[10px] font-semibold uppercase tracking-widest text-[#475569]">Supported Trust</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {agent.metadata.supportedTrust!.map((t) => (
+                    <span key={t} className="rounded border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.04)] px-2 py-0.5 text-[11px] text-[#94A3B8]">
+                      {t}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Registrations */}
+            {(agent.metadata.registrations ?? []).length > 0 && (
+              <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.02)] p-5">
+                <p className="mb-3 text-[10px] font-semibold uppercase tracking-widest text-[#475569]">Registrations</p>
+                <div className="divide-y divide-[rgba(255,255,255,0.04)]">
+                  {agent.metadata.registrations!.map((reg, i) => (
+                    <div key={i} className="flex items-center justify-between py-2.5">
+                      <span className="font-data text-xs text-[#94A3B8]">#{reg.agentId}</span>
+                      <span className="font-data text-[11px] text-[#475569]">{truncateAddress(reg.agentRegistry)}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Additional fields */}
+            {extraEntries.length > 0 && (
+              <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.02)] p-5">
+                <p className="mb-3 text-[10px] font-semibold uppercase tracking-widest text-[#475569]">Additional Fields</p>
+                <div className="divide-y divide-[rgba(255,255,255,0.04)]">
+                  {extraEntries.map(([key, value]) => (
+                    <div key={key} className="flex items-start justify-between gap-4 py-2.5">
+                      <span className="shrink-0 text-xs text-[#475569]">{key}</span>
+                      <span className="break-all text-right font-data text-xs text-[#94A3B8]">
+                        {typeof value === 'object' ? JSON.stringify(value) : String(value)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Empty state */}
+            {(agent.metadata.services ?? []).length === 0 &&
+              agent.metadata.x402Support === undefined &&
+              agent.metadata.active === undefined &&
+              (agent.metadata.supportedTrust ?? []).length === 0 &&
+              (agent.metadata.registrations ?? []).length === 0 &&
+              extraEntries.length === 0 && (
+              <div className="flex flex-col items-center justify-center py-16 text-center">
+                <p className="text-sm text-[#475569]">No metadata fields available for this agent.</p>
+              </div>
+            )}
+          </div>
+        );
+      })()}
 
       {/* ── Tab: Community ── */}
       {activeTab === 'community' && (
