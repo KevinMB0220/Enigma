@@ -98,6 +98,7 @@ export async function GET(request: NextRequest) {
         proxy_type: agent.proxy_type,
         owner_address: agent.owner_address,
         services,
+        metadata: meta,
         created_at: agent.created_at.toISOString(),
         updated_at: agent.updated_at.toISOString(),
       };

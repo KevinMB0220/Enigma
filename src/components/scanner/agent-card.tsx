@@ -58,11 +58,25 @@ export function AgentCard({ agent, sparklines = {} }: AgentCardProps) {
     >
       {/* Top row: avatar + score */}
       <div className="flex items-start justify-between">
-        <div
-          className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl text-sm font-bold"
-          style={{ background: `${colors.line}14`, color: colors.line }}
-        >
-          {monogram(agent.name)}
+        <div className="relative h-10 w-10 flex-shrink-0">
+          {agent.metadata?.image ? (
+            <img
+              src={agent.metadata.image}
+              alt={agent.name}
+              className="h-10 w-10 rounded-xl object-cover ring-1 ring-[rgba(255,255,255,0.08)]"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+                (e.currentTarget.nextElementSibling as HTMLElement | null)?.removeAttribute('hidden');
+              }}
+            />
+          ) : null}
+          <div
+            hidden={!!agent.metadata?.image}
+            className="flex h-10 w-10 items-center justify-center rounded-xl text-sm font-bold"
+            style={{ background: `${colors.line}14`, color: colors.line }}
+          >
+            {monogram(agent.name)}
+          </div>
         </div>
 
         <div className={cn('flex items-center gap-1 rounded-lg px-2.5 py-1.5', colors.bg)}>

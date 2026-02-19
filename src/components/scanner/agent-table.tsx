@@ -141,14 +141,40 @@ const columns: ColumnDef<Agent>[] = [
         <ArrowUpDown className="ml-1.5 h-3 w-3" />
       </Button>
     ),
-    cell: ({ row }) => (
-      <div className="flex flex-col">
-        <span className="font-medium text-white">{row.original.name}</span>
-        <span className="font-data text-[10px] text-[#475569]">
-          {truncateAddress(row.original.address)}
-        </span>
-      </div>
-    ),
+    cell: ({ row }) => {
+      const image = row.original.metadata?.image;
+      return (
+        <div className="flex items-center gap-3">
+          {/* Avatar */}
+          <div className="relative h-8 w-8 shrink-0">
+            {image ? (
+              <img
+                src={image}
+                alt={row.original.name}
+                className="h-8 w-8 rounded-lg object-cover ring-1 ring-[rgba(255,255,255,0.08)]"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                  (e.currentTarget.nextElementSibling as HTMLElement | null)?.removeAttribute('hidden');
+                }}
+              />
+            ) : null}
+            <div
+              hidden={!!image}
+              className="flex h-8 w-8 items-center justify-center rounded-lg bg-[rgba(255,255,255,0.04)] text-[10px] font-bold text-[#475569] ring-1 ring-[rgba(255,255,255,0.08)]"
+            >
+              {row.original.name.slice(0, 2).toUpperCase()}
+            </div>
+          </div>
+          {/* Name + address */}
+          <div className="flex flex-col">
+            <span className="font-medium text-white">{row.original.name}</span>
+            <span className="font-data text-[10px] text-[#475569]">
+              {truncateAddress(row.original.address)}
+            </span>
+          </div>
+        </div>
+      );
+    },
   },
   {
     accessorKey: 'type',
