@@ -9,7 +9,7 @@ import {
   type ColumnDef,
   type SortingState,
 } from '@tanstack/react-table';
-import { ArrowUpDown, Clock, Shield, ShieldAlert, ShieldCheck, ShieldX } from 'lucide-react';
+import { ArrowUpDown, Clock, Database, Shield, ShieldAlert, ShieldCheck, ShieldX } from 'lucide-react';
 import { useState } from 'react';
 import { LineChart, Line, ResponsiveContainer } from 'recharts';
 import { Badge } from '@/components/ui/badge';
@@ -154,20 +154,31 @@ const columns: ColumnDef<Agent>[] = [
                 className="h-8 w-8 rounded-lg object-cover ring-1 ring-[rgba(255,255,255,0.08)]"
                 onError={(e) => {
                   e.currentTarget.style.display = 'none';
-                  (e.currentTarget.nextElementSibling as HTMLElement | null)?.removeAttribute('hidden');
+                  const fallback = e.currentTarget.nextElementSibling as HTMLElement | null;
+                  if (fallback) { fallback.classList.remove('hidden'); fallback.classList.add('flex'); }
                 }}
               />
             ) : null}
             <div
-              hidden={!!image}
-              className="flex h-8 w-8 items-center justify-center rounded-lg bg-[rgba(255,255,255,0.04)] text-[10px] font-bold text-[#475569] ring-1 ring-[rgba(255,255,255,0.08)]"
+              className={cn(
+                'h-8 w-8 items-center justify-center rounded-lg bg-[rgba(255,255,255,0.04)] text-[10px] font-bold text-[#475569] ring-1 ring-[rgba(255,255,255,0.08)]',
+                image ? 'hidden' : 'flex',
+              )}
             >
               {row.original.name.slice(0, 2).toUpperCase()}
             </div>
           </div>
           {/* Name + address */}
           <div className="flex flex-col">
-            <span className="font-medium text-white">{row.original.name}</span>
+            <div className="flex items-center gap-1.5">
+              <span className="font-medium text-white">{row.original.name}</span>
+              {row.original.metadata && (
+                <Database
+                  className="h-2.5 w-2.5 shrink-0 text-[#475569]"
+                  title="Has on-chain metadata"
+                />
+              )}
+            </div>
             <span className="font-data text-[10px] text-[#475569]">
               {truncateAddress(row.original.address)}
             </span>

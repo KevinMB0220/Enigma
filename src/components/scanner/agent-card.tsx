@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Clock, Shield, ShieldAlert, ShieldCheck, ShieldX } from 'lucide-react';
+import { Clock, Database, Shield, ShieldAlert, ShieldCheck, ShieldX } from 'lucide-react';
 import { LineChart, Line, ResponsiveContainer } from 'recharts';
 import { type Agent } from '@/hooks/use-agents';
 import { type SparklineMap } from '@/hooks/use-agent-sparklines';
@@ -66,13 +66,16 @@ export function AgentCard({ agent, sparklines = {} }: AgentCardProps) {
               className="h-10 w-10 rounded-xl object-cover ring-1 ring-[rgba(255,255,255,0.08)]"
               onError={(e) => {
                 e.currentTarget.style.display = 'none';
-                (e.currentTarget.nextElementSibling as HTMLElement | null)?.removeAttribute('hidden');
+                const fallback = e.currentTarget.nextElementSibling as HTMLElement | null;
+                if (fallback) { fallback.classList.remove('hidden'); fallback.classList.add('flex'); }
               }}
             />
           ) : null}
           <div
-            hidden={!!agent.metadata?.image}
-            className="flex h-10 w-10 items-center justify-center rounded-xl text-sm font-bold"
+            className={cn(
+              'h-10 w-10 items-center justify-center rounded-xl text-sm font-bold',
+              agent.metadata?.image ? 'hidden' : 'flex',
+            )}
             style={{ background: `${colors.line}14`, color: colors.line }}
           >
             {monogram(agent.name)}
@@ -89,9 +92,14 @@ export function AgentCard({ agent, sparklines = {} }: AgentCardProps) {
 
       {/* Name + address */}
       <div className="min-w-0">
-        <p className="truncate text-sm font-semibold text-white group-hover:text-[#4ADE80] transition-colors">
-          {agent.name}
-        </p>
+        <div className="flex items-center gap-1.5">
+          <p className="truncate text-sm font-semibold text-white group-hover:text-[#4ADE80] transition-colors">
+            {agent.name}
+          </p>
+          {agent.metadata && (
+            <Database className="h-3 w-3 shrink-0 text-[#475569]" title="Has on-chain metadata" />
+          )}
+        </div>
         <p className="font-data text-[10px] text-[#475569]">
           {agent.address.slice(0, 8)}...{agent.address.slice(-6)}
         </p>
