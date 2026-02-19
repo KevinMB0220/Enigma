@@ -135,6 +135,23 @@ export default function DocsPage() {
         </p>
       </div>
 
+      {/* Mobile TOC — horizontal scroll, visible below lg */}
+      <div className="mb-4 flex gap-2 overflow-x-auto pb-1 lg:hidden">
+        {toc.map((item) => (
+          <a
+            key={item.id}
+            href={`#${item.id}`}
+            className={cn(
+              'flex flex-shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs transition-colors',
+              'border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)] text-[#64748B]',
+              'hover:border-[rgba(74,222,128,0.2)] hover:text-white',
+            )}
+          >
+            {item.label}
+          </a>
+        ))}
+      </div>
+
       <div className="flex gap-8">
 
         {/* ── Left: sticky TOC ───────────────────────────────────────── */}

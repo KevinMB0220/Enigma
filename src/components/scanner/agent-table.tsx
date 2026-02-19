@@ -339,7 +339,7 @@ export function AgentTable({ agents, sparklines = {}, onSortChange }: AgentTable
   });
 
   return (
-    <div className="overflow-hidden rounded-md border border-[rgba(255,255,255,0.06)]">
+    <div className="overflow-x-auto rounded-md border border-[rgba(255,255,255,0.06)]">
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
