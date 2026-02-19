@@ -42,6 +42,8 @@ export interface AgentFilters {
   type?: AgentType;
   status?: AgentStatus;
   minTrustScore?: number;
+  maxTrustScore?: number;
+  service?: string;
   search?: string;
 }
 
@@ -144,7 +146,7 @@ export async function getAgents(
   pagination: PaginationInput = {}
 ): Promise<PaginatedAgents> {
   try {
-    const { type, status, minTrustScore, search } = filters;
+    const { type, status, minTrustScore, maxTrustScore, service, search } = filters;
     const page = pagination.page || 1;
     const limit = pagination.limit || 20;
     const skip = (page - 1) * limit;
@@ -162,9 +164,17 @@ export async function getAgents(
       where.status = status;
     }
 
-    if (minTrustScore !== undefined) {
+    if (minTrustScore !== undefined || maxTrustScore !== undefined) {
       where.trust_score = {
-        gte: minTrustScore,
+        ...(minTrustScore !== undefined && { gte: minTrustScore }),
+        ...(maxTrustScore !== undefined && { lte: maxTrustScore }),
+      };
+    }
+
+    if (service) {
+      where.metadata = {
+        path: ['services'],
+        array_contains: [{ name: service }],
       };
     }
 

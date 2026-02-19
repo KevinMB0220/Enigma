@@ -16,6 +16,8 @@ const querySchema = z.object({
   type: z.enum(['TRADING', 'LENDING', 'GOVERNANCE', 'ORACLE', 'CUSTOM']).optional(),
   status: z.enum(['PENDING', 'VERIFIED', 'FLAGGED', 'SUSPENDED']).optional(),
   minTrustScore: z.coerce.number().int().min(0).max(100).optional(),
+  maxTrustScore: z.coerce.number().int().min(0).max(100).optional(),
+  service: z.enum(['MCP', 'A2A', 'web', 'OASF']).optional(),
   search: z.string().max(100).optional(),
   sortBy: z.enum(['trust_score', 'created_at', 'name']).optional().default('trust_score'),
   sortOrder: z.enum(['asc', 'desc']).optional().default('desc'),
@@ -64,13 +66,15 @@ export async function GET(request: NextRequest) {
       throw new ValidationError('Invalid query parameters', fields);
     }
 
-    const { type, status, minTrustScore, search, page, limit } = validationResult.data;
+    const { type, status, minTrustScore, maxTrustScore, service, search, page, limit } = validationResult.data;
 
     // Build filters
     const filters: AgentFilters = {};
     if (type) filters.type = type;
     if (status) filters.status = status;
     if (minTrustScore !== undefined) filters.minTrustScore = minTrustScore;
+    if (maxTrustScore !== undefined) filters.maxTrustScore = maxTrustScore;
+    if (service) filters.service = service;
     if (search) filters.search = search;
 
     // Build pagination
