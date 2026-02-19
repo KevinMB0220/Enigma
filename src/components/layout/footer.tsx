@@ -1,5 +1,6 @@
 import { type FC } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Twitter } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -46,9 +47,10 @@ export const Footer: FC<FooterProps> = ({ className }) => {
           <div className="flex flex-col gap-4">
             <Link
               href="/"
-              className="text-xl font-bold text-white transition-opacity duration-200 hover:opacity-80"
+              className="flex items-center gap-2.5 transition-opacity duration-200 hover:opacity-80"
             >
-              Enigma
+              <Image src="/enigma.png" alt="Enigma" width={28} height={28} className="rounded-lg object-contain" />
+              <span className="text-xl font-bold text-white">Enigma</span>
             </Link>
             <p className="text-sm text-[#9CA3AF]">
               AI Agent Transparency for Avalanche

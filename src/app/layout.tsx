@@ -1,16 +1,23 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Inter, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { Providers } from './providers';
 import { WebsiteJsonLd } from '@/components/shared/json-ld';
 import { Starfield } from '@/components/shared/starfield';
+import { NavigationProgress } from '@/components/shared/navigation-progress';
 
 const inter = Inter({
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-inter',
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-mono',
 });
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://enigma.app';
@@ -50,9 +57,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
-      <body className={`${inter.variable} font-sans antialiased`}>
+      <body className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased`}>
         <WebsiteJsonLd />
         <Starfield />
+        <NavigationProgress />
         <Providers>
           {children}
         </Providers>

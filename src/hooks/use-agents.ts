@@ -131,7 +131,7 @@ export function useAgents(filters: AgentFilters = {}) {
     queryKey: ['agents', filters],
     queryFn: () => fetchAgents(filters),
     placeholderData: keepPreviousData,
-    refetchInterval: 60 * 1000, // Refetch every 60 seconds
+    refetchInterval: 5 * 60 * 1000, // Refetch every 5 minutes
   });
 }
 

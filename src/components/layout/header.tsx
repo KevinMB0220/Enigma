@@ -1,163 +1,137 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, ArrowRight } from 'lucide-react';
+import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { WalletConnectButton } from '@/components/shared/wallet-connect-button';
 
 const navLinks = [
-  { href: '/', label: 'Home' },
-  { href: '/scanner', label: 'Scanner' },
-];
+  { href: '/',               label: 'Home',    exact: true  },
+  { href: '/scanner',        label: 'Scanner', exact: true  },
+  { href: '/scanner/agents', label: 'Agents',  exact: false },
+  { href: '/register',       label: 'Register',exact: true  },
+] as const;
 
 export function Header() {
   const pathname = usePathname();
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    const handler = () => setScrolled(window.scrollY > 8);
+    window.addEventListener('scroll', handler, { passive: true });
+    return () => window.removeEventListener('scroll', handler);
   }, []);
 
-  useEffect(() => {
-    setIsMobileMenuOpen(false);
-  }, [pathname]);
-
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setIsMobileMenuOpen(false);
-      }
-    };
-
-    if (isMobileMenuOpen) {
-      document.addEventListener('keydown', handleEscape);
-      return () => document.removeEventListener('keydown', handleEscape);
-    }
-  }, [isMobileMenuOpen]);
-
-  const handleBackdropClick = useCallback(() => {
-    setIsMobileMenuOpen(false);
-  }, []);
-
-  const toggleMobileMenu = useCallback(() => {
-    setIsMobileMenuOpen((prev) => !prev);
-  }, []);
+  useEffect(() => { setOpen(false); }, [pathname]);
 
   return (
     <>
       <header
         className={cn(
-          // Position & Layout
-          'fixed top-4 left-4 right-4 z-50 mx-auto max-w-7xl',
-          // Glassmorphism base (docs: .header-glass)
-          'bg-[rgba(15,17,23,0.6)] backdrop-blur-[20px]',
-          'border border-[rgba(255,255,255,0.06)] rounded-[16px]',
-          'shadow-[0_4px_24px_rgba(0,0,0,0.4)]',
-          // Transition
-          'transition-all duration-300',
-          // Scroll state: enhanced glassmorphism
-          isScrolled && 'bg-[rgba(15,17,23,0.8)] border-[rgba(59,130,246,0.3)]'
+          'fixed left-0 right-0 top-0 z-50 h-14 transition-all duration-300',
+          'border-b',
+          scrolled
+            ? 'border-[rgba(255,255,255,0.08)] bg-[rgba(11,15,20,0.95)] backdrop-blur-[24px]'
+            : 'border-transparent bg-[rgba(11,15,20,0.4)] backdrop-blur-[12px]',
         )}
       >
-        {/* Inner container with exact padding from docs: 16px 32px, mobile: 12px 16px */}
-        <div className="flex items-center justify-between px-4 py-3 md:px-8 md:py-4">
-          {/* Logo - 20px font-weight-700 per typography docs */}
-          <Link
-            href="/"
-            className="text-xl font-bold text-white transition-opacity duration-200 hover:opacity-80"
-          >
-            Enigma
+        <div className="mx-auto flex h-full max-w-7xl items-center justify-between px-5 md:px-8">
+
+          {/* Logo */}
+          <Link href="/" className="group flex items-center gap-2.5">
+            <Image
+              src="/enigma.png"
+              alt="Enigma"
+              width={28}
+              height={28}
+              className="rounded-lg object-contain transition-opacity group-hover:opacity-80"
+            />
+            <span className="text-sm font-bold tracking-tight text-white">Enigma</span>
           </Link>
 
-          {/* Desktop Navigation */}
+          {/* Desktop nav */}
           <nav className="hidden items-center gap-1 md:flex">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href as '/'}
-                className={cn(
-                  // Base styles - 14px body text, 500 weight, 200ms transition
-                  'px-4 py-2 rounded-[8px] text-sm font-medium',
-                  'transition-all duration-200',
-                  // Active state with primary border
-                  pathname === link.href
-                    ? 'text-white bg-[rgba(59,130,246,0.15)] border border-[rgba(59,130,246,0.3)]'
-                    : 'text-[#9CA3AF] hover:text-white hover:bg-[rgba(255,255,255,0.06)]'
-                )}
-              >
-                {link.label}
-              </Link>
-            ))}
+            {navLinks.map((link) => {
+              const active = link.exact ? pathname === link.href : pathname.startsWith(link.href);
+              return (
+                <Link
+                  key={link.href + link.label}
+                  href={link.href}
+                  className={cn(
+                    'rounded-md px-3.5 py-1.5 text-[13px] font-medium transition-all duration-150',
+                    active
+                      ? 'text-white bg-[rgba(255,255,255,0.06)]'
+                      : 'text-[#94A3B8] hover:text-white hover:bg-[rgba(255,255,255,0.04)]',
+                  )}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
           </nav>
 
-          {/* Right Section */}
-          <div className="flex items-center gap-3">
-            <WalletConnectButton />
-
-            {/* Mobile Menu Toggle */}
-            <button
-              type="button"
-              onClick={toggleMobileMenu}
+          {/* Right actions */}
+          <div className="flex items-center gap-2">
+            <div className="hidden sm:block">
+              <WalletConnectButton className="h-8 text-xs" />
+            </div>
+            <Link
+              href="/scanner"
               className={cn(
-                'md:hidden p-2 rounded-[8px]',
-                'text-[#9CA3AF] hover:text-white hover:bg-[rgba(255,255,255,0.06)]',
-                'transition-all duration-200'
+                'hidden items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-[13px] font-semibold md:flex',
+                'bg-primary text-[#0B0F14] transition-all duration-150',
+                'hover:bg-[#6EE7A0] hover:shadow-[0_0_16px_rgba(74,222,128,0.35)]',
               )}
-              aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
-              aria-expanded={isMobileMenuOpen}
             >
-              {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+              Launch App
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+
+            {/* Mobile toggle */}
+            <button
+              onClick={() => setOpen(p => !p)}
+              className="flex h-8 w-8 items-center justify-center rounded-lg text-[#94A3B8] hover:text-white md:hidden"
+            >
+              {open ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
             </button>
           </div>
         </div>
 
-        {/* Mobile Navigation - slide down animation */}
-        <div
-          className={cn(
-            'md:hidden overflow-hidden',
-            'transition-all duration-300 ease-in-out',
-            isMobileMenuOpen ? 'max-h-48 opacity-100' : 'max-h-0 opacity-0'
-          )}
-        >
-          <nav className="flex flex-col gap-1 px-4 pb-4">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href as '/'}
-                className={cn(
-                  'px-4 py-3 rounded-[8px] text-sm font-medium',
-                  'transition-all duration-200',
-                  pathname === link.href
-                    ? 'text-white bg-[rgba(59,130,246,0.15)] border border-[rgba(59,130,246,0.3)]'
-                    : 'text-[#9CA3AF] hover:text-white hover:bg-[rgba(255,255,255,0.06)]'
-                )}
-              >
-                {link.label}
-              </Link>
-            ))}
+        {/* Mobile menu */}
+        <div className={cn(
+          'md:hidden overflow-hidden transition-all duration-200',
+          'border-t border-[rgba(255,255,255,0.06)] bg-[rgba(11,15,20,0.98)]',
+          open ? 'max-h-60 opacity-100' : 'max-h-0 opacity-0 border-transparent',
+        )}>
+          <nav className="flex flex-col px-5 py-3 gap-0.5">
+            {navLinks.map((link) => {
+              const active = link.exact ? pathname === link.href : pathname.startsWith(link.href);
+              return (
+                <Link
+                  key={link.href + link.label}
+                  href={link.href}
+                  className={cn(
+                    'rounded-md px-3 py-2.5 text-sm font-medium transition-all',
+                    active ? 'text-white bg-[rgba(255,255,255,0.06)]' : 'text-[#94A3B8]',
+                  )}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
+            <div className="mt-2 pt-2 border-t border-[rgba(255,255,255,0.06)]">
+              <WalletConnectButton className="w-full h-9 text-sm" />
+            </div>
           </nav>
         </div>
       </header>
 
-      {/* Mobile Menu Backdrop */}
-      {isMobileMenuOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm md:hidden"
-          onClick={handleBackdropClick}
-          aria-hidden="true"
-        />
-      )}
-
-      {/* Spacer for fixed header */}
-      <div className="h-24" />
+      {/* Spacer */}
+      <div className="h-14" />
     </>
   );
 }

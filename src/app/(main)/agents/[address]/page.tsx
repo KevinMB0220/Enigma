@@ -2,684 +2,606 @@
 
 import { useParams } from 'next/navigation';
 import { useState } from 'react';
-import {
-  ArrowLeft,
-  Shield,
-  Copy,
-  Check,
-  ExternalLink,
-  Loader2,
-  AlertCircle,
-} from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { ArrowLeft, ExternalLink, GitBranch } from 'lucide-react';
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { TrustScoreBadge } from '@/components/shared/trust-score-badge';
 import { RatingForm } from '@/components/agent/rating-form';
 import { ReportModal } from '@/components/agent/report-modal';
-import { ReputationContract } from '@/components/agent/reputation-contract';
-import { AgentMetadataDisplay } from '@/components/agent/agent-metadata';
+import { Spinner } from '@/components/shared/spinner';
 import { useAgent, type AgentDetail } from '@/hooks/use-agent';
 import { cn } from '@/lib/utils/index';
-import {
-  BarChart3,
-  Activity,
-  ShieldCheck,
-  Star,
-  TrendingUp as TrendingUpIcon,
-  Calculator,
-} from 'lucide-react';
 
-/**
- * Status badge colors
- */
-const STATUS_STYLES: Record<string, { bg: string; text: string }> = {
-  VERIFIED: { bg: 'bg-green-500/15', text: 'text-green-400' },
-  PENDING: { bg: 'bg-yellow-500/15', text: 'text-yellow-400' },
-  FLAGGED: { bg: 'bg-orange-500/15', text: 'text-orange-400' },
-  SUSPENDED: { bg: 'bg-red-500/15', text: 'text-red-400' },
-};
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
-/**
- * Agent type labels
- */
-const TYPE_LABELS: Record<string, string> = {
-  TRADING: 'Trading Bot',
-  LENDING: 'Lending Protocol',
-  GOVERNANCE: 'Governance Agent',
-  ORACLE: 'Oracle Provider',
-  CUSTOM: 'Custom Agent',
-};
+function truncateAddress(address: string): string {
+  return `${address.slice(0, 6)}…${address.slice(-4)}`;
+}
 
-/**
- * Agent Profile Page
- * Displays detailed agent information with tabbed interface
- */
+function formatRelativeTime(dateString: string): string {
+  const diffMs = Date.now() - new Date(dateString).getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMins / 60);
+  const diffDays = Math.floor(diffHours / 24);
+  if (diffMins < 1) return 'just now';
+  if (diffMins < 60) return `${diffMins}m ago`;
+  if (diffHours < 24) return `${diffHours}h ago`;
+  if (diffDays < 30) return `${diffDays}d ago`;
+  return new Date(dateString).toLocaleDateString();
+}
+
+function formatAge(dateString: string): string {
+  const diffDays = Math.floor((Date.now() - new Date(dateString).getTime()) / 86400000);
+  if (diffDays === 0) return 'today';
+  if (diffDays === 1) return '1 day';
+  if (diffDays < 30) return `${diffDays} days`;
+  const months = Math.floor(diffDays / 30);
+  return months === 1 ? '1 month' : `${months} months`;
+}
+
+function formatEventDate(dateString: string): string {
+  return new Date(dateString).toLocaleDateString('en-US', {
+    month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
+  });
+}
+
+/** Format DB enum values into readable labels (TRADING → Trading, EIP1967 → EIP-1967) */
+function formatEnumValue(value: string): string {
+  if (value === 'EIP1967') return 'EIP-1967';
+  if (value === 'UUPS') return 'UUPS';
+  if (value === 'NONE') return 'None';
+  return value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
+}
+
+// ─── Status helpers ───────────────────────────────────────────────────────────
+
+function statusClass(status: string): string {
+  if (status === 'VERIFIED') return 'text-[#4ADE80] border-[rgba(74,222,128,0.25)] bg-[rgba(74,222,128,0.08)]';
+  if (status === 'FLAGGED' || status === 'SUSPENDED') return 'text-[#FB7185] border-[rgba(251,113,133,0.25)] bg-[rgba(251,113,133,0.08)]';
+  return 'text-[#475569] border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.04)]';
+}
+
+// ─── Known protocols ─────────────────────────────────────────────────────────
+
+const KNOWN_PROTOCOLS = ['MCP', 'A2A', 'x402', 'web', 'github', 'attestations'] as const;
+
+function isProtocolActive(protocol: string, agent: AgentDetail): boolean {
+  return (agent.metadata?.services ?? []).some(
+    (s) => s.name.toLowerCase() === protocol.toLowerCase(),
+  );
+}
+
+// ─── Sub-components ───────────────────────────────────────────────────────────
+
+function IdentityRow({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
+  return (
+    <div className="flex items-center justify-between py-2.5">
+      <span className="text-xs text-[#475569]">{label}</span>
+      <span className={cn('text-xs text-[#94A3B8]', mono && 'font-data')}>{value}</span>
+    </div>
+  );
+}
+
+// ─── Tab types ────────────────────────────────────────────────────────────────
+
+type Tab = 'overview' | 'activity' | 'community';
+
+// ─── Main page ────────────────────────────────────────────────────────────────
+
 export default function AgentProfilePage() {
   const params = useParams();
   const address = params.address as string;
   const [copied, setCopied] = useState(false);
+  const [embedCopied, setEmbedCopied] = useState(false);
+  const [activeTab, setActiveTab] = useState<Tab>('overview');
 
   const { data: agent, isLoading, isError, error, refetch } = useAgent(address, {
-    refetchInterval: 60 * 1000, // Refetch every minute
+    refetchInterval: 5 * 60 * 1000,
   });
 
-  // Copy address to clipboard
+  const { data: heartbeatData } = useQuery({
+    queryKey: ['heartbeats-recent', address],
+    queryFn: async () => {
+      const res = await fetch(`/api/v1/agents/${address}/heartbeats?period=7d&limit=10`);
+      const json = await res.json();
+      return json.data ?? null;
+    },
+    enabled: !!address,
+    staleTime: 5 * 60 * 1000,
+  });
+
   const handleCopy = () => {
     navigator.clipboard.writeText(address);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
-  // Snowtrace link - points to NFT in Identity Registry
-  const snowtraceUrl = agent?.registryAddress && agent?.tokenId
-    ? `https://snowtrace.io/token/${agent.registryAddress}?a=${agent.tokenId}#inventory`
-    : `https://snowtrace.io/address/${address}`;
-
-  // Loading state
-  if (isLoading) {
-    return (
-      <div className="min-h-[calc(100vh-200px)] flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin text-purple-400 mx-auto mb-4" />
-          <p className="text-[rgba(255,255,255,0.6)]">Loading agent profile...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Error state
-  if (isError) {
-    return (
-      <div className="min-h-[calc(100vh-200px)] py-12 px-4">
-        <div className="max-w-4xl mx-auto">
-          <div className="mb-8">
-            <Button variant="ghost" asChild>
-              <Link href="/scanner">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to Scanner
-              </Link>
-            </Button>
-          </div>
-
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <div className="h-16 w-16 rounded-full bg-red-500/15 flex items-center justify-center mb-6">
-              <AlertCircle className="h-8 w-8 text-red-400" />
-            </div>
-            <h1 className="text-xl font-bold text-white mb-2">Agent Not Found</h1>
-            <p className="text-[rgba(255,255,255,0.6)] mb-6 max-w-md">
-              {error?.message || 'Unable to load agent details.'}
-            </p>
-            <Button onClick={() => refetch()} variant="outline">
-              Try Again
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (!agent) {
-    return null;
-  }
-
-  const statusStyle = STATUS_STYLES[agent.status] || STATUS_STYLES.PENDING;
-
-  return (
-    <div className="min-h-[calc(100vh-200px)] py-8 px-4">
-      <div className="max-w-5xl mx-auto">
-        {/* Back Button */}
-        <div className="mb-6">
-          <Button variant="ghost" asChild className="text-[rgba(255,255,255,0.6)] hover:text-white">
-            <Link href="/scanner">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Scanner
-            </Link>
-          </Button>
-        </div>
-
-        {/* Header */}
-        <div className="rounded-lg bg-[rgba(15,17,23,0.6)] backdrop-blur-xl border border-[rgba(255,255,255,0.06)] p-6 mb-6">
-          <div className="flex flex-col md:flex-row md:items-start gap-6">
-            {/* Agent Icon and Trust Score */}
-            <div className="flex items-center gap-4">
-              <div className="h-16 w-16 rounded-full bg-purple-500/15 flex items-center justify-center">
-                <Shield className="h-8 w-8 text-purple-400" />
-              </div>
-              <TrustScoreBadge
-                score={agent.trustScore.score}
-                size="lg"
-                lastUpdated={agent.trustScore.lastUpdated}
-              />
-            </div>
-
-            {/* Agent Info */}
-            <div className="flex-1">
-              <div className="flex items-center gap-3 mb-2">
-                <h1 className="text-2xl font-bold text-white">{agent.name}</h1>
-                <span className={cn('px-2 py-0.5 rounded text-xs font-medium', statusStyle.bg, statusStyle.text)}>
-                  {agent.status}
-                </span>
-              </div>
-
-              {agent.metadata?.services && agent.metadata.services.length > 0 ? (
-                <div className="flex flex-wrap gap-1.5 mb-3">
-                  {agent.metadata.services.map((svc) => (
-                    <span
-                      key={svc.name}
-                      className={cn(
-                        'px-2 py-0.5 rounded text-xs font-medium',
-                        svc.name.toLowerCase() === 'mcp' && 'bg-emerald-500/15 text-emerald-400',
-                        svc.name.toLowerCase() === 'a2a' && 'bg-yellow-500/15 text-yellow-400',
-                        svc.name.toLowerCase() === 'web' && 'bg-blue-500/15 text-blue-400',
-                        svc.name.toLowerCase() === 'oasf' && 'bg-purple-500/15 text-purple-400',
-                        !['mcp', 'a2a', 'web', 'oasf'].includes(svc.name.toLowerCase()) && 'bg-[rgba(255,255,255,0.1)] text-[rgba(255,255,255,0.6)]',
-                      )}
-                    >
-                      {svc.name}{svc.version ? ` v${svc.version}` : ''}
-                    </span>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-[rgba(255,255,255,0.5)] mb-3">
-                  {TYPE_LABELS[agent.type] || agent.type}
-                </p>
-              )}
-
-              {/* ERC-8004 Identity Registry Info */}
-              <div className="space-y-2">
-                {agent.tokenId && agent.registryAddress && (
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-[rgba(255,255,255,0.4)]">ERC-8004 NFT:</span>
-                    <code className="px-2 py-0.5 bg-[rgba(255,255,255,0.05)] rounded text-xs font-mono text-purple-300">
-                      Token #{agent.tokenId}
-                    </code>
-                    <Button variant="ghost" size="sm" asChild className="h-6 w-6 p-0">
-                      <a href={snowtraceUrl} target="_blank" rel="noopener noreferrer" title="View on Snowtrace">
-                        <ExternalLink className="h-3 w-3" />
-                      </a>
-                    </Button>
-                  </div>
-                )}
-
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-[rgba(255,255,255,0.4)]">Address:</span>
-                  <code className="px-2 py-0.5 bg-[rgba(255,255,255,0.05)] rounded text-xs font-mono text-[rgba(255,255,255,0.6)]">
-                    {address.slice(0, 10)}...{address.slice(-8)}
-                  </code>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleCopy}
-                    className="h-6 w-6 p-0"
-                    title="Copy address"
-                  >
-                    {copied ? (
-                      <Check className="h-3 w-3 text-green-400" />
-                    ) : (
-                      <Copy className="h-3 w-3" />
-                    )}
-                  </Button>
-                </div>
-
-                {agent.ownerAddress && (
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-[rgba(255,255,255,0.4)]">Owner:</span>
-                    <code className="px-2 py-0.5 bg-[rgba(255,255,255,0.05)] rounded text-xs font-mono text-[rgba(255,255,255,0.6)]">
-                      {agent.ownerAddress.slice(0, 10)}...{agent.ownerAddress.slice(-8)}
-                    </code>
-                    <Button variant="ghost" size="sm" asChild className="h-6 w-6 p-0">
-                      <a
-                        href={`https://snowtrace.io/address/${agent.ownerAddress}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        title="View owner on Snowtrace"
-                      >
-                        <ExternalLink className="h-3 w-3" />
-                      </a>
-                    </Button>
-                  </div>
-                )}
-              </div>
-
-              {agent.description && (
-                <p className="mt-3 text-sm text-[rgba(255,255,255,0.6)]">
-                  {agent.description}
-                </p>
-              )}
-
-              <div className="mt-3">
-                <ReportModal agentAddress={address} />
-              </div>
-            </div>
-          </div>
-
-          {/* Flagged Warning */}
-          {agent.status === 'FLAGGED' && (
-            <div className="mt-4 flex items-center gap-2 rounded-lg bg-yellow-500/10 border border-yellow-500/20 p-3">
-              <AlertCircle size={16} className="shrink-0 text-yellow-500" />
-              <p className="text-sm text-yellow-400">
-                This agent has been flagged by the community and is under review.
-              </p>
-            </div>
-          )}
-        </div>
-
-        {/* Tabbed Content */}
-        <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="w-full justify-start bg-[rgba(15,17,23,0.6)] border border-[rgba(255,255,255,0.06)] mb-6">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="metadata">Metadata</TabsTrigger>
-            <TabsTrigger value="verification">Verification</TabsTrigger>
-            <TabsTrigger value="heartbeat">Heartbeat</TabsTrigger>
-            <TabsTrigger value="ratings">Ratings</TabsTrigger>
-          </TabsList>
-
-          {/* Overview Tab */}
-          <TabsContent value="overview" className="space-y-6">
-            {/* Smart Contract Analysis - Full Width */}
-            <ReputationContract agent={agent} />
-
-            {/* Trust Score Calculation */}
-            <TrustScoreCalculation agent={agent} />
-          </TabsContent>
-
-          {/* Metadata Tab */}
-          <TabsContent value="metadata">
-            <AgentMetadataDisplay metadata={agent.metadata} />
-          </TabsContent>
-
-          {/* Verification Tab */}
-          <TabsContent value="verification">
-            <VerificationTab agent={agent} />
-          </TabsContent>
-
-          {/* Heartbeat Tab */}
-          <TabsContent value="heartbeat">
-            <HeartbeatTab agent={agent} />
-          </TabsContent>
-
-          {/* Ratings Tab */}
-          <TabsContent value="ratings">
-            <RatingsTab agent={agent} agentAddress={address} />
-          </TabsContent>
-        </Tabs>
-      </div>
-    </div>
-  );
-}
-
-/**
- * Verification tab content
- */
-function VerificationTab({ agent }: { agent: AgentDetail }) {
-  const proxyStatusColor = agent.proxy.detected
-    ? agent.proxy.type !== 'CUSTOM'
-      ? 'text-yellow-400'
-      : 'text-red-400'
-    : 'text-green-400';
-
-  return (
-    <div className="grid md:grid-cols-2 gap-6">
-      {/* Proxy Analysis */}
-      <div className="rounded-lg bg-[rgba(15,17,23,0.6)] backdrop-blur-xl border border-[rgba(255,255,255,0.06)] p-6">
-        <h3 className="text-lg font-semibold text-white mb-4">Proxy Analysis</h3>
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-[rgba(255,255,255,0.6)]">Proxy Detected</span>
-            <span className={cn('text-sm font-medium', proxyStatusColor)}>
-              {agent.proxy.detected ? 'Yes' : 'No'}
-            </span>
-          </div>
-          {agent.proxy.detected && (
-            <>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-[rgba(255,255,255,0.6)]">Proxy Type</span>
-                <span className="text-sm font-medium text-white">{agent.proxy.type}</span>
-              </div>
-              {agent.proxy.implementationAddress && (
-                <div className="flex flex-col gap-1">
-                  <span className="text-sm text-[rgba(255,255,255,0.6)]">Implementation</span>
-                  <code className="text-xs font-mono text-purple-400 break-all">
-                    {agent.proxy.implementationAddress}
-                  </code>
-                </div>
-              )}
-            </>
-          )}
-        </div>
-      </div>
-
-      {/* OZ Match Results */}
-      <div className="rounded-lg bg-[rgba(15,17,23,0.6)] backdrop-blur-xl border border-[rgba(255,255,255,0.06)] p-6">
-        <h3 className="text-lg font-semibold text-white mb-4">Security Patterns</h3>
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-[rgba(255,255,255,0.6)]">OZ Match Score</span>
-            <span className="text-sm font-medium text-white">
-              {agent.trustScore.breakdown.ozMatch.score}/100
-            </span>
-          </div>
-          {(() => {
-            const components = agent.trustScore.breakdown.ozMatch.details.matchedComponents as string[] | undefined;
-            if (!components || components.length === 0) {
-              return (
-                <p className="text-sm text-[rgba(255,255,255,0.5)]">
-                  No known OpenZeppelin patterns detected
-                </p>
-              );
-            }
-            return (
-              <div>
-                <p className="text-sm text-[rgba(255,255,255,0.6)] mb-2">Matched Components:</p>
-                <div className="flex flex-wrap gap-2">
-                  {components.map((comp) => (
-                    <span
-                      key={comp}
-                      className="px-2 py-1 text-xs rounded bg-green-500/15 text-green-400"
-                    >
-                      {comp}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            );
-          })()}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/**
- * Heartbeat tab content
- */
-function HeartbeatTab({ agent }: { agent: AgentDetail }) {
-  return (
-    <div className="rounded-lg bg-[rgba(15,17,23,0.6)] backdrop-blur-xl border border-[rgba(255,255,255,0.06)] p-6">
-      <h3 className="text-lg font-semibold text-white mb-4">Uptime Statistics (7 Days)</h3>
-      <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard label="Uptime" value={`${agent.uptime.percentage.toFixed(1)}%`} />
-        <StatCard label="Total Pings" value={agent.uptime.totalPings.toString()} />
-        <StatCard label="Successful" value={agent.uptime.successfulPings.toString()} color="green" />
-        <StatCard label="Failed/Timeout" value={(agent.uptime.failedPings + agent.uptime.timeoutPings).toString()} color="red" />
-      </div>
-      <div className="mt-4 p-4 bg-[rgba(255,255,255,0.03)] rounded-lg">
-        <p className="text-sm text-[rgba(255,255,255,0.6)]">
-          Average Response Time:{' '}
-          <span className="font-medium text-white">
-            {agent.uptime.averageResponseTimeMs}ms
-          </span>
-        </p>
-      </div>
-      <p className="mt-4 text-sm text-[rgba(255,255,255,0.5)]">
-        Heartbeat chart visualization coming soon in a future update.
-      </p>
-    </div>
-  );
-}
-
-/**
- * Stat card component
- */
-function StatCard({ label, value, color }: { label: string; value: string; color?: 'green' | 'red' }) {
-  const valueColor = color === 'green' ? 'text-green-400' : color === 'red' ? 'text-red-400' : 'text-white';
-  return (
-    <div className="p-4 bg-[rgba(255,255,255,0.03)] rounded-lg">
-      <p className="text-sm text-[rgba(255,255,255,0.6)]">{label}</p>
-      <p className={cn('text-2xl font-bold', valueColor)}>{value}</p>
-    </div>
-  );
-}
-
-/**
- * Trust Score Calculation Display
- */
-function TrustScoreCalculation({ agent }: { agent: AgentDetail }) {
-  const components = [
-    {
-      key: 'volume',
-      label: 'Transaction Volume',
-      icon: BarChart3,
-      score: agent.trustScore.breakdown.volume.score,
-      weight: agent.trustScore.breakdown.volume.weight,
-      color: 'cyan',
-    },
-    {
-      key: 'proxy',
-      label: 'Proxy Transparency',
-      icon: Shield,
-      score: agent.trustScore.breakdown.proxy.score,
-      weight: agent.trustScore.breakdown.proxy.weight,
-      color: 'emerald',
-    },
-    {
-      key: 'uptime',
-      label: 'Uptime',
-      icon: Activity,
-      score: agent.trustScore.breakdown.uptime.score,
-      weight: agent.trustScore.breakdown.uptime.weight,
-      color: 'amber',
-    },
-    {
-      key: 'ozMatch',
-      label: 'Security Patterns',
-      icon: ShieldCheck,
-      score: agent.trustScore.breakdown.ozMatch.score,
-      weight: agent.trustScore.breakdown.ozMatch.weight,
-      color: 'purple',
-    },
-    {
-      key: 'ratings',
-      label: 'Community Rating',
-      icon: Star,
-      score: agent.trustScore.breakdown.ratings.score,
-      weight: agent.trustScore.breakdown.ratings.weight,
-      color: 'rose',
-    },
-  ];
-
-  const colorClasses = {
-    cyan: {
-      bg: 'bg-cyan-500/10',
-      text: 'text-cyan-400',
-      border: 'border-cyan-500/30',
-      bar: 'bg-gradient-to-r from-cyan-500 to-cyan-600',
-      glow: 'shadow-cyan-500/20',
-    },
-    emerald: {
-      bg: 'bg-emerald-500/10',
-      text: 'text-emerald-400',
-      border: 'border-emerald-500/30',
-      bar: 'bg-gradient-to-r from-emerald-500 to-emerald-600',
-      glow: 'shadow-emerald-500/20',
-    },
-    amber: {
-      bg: 'bg-amber-500/10',
-      text: 'text-amber-400',
-      border: 'border-amber-500/30',
-      bar: 'bg-gradient-to-r from-amber-500 to-amber-600',
-      glow: 'shadow-amber-500/20',
-    },
-    purple: {
-      bg: 'bg-purple-500/10',
-      text: 'text-purple-400',
-      border: 'border-purple-500/30',
-      bar: 'bg-gradient-to-r from-purple-500 to-purple-600',
-      glow: 'shadow-purple-500/20',
-    },
-    rose: {
-      bg: 'bg-rose-500/10',
-      text: 'text-rose-400',
-      border: 'border-rose-500/30',
-      bar: 'bg-gradient-to-r from-rose-500 to-rose-600',
-      glow: 'shadow-rose-500/20',
-    },
+  const handleEmbed = () => {
+    const snippet = `<iframe src="${window.location.origin}/agents/${address}/embed" width="320" height="160" frameborder="0" style="border:none;"></iframe>`;
+    navigator.clipboard.writeText(snippet);
+    setEmbedCopied(true);
+    setTimeout(() => setEmbedCopied(false), 2000);
   };
 
+  const handleShare = () => {
+    if (!agent) return;
+    const url = `${window.location.origin}/agents/${address}`;
+    const text = [
+      `\uD83D\uDD0D ${agent.name} \u2014 Trust Score: ${agent.trustScore.score}/100`,
+      `\u2705 ${agent.status} | ${agent.type}`,
+      ``,
+      `Verified on Enigma \u00B7 Avalanche`,
+    ].join('\n');
+    window.open(
+      `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`,
+      '_blank',
+      'noopener,noreferrer,width=600,height=500',
+    );
+  };
+
+  const snowtraceUrl =
+    agent?.registryAddress && agent?.tokenId
+      ? `https://snowtrace.io/token/${agent.registryAddress}?a=${agent.tokenId}#inventory`
+      : `https://snowtrace.io/address/${address}`;
+
+  // ─── Loading ─────────────────────────────────────────────────────────────────
+  if (isLoading) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <Spinner size="lg" />
+          <p className="text-sm text-[#64748B]">Loading agent profile…</p>
+        </div>
+      </div>
+    );
+  }
+
+  // ─── Error ───────────────────────────────────────────────────────────────────
+  if (isError) {
+    return (
+      <div className="p-6">
+        <Link
+          href="/scanner/agents"
+          className="mb-6 inline-flex items-center gap-1.5 text-sm text-[#64748B] transition-colors hover:text-white"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" />
+          Back to Agents
+        </Link>
+        <div className="mt-8 flex flex-col items-center justify-center py-16 text-center">
+          <h1 className="mb-2 text-lg font-bold text-white">Agent Not Found</h1>
+          <p className="mb-6 max-w-md text-sm text-[#64748B]">
+            {error?.message || 'Unable to load agent details.'}
+          </p>
+          <button
+            onClick={() => refetch()}
+            className="rounded-lg border border-[rgba(255,255,255,0.08)] px-4 py-2 text-sm text-white transition-colors hover:bg-[rgba(255,255,255,0.04)]"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!agent) return null;
+
+  // ─── Derived values ───────────────────────────────────────────────────────────
+  const vol24h = agent.volumes?.['24h'];
+  const vol24hDisplay = vol24h ? `${parseFloat(vol24h.volumeAvax).toFixed(1)} AVAX` : '—';
+
+  const snapshotStats = [
+    { label: 'UPTIME',       value: `${agent.uptime.percentage.toFixed(0)}%` },
+    { label: 'VOLUME (24H)', value: vol24hDisplay },
+    { label: 'PROXY',        value: agent.proxy.detected ? formatEnumValue(agent.proxy.type) : 'None' },
+    { label: 'RATING',       value: agent.ratings.count > 0 ? `${agent.ratings.average.toFixed(1)} / 5` : '—' },
+    { label: 'AGE',          value: formatAge(agent.createdAt) },
+  ];
+
+  const breakdownRows = [
+    { label: 'Transaction Volume', score: agent.trustScore.breakdown.volume.score,  weight: agent.trustScore.breakdown.volume.weight },
+    { label: 'Uptime',             score: agent.trustScore.breakdown.uptime.score,   weight: agent.trustScore.breakdown.uptime.weight },
+    { label: 'Proxy Transparency', score: agent.trustScore.breakdown.proxy.score,    weight: agent.trustScore.breakdown.proxy.weight },
+    { label: 'Security Patterns',  score: agent.trustScore.breakdown.ozMatch.score,  weight: agent.trustScore.breakdown.ozMatch.weight },
+    { label: 'Community Ratings',  score: agent.trustScore.breakdown.ratings.score,  weight: agent.trustScore.breakdown.ratings.weight },
+  ];
+
+  type EventItem = {
+    id: string;
+    type: 'HEARTBEAT' | 'RATING';
+    time: string;
+    label: string;
+    sortKey: number;
+  };
+
+  const hbLogs: Array<{ id: string; timestamp: string; result: string; responseTimeMs: number }> =
+    heartbeatData?.logs ?? [];
+
+  const allEvents: EventItem[] = [
+    ...hbLogs.map((h) => ({
+      id: h.id,
+      type: 'HEARTBEAT' as const,
+      time: h.timestamp,
+      label: `${h.result} · ${h.responseTimeMs}ms`,
+      sortKey: new Date(h.timestamp).getTime(),
+    })),
+    ...(agent.ratings.recent ?? []).map((r) => ({
+      id: r.id,
+      type: 'RATING' as const,
+      time: r.createdAt,
+      label: `${r.rating}★ from ${truncateAddress(r.userAddress)}`,
+      sortKey: new Date(r.createdAt).getTime(),
+    })),
+  ]
+    .sort((a, b) => b.sortKey - a.sortKey)
+    .slice(0, 10);
+
+  const tabs: { id: Tab; label: string; count?: number }[] = [
+    { id: 'overview',  label: 'Overview' },
+    { id: 'activity',  label: 'Activity',  count: allEvents.length },
+    { id: 'community', label: 'Community', count: agent.ratings.count },
+  ];
+
+  // ─── Render ───────────────────────────────────────────────────────────────────
   return (
-    <div className="rounded-2xl overflow-hidden bg-gradient-to-br from-[#0F1117] via-[#1A1625] to-[#0F1117] border border-purple-500/20">
-      {/* Header */}
-      <div className="border-b border-white/5 bg-gradient-to-r from-purple-500/5 via-transparent to-blue-500/5 p-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="relative h-12 w-12 rounded-xl bg-gradient-to-br from-purple-500 to-blue-600 p-0.5">
-              <div className="h-full w-full rounded-xl bg-[#0F1117] flex items-center justify-center">
-                <Calculator className="h-6 w-6 text-purple-400" />
-              </div>
-            </div>
-            <div>
-              <h3 className="text-lg font-bold text-white mb-0.5">Trust Score Formula</h3>
-              <p className="text-sm text-white/50">Weighted calculation breakdown</p>
-            </div>
+    <div className="mx-auto flex max-w-5xl flex-col gap-6 px-6 py-8">
+
+      {/* Back */}
+      <Link
+        href="/scanner/agents"
+        className="inline-flex w-fit items-center gap-1.5 text-xs text-[#475569] transition-colors hover:text-white"
+      >
+        <ArrowLeft className="h-3.5 w-3.5" />
+        Back to Agents
+      </Link>
+
+      {/* ── Header ── */}
+      <div className="flex items-start justify-between gap-6">
+        <div className="min-w-0 flex-1">
+          <div className="mb-2 flex flex-wrap items-center gap-2">
+            <h1 className="text-3xl font-bold tracking-tight text-white">{agent.name}</h1>
+            <span className="rounded border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.04)] px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-[#475569]">
+              {formatEnumValue(agent.type)}
+            </span>
+            <span className={cn('rounded border px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider', statusClass(agent.status))}>
+              {formatEnumValue(agent.status)}
+            </span>
           </div>
-          <div className="flex items-center gap-3 px-4 py-2 rounded-xl bg-white/5 border border-white/10">
-            <span className="text-xs text-white/50 font-medium">Final Score</span>
-            <div className="flex items-baseline gap-1">
-              <span className="text-3xl font-bold text-white">{agent.trustScore.score}</span>
-              <span className="text-lg text-white/40">/100</span>
-            </div>
+
+          {agent.description && (
+            <p className="mb-3 max-w-2xl text-sm leading-relaxed text-[#94A3B8]">
+              {agent.description}
+            </p>
+          )}
+
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 font-data text-xs text-[#475569]">
+            {agent.tokenId && <span>#{agent.tokenId}</span>}
+            {agent.tokenId && <span>·</span>}
+            <span>Registered {formatRelativeTime(agent.createdAt)}</span>
+            <span>·</span>
+            <button
+              onClick={handleCopy}
+              title="Copy address"
+              className="inline-flex items-center gap-1 transition-colors hover:text-white"
+            >
+              {truncateAddress(address)}
+              {copied && <span className="text-[#4ADE80]"> ✓</span>}
+            </button>
+            <span>·</span>
+            <span>Owner {truncateAddress(agent.ownerAddress)}</span>
           </div>
+        </div>
+
+        {/* Score */}
+        <div className="shrink-0 text-right">
+          <p className="font-data text-5xl font-bold leading-none text-[#4ADE80]">
+            {agent.trustScore.score}
+          </p>
+          <p className="mt-0.5 text-sm text-[#475569]">/100</p>
+          <Link
+            href={`/agents/${address}/trust-graph` as '/'}
+            className="mt-2 inline-flex items-center gap-1 text-[11px] text-[#475569] transition-colors hover:text-white"
+          >
+            Trust Graph →
+          </Link>
         </div>
       </div>
 
-      {/* Components Grid */}
-      <div className="p-6">
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {components.map((component) => {
-            const Icon = component.icon;
-            const colors = colorClasses[component.color as keyof typeof colorClasses];
-            const weightPercent = Math.round(component.weight * 100);
-            const contribution = (component.score * component.weight).toFixed(1);
+      {/* Flagged / Suspended warning */}
+      {(agent.status === 'FLAGGED' || agent.status === 'SUSPENDED') && (
+        <div className="rounded-lg border border-[rgba(251,113,133,0.2)] bg-[rgba(251,113,133,0.06)] px-4 py-3 text-sm text-[#FB7185]">
+          This agent has been{' '}
+          {agent.status === 'FLAGGED'
+            ? 'flagged by the community and is under review'
+            : 'suspended'}.
+        </div>
+      )}
 
-            return (
-              <div
-                key={component.key}
-                className={cn(
-                  'group relative overflow-hidden rounded-xl p-4 border-2 transition-all hover:scale-[1.02] cursor-pointer',
-                  colors.border,
-                  colors.bg,
-                  'shadow-lg',
-                  colors.glow
+      {/* ── Actions ── */}
+      <div className="flex flex-wrap gap-2">
+        <button
+          onClick={handleShare}
+          className="rounded-lg border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.04)] px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-[rgba(255,255,255,0.08)]"
+        >
+          Share Certificate
+        </button>
+        <button
+          onClick={handleEmbed}
+          className="rounded-lg border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.04)] px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-[rgba(255,255,255,0.08)]"
+        >
+          {embedCopied ? 'Copied!' : 'Embed'}
+        </button>
+        <a
+          href={snowtraceUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 rounded-lg border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.04)] px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-[rgba(255,255,255,0.08)]"
+        >
+          Explorer
+          <ExternalLink className="h-3 w-3" />
+        </a>
+        <Link
+          href={`/agents/${address}/trust-graph` as '/'}
+          className="inline-flex items-center gap-1.5 rounded-lg border border-[rgba(74,222,128,0.2)] bg-[rgba(74,222,128,0.06)] px-4 py-2 text-xs font-semibold text-[#4ADE80] transition-colors hover:bg-[rgba(74,222,128,0.1)]"
+        >
+          <GitBranch className="h-3 w-3" />
+          Trust Graph
+        </Link>
+        <ReportModal agentAddress={address} />
+      </div>
+
+      {/* ── Trust Snapshot strip ── */}
+      <div className="grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-[rgba(255,255,255,0.06)] sm:grid-cols-5">
+        {snapshotStats.map(({ label, value }) => (
+          <div key={label} className="bg-[rgba(255,255,255,0.02)] px-4 py-3">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-[#475569]">{label}</p>
+            <p className="font-data mt-1 text-sm font-bold text-white">{value}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* ── Tabs ── */}
+      <div className="border-b border-[rgba(255,255,255,0.06)]">
+        <div className="flex">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={cn(
+                'relative px-4 py-2.5 text-sm font-medium transition-colors',
+                activeTab === tab.id
+                  ? 'text-white after:absolute after:bottom-0 after:left-0 after:right-0 after:h-px after:bg-[#4ADE80]'
+                  : 'text-[#475569] hover:text-[#94A3B8]',
+              )}
+            >
+              {tab.label}
+              {tab.count !== undefined && tab.count > 0 && (
+                <span className="ml-2 rounded-full bg-[rgba(255,255,255,0.06)] px-1.5 py-0.5 text-[10px] text-[#475569]">
+                  {tab.count}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Tab: Overview ── */}
+      {activeTab === 'overview' && (
+        <div className="flex flex-col gap-6">
+
+          {/* Two-column */}
+          <div className="grid gap-4 md:grid-cols-2">
+
+            {/* ERC-8004 Identity */}
+            <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.02)] p-5">
+              <p className="mb-4 text-[10px] font-semibold uppercase tracking-widest text-[#475569]">ERC-8004 Identity</p>
+              <div className="divide-y divide-[rgba(255,255,255,0.04)]">
+                <IdentityRow label="Agent ID"  value={agent.tokenId ? `#${agent.tokenId}` : '—'} />
+                <IdentityRow label="Type"      value={formatEnumValue(agent.type)} />
+                <IdentityRow label="Chain"     value="Avalanche C-Chain" />
+                <IdentityRow label="Owner"     value={truncateAddress(agent.ownerAddress)} mono />
+                {agent.registryAddress && (
+                  <IdentityRow label="Registry" value={truncateAddress(agent.registryAddress)} mono />
                 )}
-              >
-                <div className="absolute inset-0 bg-gradient-to-br from-black/40 to-black/20" />
-                <div className="relative">
-                  {/* Icon and Label */}
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className={cn('p-2 rounded-lg', colors.bg, 'border', colors.border)}>
-                      <Icon className={cn('h-4 w-4', colors.text)} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs text-white/80 font-medium">{component.label}</p>
-                      <p className="text-[10px] text-white/40">Weight: {weightPercent}%</p>
+                {agent.tokenUri && (
+                  <div className="flex items-center justify-between py-2.5">
+                    <span className="text-xs text-[#475569]">Token URI</span>
+                    <a
+                      href={agent.tokenUri}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-xs text-[#94A3B8] transition-colors hover:text-white"
+                    >
+                      View <ExternalLink className="h-3 w-3" />
+                    </a>
+                  </div>
+                )}
+                <IdentityRow label="Storage"  value="On-chain" />
+              </div>
+            </div>
+
+            {/* Right column */}
+            <div className="flex flex-col gap-4">
+              <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.02)] p-5">
+                <p className="mb-4 text-[10px] font-semibold uppercase tracking-widest text-[#475569]">What Changed</p>
+                <ul className="space-y-2 text-xs text-[#94A3B8]">
+                  <li>Registered {formatRelativeTime(agent.createdAt)}</li>
+                  <li>Trust score updated {formatRelativeTime(agent.trustScore.lastUpdated)}</li>
+                  {agent.ratings.recent.length > 0 && (
+                    <li>Rating received {formatRelativeTime(agent.ratings.recent[0].createdAt)}</li>
+                  )}
+                  {heartbeatData?.logs?.[0] ? (
+                    <li>
+                      Heartbeat:{' '}
+                      {heartbeatData.logs[0].result === 'PASS' ? 'last check OK' : 'last check failed'}{' '}
+                      · {formatRelativeTime(heartbeatData.logs[0].timestamp)}
+                    </li>
+                  ) : (
+                    <li>Heartbeat: no data yet</li>
+                  )}
+                </ul>
+              </div>
+
+              <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.02)] p-5">
+                <p className="mb-4 text-[10px] font-semibold uppercase tracking-widest text-[#475569]">Connected Protocols</p>
+                <div className="divide-y divide-[rgba(255,255,255,0.04)]">
+                  {KNOWN_PROTOCOLS.map((protocol) => {
+                    const active = isProtocolActive(protocol, agent);
+                    return (
+                      <div key={protocol} className="flex items-center justify-between py-2.5">
+                        <span className="text-xs text-white">{protocol}</span>
+                        <span
+                          className={cn(
+                            'rounded px-2 py-0.5 text-[10px] font-semibold',
+                            active
+                              ? 'bg-[rgba(74,222,128,0.1)] text-[#4ADE80]'
+                              : 'bg-[rgba(255,255,255,0.04)] text-[#475569]',
+                          )}
+                        >
+                          {active ? 'Active' : 'Inactive'}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Trust Breakdown */}
+          <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.02)] p-5">
+            <div className="mb-5 flex items-center justify-between">
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-[#475569]">Trust Breakdown</p>
+              <p className="font-data text-sm font-bold text-white">
+                {agent.trustScore.score}
+                <span className="ml-0.5 text-xs font-normal text-[#475569]">/100</span>
+              </p>
+            </div>
+            <div className="space-y-4">
+              {breakdownRows.map(({ label, score, weight }) => (
+                <div key={label}>
+                  <div className="mb-1.5 flex items-center justify-between">
+                    <span className="text-xs text-[#94A3B8]">{label}</span>
+                    <div className="flex items-center gap-3">
+                      <span className="text-[10px] text-[#475569]">{Math.round(weight * 100)}%</span>
+                      <span className="font-data w-7 text-right text-xs font-bold text-white">{score}</span>
                     </div>
                   </div>
-
-                  {/* Score Display */}
-                  <div className="mb-3">
-                    <div className="flex items-baseline gap-2 mb-1">
-                      <span className={cn('text-3xl font-bold', colors.text)}>
-                        {component.score}
-                      </span>
-                      <span className="text-sm text-white/40">/100</span>
-                    </div>
-                    <p className="text-xs text-white/50">
-                      Contributes: <span className={cn('font-semibold', colors.text)}>{contribution}</span> points
-                    </p>
-                  </div>
-
-                  {/* Animated Progress Bar */}
-                  <div className="relative h-2 w-full overflow-hidden rounded-full bg-black/30">
+                  <div className="h-1 w-full overflow-hidden rounded-full bg-[rgba(255,255,255,0.06)]">
                     <div
-                      className={cn('h-full rounded-full transition-all duration-700 ease-out', colors.bar)}
-                      style={{
-                        width: `${component.score}%`,
-                        boxShadow: '0 0 10px currentColor',
-                      }}
+                      className="h-full rounded-full bg-[#4ADE80] opacity-80 transition-all duration-700"
+                      style={{ width: `${score}%` }}
                     />
                   </div>
                 </div>
-              </div>
-            );
-          })}
+              ))}
+            </div>
+          </div>
         </div>
+      )}
 
-        {/* Formula Explanation */}
-        <div className="mt-6 p-4 bg-white/[0.02] rounded-xl border border-white/5">
-          <div className="flex items-start gap-3">
-            <TrendingUpIcon className="h-5 w-5 text-purple-400 shrink-0 mt-0.5" />
-            <div>
-              <h4 className="text-sm font-semibold text-white mb-2">How it works</h4>
-              <p className="text-xs text-white/60 leading-relaxed">
-                Each metric is scored 0-100 and multiplied by its weight. The final trust score is the sum of all weighted scores.
-                Higher weights mean that metric has more influence on the overall score.
-              </p>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {components.map((c) => (
-                  <span key={c.key} className="text-[10px] text-white/40 px-2 py-1 bg-white/5 rounded">
-                    {c.label}: {Math.round(c.weight * 100)}%
-                  </span>
+      {/* ── Tab: Activity ── */}
+      {activeTab === 'activity' && (
+        <div className="flex flex-col gap-6">
+
+          {/* Uptime summary */}
+          <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.02)] p-5">
+            <p className="mb-4 text-[10px] font-semibold uppercase tracking-widest text-[#475569]">Uptime Summary (7d)</p>
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+              {[
+                { label: 'Uptime',        value: `${agent.uptime.percentage.toFixed(1)}%` },
+                { label: 'Total Checks',  value: agent.uptime.totalPings.toString() },
+                { label: 'Successful',    value: agent.uptime.successfulPings.toString() },
+                { label: 'Avg Response',  value: `${agent.uptime.averageResponseTimeMs}ms` },
+              ].map(({ label, value }) => (
+                <div key={label}>
+                  <p className="text-[10px] uppercase tracking-widest text-[#475569]">{label}</p>
+                  <p className="font-data mt-1 text-sm font-bold text-white">{value}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Event history */}
+          {allEvents.length > 0 ? (
+            <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.02)]">
+              <div className="border-b border-[rgba(255,255,255,0.06)] px-5 py-3">
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-[#475569]">Event History</p>
+              </div>
+              <div className="divide-y divide-[rgba(255,255,255,0.04)]">
+                {allEvents.map((evt) => (
+                  <div key={evt.id} className="flex items-center gap-3 px-5 py-2.5">
+                    <span className="font-data shrink-0 text-[10px] text-[#475569]">
+                      {formatEventDate(evt.time)}
+                    </span>
+                    <span
+                      className={cn(
+                        'shrink-0 rounded px-1.5 py-0.5 text-[10px] font-semibold',
+                        evt.type === 'HEARTBEAT'
+                          ? 'bg-[rgba(255,255,255,0.06)] text-[#94A3B8]'
+                          : 'bg-[rgba(74,222,128,0.08)] text-[#4ADE80]',
+                      )}
+                    >
+                      {evt.type}
+                    </span>
+                    <span className="truncate text-xs text-[#94A3B8]">{evt.label}</span>
+                  </div>
                 ))}
               </div>
             </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/**
- * Ratings tab content
- */
-function RatingsTab({ agent, agentAddress }: { agent: AgentDetail; agentAddress: string }) {
-  return (
-    <div className="space-y-6">
-      {/* Rating Form */}
-      <RatingForm agentAddress={agentAddress} />
-
-      {/* Ratings List */}
-      <div className="rounded-lg bg-[rgba(15,17,23,0.6)] backdrop-blur-xl border border-[rgba(255,255,255,0.06)] p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-semibold text-white">Community Ratings</h3>
-          <div className="text-right">
-            <p className="text-2xl font-bold text-white">{agent.ratings.average.toFixed(1)}</p>
-            <p className="text-sm text-[rgba(255,255,255,0.5)]">{agent.ratings.count} ratings</p>
-          </div>
-        </div>
-
-        {agent.ratings.count === 0 ? (
-          <p className="text-center text-[rgba(255,255,255,0.5)] py-8">
-            No ratings yet. Be the first to rate this agent!
-          </p>
-        ) : (
-        <div className="space-y-4">
-          {agent.ratings.recent.map((rating) => (
-            <div
-              key={rating.id}
-              className="p-4 bg-[rgba(255,255,255,0.03)] rounded-lg"
-            >
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <span className="text-yellow-400">{'★'.repeat(rating.rating)}</span>
-                  <span className="text-[rgba(255,255,255,0.3)]">{'★'.repeat(5 - rating.rating)}</span>
-                </div>
-                <span className="text-xs text-[rgba(255,255,255,0.5)]">
-                  {new Date(rating.createdAt).toLocaleDateString()}
-                </span>
-              </div>
-              {rating.review && (
-                <p className="text-sm text-[rgba(255,255,255,0.7)]">{rating.review}</p>
-              )}
-              <p className="text-xs text-[rgba(255,255,255,0.4)] mt-2">
-                by {rating.userAddress.slice(0, 6)}...{rating.userAddress.slice(-4)}
-              </p>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <p className="text-sm text-[#475569]">No activity recorded yet.</p>
             </div>
-          ))}
+          )}
         </div>
-        )}
-      </div>
+      )}
+
+      {/* ── Tab: Community ── */}
+      {activeTab === 'community' && (
+        <div className="flex flex-col gap-4">
+          <RatingForm agentAddress={address} />
+
+          {agent.ratings.count > 0 ? (
+            <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.02)] p-5">
+              <div className="mb-4 flex items-center justify-between">
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-[#475569]">Community Ratings</p>
+                <p className="font-data text-sm font-bold text-white">
+                  {agent.ratings.average.toFixed(1)}
+                  <span className="ml-1 text-xs font-normal text-[#475569]">
+                    / 5 · {agent.ratings.count} ratings
+                  </span>
+                </p>
+              </div>
+              <div className="space-y-3">
+                {agent.ratings.recent.map((rating) => (
+                  <div
+                    key={rating.id}
+                    className="rounded-lg border border-[rgba(255,255,255,0.05)] bg-[rgba(255,255,255,0.02)] p-4"
+                  >
+                    <div className="mb-1.5 flex items-center justify-between">
+                      <span className="text-[#94A3B8]">
+                        {'★'.repeat(rating.rating)}
+                        <span className="text-[#334155]">{'★'.repeat(5 - rating.rating)}</span>
+                      </span>
+                      <span className="font-data text-[10px] text-[#475569]">
+                        {formatRelativeTime(rating.createdAt)}
+                      </span>
+                    </div>
+                    {rating.review && <p className="text-xs text-[#94A3B8]">{rating.review}</p>}
+                    <p className="mt-1.5 font-data text-[10px] text-[#475569]">
+                      {truncateAddress(rating.userAddress)}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-8 text-center">
+              <p className="text-sm text-[#475569]">No ratings yet. Be the first to rate this agent.</p>
+            </div>
+          )}
+        </div>
+      )}
+
     </div>
   );
 }

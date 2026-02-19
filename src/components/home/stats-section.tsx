@@ -49,7 +49,7 @@ export function StatsSection({ totalAgents, verifiedAgents, volumeDisplay, avgTr
             style={{ animationDelay: isVisible ? `${index * 100}ms` : '0ms' }}
           >
             <stat.icon className="mx-auto mb-3 h-6 w-6 text-primary transition-transform group-hover:scale-110" />
-            <div className="text-stat font-bold text-white number-animate">{stat.value}</div>
+            <div className="text-stat font-bold text-white number-animate font-data">{stat.value}</div>
             <div className="mt-1 text-sm text-text-secondary">{stat.label}</div>
           </div>
         ))}
