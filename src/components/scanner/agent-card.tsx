@@ -97,7 +97,9 @@ export function AgentCard({ agent, sparklines = {} }: AgentCardProps) {
             {agent.name}
           </p>
           {agent.metadata && (
-            <Database className="h-3 w-3 shrink-0 text-[#475569]" title="Has on-chain metadata" />
+            <span title="Has on-chain metadata">
+              <Database className="h-3 w-3 shrink-0 text-[#475569]" />
+            </span>
           )}
         </div>
         <p className="font-data text-[10px] text-[#475569]">

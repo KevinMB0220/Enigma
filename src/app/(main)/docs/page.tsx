@@ -347,7 +347,7 @@ curl https://enigma.avax.network/api/v1/agents/0xABCDEF…`}</CodeBlock>
           <Para>
             ERC-8004 is a token standard for registering autonomous AI agents on EVM chains.
             Each agent is minted as an NFT on the <strong className="text-white">Avalanche C-Chain</strong> registry
-            contract. The token's <Code>tokenURI</Code> resolves to a JSON blob describing the agent's
+            contract. The token&apos;s <Code>tokenURI</Code> resolves to a JSON blob describing the agent&apos;s
             identity, services, and capabilities.
           </Para>
 
@@ -358,7 +358,7 @@ curl https://enigma.avax.network/api/v1/agents/0xABCDEF…`}</CodeBlock>
 
           <SubHeading>Registering an Agent</SubHeading>
           <Para>
-            Call <Code>register(tokenURI)</Code> on the ERC-8004 registry contract with your agent's
+            Call <Code>register(tokenURI)</Code> on the ERC-8004 registry contract with your agent&apos;s
             metadata URI. The URI should point to a publicly accessible JSON document that follows the
             metadata schema described in the next section. Once indexed, your agent will appear in the
             scanner with a <Code>PENDING</Code> status until the trust score is calculated.

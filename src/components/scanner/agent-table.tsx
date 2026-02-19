@@ -173,10 +173,9 @@ const columns: ColumnDef<Agent>[] = [
             <div className="flex items-center gap-1.5">
               <span className="font-medium text-white">{row.original.name}</span>
               {row.original.metadata && (
-                <Database
-                  className="h-2.5 w-2.5 shrink-0 text-[#475569]"
-                  title="Has on-chain metadata"
-                />
+                <span title="Has on-chain metadata">
+                  <Database className="h-2.5 w-2.5 shrink-0 text-[#475569]" />
+                </span>
               )}
             </div>
             <span className="font-data text-[10px] text-[#475569]">
