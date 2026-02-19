@@ -5,9 +5,9 @@ import { Slider } from '@/components/ui/slider';
 import { cn } from '@/lib/utils/index';
 
 export interface FilterValues {
-  type: string | undefined;
+  service: string | undefined;
   status: string | undefined;
-  minTrustScore: number;
+  trustScoreRange: [number, number];
   sortBy?: 'trust_score' | 'created_at' | 'name';
   sortOrder?: 'asc' | 'desc';
 }
@@ -18,13 +18,11 @@ interface FiltersProps {
 }
 
 // ---- option lists -------------------------------------------------------
-const TYPES = [
-  { value: 'ALL',        label: 'All types'   },
-  { value: 'TRADING',    label: 'Trading'     },
-  { value: 'LENDING',    label: 'Lending'     },
-  { value: 'GOVERNANCE', label: 'Governance'  },
-  { value: 'ORACLE',     label: 'Oracle'      },
-  { value: 'CUSTOM',     label: 'Custom'      },
+const SERVICES = [
+  { value: 'MCP',  label: 'MCP',  className: 'bg-[rgba(74,222,128,0.1)] text-[#4ADE80] border-[rgba(74,222,128,0.2)]' },
+  { value: 'A2A',  label: 'A2A',  className: 'bg-[rgba(252,211,77,0.1)] text-[#FCD34D] border-[rgba(252,211,77,0.2)]' },
+  { value: 'web',  label: 'web',  className: 'bg-[rgba(34,211,238,0.1)] text-[#22D3EE] border-[rgba(34,211,238,0.2)]' },
+  { value: 'OASF', label: 'OASF', className: 'bg-[rgba(167,139,250,0.1)] text-[#A78BFA] border-[rgba(167,139,250,0.2)]' },
 ];
 
 const STATUSES = [
@@ -84,9 +82,10 @@ function FilterSelect({
 // ---- main component -----------------------------------------------------
 export function Filters({ values, onChange }: FiltersProps) {
   const hasActive =
-    !!values.type ||
+    !!values.service ||
     !!values.status ||
-    values.minTrustScore > 0 ||
+    values.trustScoreRange[0] > 0 ||
+    values.trustScoreRange[1] < 100 ||
     !!values.sortBy;
 
   const set = (patch: Partial<FilterValues>) => onChange({ ...values, ...patch });
@@ -94,13 +93,29 @@ export function Filters({ values, onChange }: FiltersProps) {
   return (
     <div className="flex flex-col gap-5">
 
-      {/* Type */}
-      <FilterSelect
-        label="Agent Type"
-        value={values.type ?? 'ALL'}
-        options={TYPES}
-        onChange={(v) => set({ type: v === 'ALL' ? undefined : v })}
-      />
+      {/* Service Categories */}
+      <div className="space-y-1.5">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#475569]">Service Category</p>
+        <div className="flex flex-wrap gap-1.5">
+          {SERVICES.map((svc) => {
+            const active = values.service === svc.value;
+            return (
+              <button
+                key={svc.value}
+                onClick={() => set({ service: active ? undefined : svc.value })}
+                className={cn(
+                  'rounded-md border px-2.5 py-1 text-[11px] font-semibold transition-all duration-100',
+                  active
+                    ? svc.className
+                    : 'border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)] text-[#64748B] hover:bg-[rgba(255,255,255,0.06)] hover:text-[#94A3B8]',
+                )}
+              >
+                {svc.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
       {/* Status */}
       <FilterSelect
@@ -126,21 +141,23 @@ export function Filters({ values, onChange }: FiltersProps) {
         onChange={(v) => set({ sortOrder: v as 'asc' | 'desc' })}
       />
 
-      {/* Min trust score */}
+      {/* Trust score range */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <p className="text-[10px] font-semibold uppercase tracking-widest text-[#475569]">
-            Min Trust Score
+            Trust Score
           </p>
           <span className="font-data text-xs font-semibold text-white">
-            {values.minTrustScore}
+            {values.trustScoreRange[0]} – {values.trustScoreRange[1]}
           </span>
         </div>
         <Slider
-          value={[values.minTrustScore]}
-          onValueChange={([v]) => set({ minTrustScore: v })}
+          value={values.trustScoreRange}
+          onValueChange={(v) => set({ trustScoreRange: [v[0], v[1]] })}
+          min={0}
           max={100}
           step={5}
+          minStepsBetweenThumbs={1}
           className="w-full"
         />
         <div className="flex justify-between font-data text-[10px] text-[#334155]">
@@ -153,7 +170,7 @@ export function Filters({ values, onChange }: FiltersProps) {
       {/* Reset */}
       {hasActive && (
         <button
-          onClick={() => onChange({ type: undefined, status: undefined, minTrustScore: 0, sortBy: undefined, sortOrder: undefined })}
+          onClick={() => onChange({ service: undefined, status: undefined, trustScoreRange: [0, 100], sortBy: undefined, sortOrder: undefined })}
           className={cn(
             'flex w-full items-center justify-center gap-1.5 rounded-md py-2 text-xs font-medium transition-all',
             'border border-[rgba(251,113,133,0.2)] text-[#FB7185]',
