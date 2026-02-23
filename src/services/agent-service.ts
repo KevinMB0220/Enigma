@@ -196,14 +196,16 @@ export async function getAgents(
     }
 
     // Execute queries in parallel
+    // Agents with metadata come first (CASE WHEN), then by trust_score desc
     const [agents, total] = await Promise.all([
       prisma.agent.findMany({
         where,
         skip,
         take: limit,
-        orderBy: {
-          created_at: 'desc',
-        },
+        orderBy: [
+          { metadata: { sort: 'desc', nulls: 'last' } },
+          { trust_score: 'desc' },
+        ],
         include: {
           trustScores: {
             orderBy: { calculatedAt: 'desc' },
