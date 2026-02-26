@@ -49,10 +49,10 @@ export const Footer: FC<FooterProps> = ({ className }) => {
           <div className="flex flex-col gap-4">
             <Link
               href="/"
-              className="flex items-center gap-2.5 transition-opacity duration-200 hover:opacity-80"
+              className="flex items-center gap-2 transition-opacity duration-200 hover:opacity-80"
             >
-              <Image src="/enigma.png" alt="Enigma" width={28} height={28} className="rounded-lg object-contain" />
-              <span className="text-xl font-bold text-white">Enigma</span>
+              <Image src="/logo-waves-dark.svg" alt="Enigma" width={36} height={36} className="object-contain" />
+              <Image src="/logo-f1-dark.svg" alt="Enigma" width={70} height={28} className="object-contain" />
             </Link>
             <p className="text-sm text-[#9CA3AF]">
               AI Agent Transparency for Avalanche

@@ -43,15 +43,21 @@ export function Header() {
         <div className="mx-auto flex h-full max-w-7xl items-center justify-between px-5 md:px-8">
 
           {/* Logo */}
-          <Link href="/" className="group flex items-center gap-2.5">
+          <Link href="/" className="group flex items-center gap-2">
             <Image
-              src="/enigma.png"
+              src="/logo-waves-dark.svg"
               alt="Enigma"
-              width={28}
-              height={28}
-              className="rounded-lg object-contain transition-opacity group-hover:opacity-80"
+              width={32}
+              height={32}
+              className="object-contain transition-transform group-hover:scale-105"
             />
-            <span className="text-sm font-bold tracking-tight text-white">Enigma</span>
+            <Image
+              src="/logo-f1-dark.svg"
+              alt="Enigma"
+              width={60}
+              height={24}
+              className="hidden sm:block object-contain transition-opacity group-hover:opacity-80"
+            />
           </Link>
 
           {/* Desktop nav */}
