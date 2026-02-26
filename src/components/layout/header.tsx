@@ -43,20 +43,13 @@ export function Header() {
         <div className="mx-auto flex h-full max-w-7xl items-center justify-between px-5 md:px-8">
 
           {/* Logo */}
-          <Link href="/" className="group flex items-center gap-2">
+          <Link href="/" className="group flex items-center">
             <Image
-              src="/logo-waves-dark.svg"
+              src="/logo-f1-waves-dark.svg"
               alt="Enigma"
-              width={32}
-              height={32}
+              width={36}
+              height={36}
               className="object-contain transition-transform group-hover:scale-105"
-            />
-            <Image
-              src="/logo-f1-dark.svg"
-              alt="Enigma"
-              width={60}
-              height={24}
-              className="hidden sm:block object-contain transition-opacity group-hover:opacity-80"
             />
           </Link>
 
