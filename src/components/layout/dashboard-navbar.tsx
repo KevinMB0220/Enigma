@@ -2,10 +2,11 @@
 
 import { useState, useCallback } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { Search, RefreshCw, Bell, CheckCircle2, Menu } from 'lucide-react';
 import Image from 'next/image';
 import { WalletConnectButton } from '@/components/shared/wallet-connect-button';
+import { TourTriggerButton, type TourPage } from '@/components/tour';
 import { cn } from '@/lib/utils';
 
 type ChainStatus = 'synced' | 'indexing' | 'degraded';
@@ -36,9 +37,21 @@ interface DashboardNavbarProps {
 
 export function DashboardNavbar({ onMenuToggle }: DashboardNavbarProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const [search, setSearch] = useState('');
   const [isSyncing, setIsSyncing] = useState(false);
   const [chainStatus] = useState<ChainStatus>('synced');
+
+  // Determine current tour page
+  const currentTourPage: TourPage | null = pathname.includes('/agents/')
+    ? 'agent'
+    : pathname.includes('/scanner')
+      ? 'scanner'
+      : pathname.includes('/register')
+        ? 'register'
+        : pathname.includes('/docs')
+          ? 'docs'
+          : null;
 
   const handleSync = useCallback(async () => {
     setIsSyncing(true);
@@ -74,15 +87,14 @@ export function DashboardNavbar({ onMenuToggle }: DashboardNavbarProps) {
         >
           <Menu className="h-4 w-4" />
         </button>
-        <Link href="/" className="flex items-center gap-2 group">
+        <Link href="/" className="flex items-center group">
           <Image
-            src="/enigma.png"
+            src="/logo-f1-waves-dark.svg"
             alt="Enigma"
-            width={28}
-            height={28}
-            className="rounded-lg object-contain transition-opacity group-hover:opacity-80"
+            width={32}
+            height={32}
+            className="object-contain transition-transform group-hover:scale-105"
           />
-          <span className="text-sm font-bold text-white tracking-tight">Enigma</span>
         </Link>
         <div className="hidden h-4 w-px bg-[rgba(255,255,255,0.08)] sm:block" />
         <ChainStatusPill status={chainStatus} />
@@ -121,6 +133,9 @@ export function DashboardNavbar({ onMenuToggle }: DashboardNavbarProps) {
 
       {/* Right — Actions */}
       <div className="ml-auto flex items-center gap-2">
+
+        {/* Tour Help */}
+        {currentTourPage && <TourTriggerButton page={currentTourPage} />}
 
         {/* Sync */}
         <button

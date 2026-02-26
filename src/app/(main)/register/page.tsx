@@ -2,10 +2,11 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useAccount } from 'wagmi';
-import { Loader2, AlertCircle, CheckCircle2, Wallet } from 'lucide-react';
+import { Loader2, AlertCircle, CheckCircle2, Wallet, BookOpen } from 'lucide-react';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -126,15 +127,22 @@ export default function RegisterPage() {
           <h1 className="text-3xl font-bold text-white mb-3">
             Register Your Agent
           </h1>
-          <p className="text-[rgba(255,255,255,0.6)] max-w-md mx-auto">
+          <p className="text-[rgba(255,255,255,0.6)] max-w-md mx-auto mb-4">
             Add your autonomous agent to Enigma for trust scoring and discovery
             by the community.
           </p>
+          <Link
+            href="/docs#register"
+            className="inline-flex items-center gap-1.5 text-sm text-[#A78BFA] hover:text-[#C4B5FD] transition-colors"
+          >
+            <BookOpen className="h-4 w-4" />
+            Read the registration guide
+          </Link>
         </div>
 
         {/* Connect Wallet Prompt */}
         {!isConnected && (
-          <div className="mb-8 p-6 rounded-lg bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.06)]">
+          <div data-tour="register-wallet" className="mb-8 p-6 rounded-lg bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.06)]">
             <div className="flex items-start gap-4">
               <div className="h-10 w-10 rounded-full bg-purple-500/20 flex items-center justify-center flex-shrink-0">
                 <Wallet className="h-5 w-5 text-purple-400" />
@@ -156,7 +164,7 @@ export default function RegisterPage() {
         {/* Registration Form */}
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {/* Agent Address */}
-          <div className="space-y-2">
+          <div data-tour="register-address" className="space-y-2">
             <Label htmlFor="address" className="text-white">
               Agent Contract Address <span className="text-red-400">*</span>
             </Label>
@@ -196,7 +204,7 @@ export default function RegisterPage() {
           </div>
 
           {/* Agent Type */}
-          <div className="space-y-2">
+          <div data-tour="register-type" className="space-y-2">
             <Label className="text-white">
               Agent Type <span className="text-red-400">*</span>
             </Label>
@@ -267,6 +275,7 @@ export default function RegisterPage() {
 
           {/* Submit Button */}
           <Button
+            data-tour="register-submit"
             type="submit"
             className="w-full"
             size="lg"

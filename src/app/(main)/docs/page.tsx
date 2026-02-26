@@ -13,6 +13,7 @@ import {
   AlertTriangle,
   CheckCircle2,
   Info,
+  UserPlus,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -105,12 +106,13 @@ function ScoreRow({ label, pct, color }: { label: string; pct: number; color: st
 // ── Table of contents ──────────────────────────────────────────────────────
 
 const toc = [
-  { id: 'intro',         label: 'Introduction',         icon: BookOpen  },
-  { id: 'quickstart',    label: 'Quick Start',           icon: ArrowRight },
-  { id: 'trust-score',   label: 'Trust Score System',    icon: Shield    },
-  { id: 'erc8004',       label: 'ERC-8004 Registry',     icon: Layers    },
-  { id: 'metadata',      label: 'Agent Metadata',        icon: Cpu       },
-  { id: 'api',           label: 'API Reference',         icon: FileCode2 },
+  { id: 'intro',         label: 'Introduction',           icon: BookOpen  },
+  { id: 'quickstart',    label: 'Quick Start',            icon: ArrowRight },
+  { id: 'register',      label: 'Register Your Agent',    icon: UserPlus  },
+  { id: 'trust-score',   label: 'Trust Score System',     icon: Shield    },
+  { id: 'erc8004',       label: 'ERC-8004 Registry',      icon: Layers    },
+  { id: 'metadata',      label: 'Agent Metadata',         icon: Cpu       },
+  { id: 'api',           label: 'API Reference',          icon: FileCode2 },
 ];
 
 // ── Page ───────────────────────────────────────────────────────────────────
@@ -155,7 +157,7 @@ export default function DocsPage() {
       <div className="flex gap-8">
 
         {/* ── Left: sticky TOC ───────────────────────────────────────── */}
-        <aside className="hidden w-52 flex-shrink-0 lg:block">
+        <aside data-tour="docs-toc" className="hidden w-52 flex-shrink-0 lg:block">
           <div className="sticky top-6">
             <p className="mb-3 text-[10px] font-semibold uppercase tracking-widest text-[#475569]">
               On this page
@@ -276,7 +278,84 @@ curl https://enigma.avax.network/api/v1/agents/0xABCDEF…`}</CodeBlock>
             all endpoints and parameters.
           </Callout>
 
+          {/* ── Register Your Agent ───────────────────────────────── */}
+          <SectionHeading id="register">
+            <UserPlus className="h-5 w-5 text-[#A78BFA]" />
+            Register Your Agent
+          </SectionHeading>
+
+          <Para>
+            Ready to get your AI agent on-chain? Follow these steps to register your agent on the
+            Enigma platform and start building trust with the community.
+          </Para>
+
+          <SubHeading>Step 1: Prepare Your Metadata</SubHeading>
+          <Para>
+            Create a JSON file with your agent&apos;s metadata. Host it on a publicly accessible URL
+            (IPFS, your own server, or any CDN). This will be your <Code>tokenURI</Code>.
+          </Para>
+          <CodeBlock lang="json">{`{
+  "name": "My Awesome Agent",
+  "description": "An AI agent that helps with trading strategies.",
+  "image": "https://your-domain.com/agent-avatar.png",
+  "type": "TRADING",
+  "services": [
+    { "name": "mcp", "endpoint": "https://your-domain.com/mcp" },
+    { "name": "a2a", "endpoint": "https://your-domain.com/a2a" }
+  ]
+}`}</CodeBlock>
+
+          <SubHeading>Step 2: Connect Your Wallet</SubHeading>
+          <Para>
+            Go to the <Link href="/register" className="text-primary underline underline-offset-2 hover:opacity-80">Register page</Link> and
+            connect your wallet. You&apos;ll need some AVAX for the transaction gas fee.
+          </Para>
+
+          <SubHeading>Step 3: Submit Registration</SubHeading>
+          <Para>
+            Enter your agent&apos;s contract address and metadata URI, select the agent type, and submit
+            the transaction. The registration will be processed on-chain immediately.
+          </Para>
+
+          <SubHeading>Step 4: Wait for Indexing</SubHeading>
+          <Para>
+            Enigma&apos;s indexer runs every <strong className="text-white">3 hours</strong>. Once your agent
+            is indexed, it will appear in the scanner with a <Code>PENDING</Code> status. The trust score
+            will be calculated in the next cycle.
+          </Para>
+
+          <Callout type="success">
+            After registration, your agent will automatically receive trust score updates based on
+            on-chain activity, community ratings, and verification status.
+          </Callout>
+
+          <div className="mt-4 flex flex-wrap gap-3">
+            <Link
+              href="/register"
+              className={cn(
+                'flex items-center gap-2 rounded-lg px-4 py-2.5 text-xs font-semibold',
+                'border border-[rgba(74,222,128,0.3)] bg-[rgba(74,222,128,0.1)] text-[#4ADE80]',
+                'hover:bg-[rgba(74,222,128,0.15)] hover:border-[rgba(74,222,128,0.4)] transition-all',
+              )}
+            >
+              <UserPlus className="h-3.5 w-3.5" />
+              Register Now
+              <ArrowRight className="h-3 w-3" />
+            </Link>
+            <Link
+              href="/scanner/agents"
+              className={cn(
+                'flex items-center gap-2 rounded-lg px-4 py-2.5 text-xs font-semibold',
+                'border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.04)] text-[#94A3B8]',
+                'hover:bg-[rgba(255,255,255,0.08)] hover:text-white transition-all',
+              )}
+            >
+              Browse Registered Agents
+            </Link>
+          </div>
+
           {/* ── Trust Score ───────────────────────────────────────── */}
+          <div data-tour="docs-trust">
           <SectionHeading id="trust-score">
             <Shield className="h-5 w-5 text-primary" />
             Trust Score System
@@ -336,6 +415,8 @@ curl https://enigma.avax.network/api/v1/agents/0xABCDEF…`}</CodeBlock>
                 <span className="text-xs text-[#94A3B8]">{s.desc}</span>
               </div>
             ))}
+          </div>
+
           </div>
 
           {/* ── ERC-8004 ──────────────────────────────────────────── */}
@@ -428,6 +509,7 @@ uint256 tokenId = registry.register(uri);`}</CodeBlock>
           </Callout>
 
           {/* ── API ───────────────────────────────────────────────── */}
+          <div data-tour="docs-api">
           <SectionHeading id="api">
             <FileCode2 className="h-5 w-5 text-[#22D3EE]" />
             API Reference
@@ -521,6 +603,7 @@ uint256 tokenId = registry.register(uri);`}</CodeBlock>
               <ExternalLink className="h-3 w-3" />
               Community
             </a>
+          </div>
           </div>
 
         </main>

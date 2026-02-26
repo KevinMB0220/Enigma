@@ -29,9 +29,9 @@ export default async function Image({ params }: { params: { address: string } })
   const address = params.address.toLowerCase();
 
   // Load the Enigma logo from the public folder as a base64 data URL
-  const logoPath = path.join(process.cwd(), 'public', 'enigma.png');
-  const logoData = fs.readFileSync(logoPath);
-  const logoSrc  = `data:image/png;base64,${logoData.toString('base64')}`;
+  const logoPath = path.join(process.cwd(), 'public', 'logo-f1-waves-dark.svg');
+  const logoData = fs.readFileSync(logoPath, 'utf-8');
+  const logoSrc  = `data:image/svg+xml;base64,${Buffer.from(logoData).toString('base64')}`;
 
   const agent = await prisma.agent.findUnique({
     where:  { address },

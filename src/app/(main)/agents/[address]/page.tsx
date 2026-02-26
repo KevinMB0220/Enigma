@@ -3,11 +3,12 @@
 import { useParams } from 'next/navigation';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft, ExternalLink, GitBranch, Bot } from 'lucide-react';
+import { ArrowLeft, ExternalLink, GitBranch, Bot, BookOpen } from 'lucide-react';
 import Link from 'next/link';
 import { RatingForm } from '@/components/agent/rating-form';
 import { ReportModal } from '@/components/agent/report-modal';
 import { Spinner } from '@/components/shared/spinner';
+import { TourCta } from '@/components/tour';
 import { useAgent, type AgentDetail } from '@/hooks/use-agent';
 import { cn } from '@/lib/utils/index';
 
@@ -268,7 +269,7 @@ export default function AgentProfilePage() {
 
       {/* ── Header ── */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
-        <div className="flex min-w-0 flex-1 items-start gap-4">
+        <div data-tour="agent-header" className="flex min-w-0 flex-1 items-start gap-4">
 
           {/* Agent avatar */}
           <div className="shrink-0">
@@ -336,7 +337,7 @@ export default function AgentProfilePage() {
         </div>
 
         {/* Score */}
-        <div className="shrink-0 sm:text-right">
+        <div data-tour="agent-score" className="shrink-0 sm:text-right">
           <p className="font-data text-5xl font-bold leading-none text-[#4ADE80]">
             {agent.trustScore.score}
           </p>
@@ -361,7 +362,7 @@ export default function AgentProfilePage() {
       )}
 
       {/* ── Actions ── */}
-      <div className="flex flex-wrap gap-2">
+      <div data-tour="agent-actions" className="flex flex-wrap gap-2">
         <button
           onClick={handleShare}
           className="rounded-lg border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.04)] px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-[rgba(255,255,255,0.08)]"
@@ -391,10 +392,17 @@ export default function AgentProfilePage() {
           Trust Graph
         </Link>
         <ReportModal agentAddress={address} />
+        <Link
+          href="/docs#register"
+          className="inline-flex items-center gap-1.5 rounded-lg border border-[rgba(167,139,250,0.2)] bg-[rgba(167,139,250,0.06)] px-4 py-2 text-xs font-semibold text-[#A78BFA] transition-colors hover:bg-[rgba(167,139,250,0.1)]"
+        >
+          <BookOpen className="h-3 w-3" />
+          How to Register
+        </Link>
       </div>
 
       {/* ── Trust Snapshot strip ── */}
-      <div className="grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-[rgba(255,255,255,0.06)] sm:grid-cols-5">
+      <div data-tour="agent-stats" className="grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-[rgba(255,255,255,0.06)] sm:grid-cols-5">
         {snapshotStats.map(({ label, value }) => (
           <div key={label} className="bg-[rgba(255,255,255,0.02)] px-4 py-3">
             <p className="text-[10px] font-semibold uppercase tracking-widest text-[#475569]">{label}</p>
@@ -404,7 +412,7 @@ export default function AgentProfilePage() {
       </div>
 
       {/* ── Tabs ── */}
-      <div className="border-b border-[rgba(255,255,255,0.06)]">
+      <div data-tour="agent-tabs" className="border-b border-[rgba(255,255,255,0.06)]">
         <div className="flex">
           {tabs.map((tab) => (
             <button
@@ -771,6 +779,8 @@ export default function AgentProfilePage() {
         </div>
       )}
 
+      {/* Tour CTA for first-time visitors */}
+      <TourCta page="agent" />
     </div>
   );
 }
