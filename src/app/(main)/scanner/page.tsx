@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Bot, ShieldCheck, Activity, Star } from 'lucide-react';
+import Link from 'next/link';
+import { Bot, ShieldCheck, Activity, Star, UserPlus, BookOpen } from 'lucide-react';
 import { type AgentStatus } from '@prisma/client';
 import { useAgents } from '@/hooks/use-agents';
 import { useAgentStats } from '@/hooks/use-agent-stats';
@@ -96,7 +97,7 @@ export default function ScannerPage() {
     <div className="flex flex-col gap-4 p-4 sm:gap-6 sm:p-6">
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div data-tour="scanner-kpi" className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <KpiCard
           label="Total Agents"
           value={stats?.total ?? 0}
@@ -142,7 +143,7 @@ export default function ScannerPage() {
       <div className="flex gap-4">
 
         {/* Table card */}
-        <div className="glass flex min-w-0 flex-1 flex-col overflow-hidden">
+        <div data-tour="scanner-table" className="glass flex min-w-0 flex-1 flex-col overflow-hidden">
           {/* Toolbar */}
           <div className="flex items-center justify-between border-b border-[rgba(255,255,255,0.06)] px-5 py-3">
             <div>
@@ -151,7 +152,18 @@ export default function ScannerPage() {
                 {meta?.total ?? agents.length} agents on-chain
               </p>
             </div>
-            <SearchBar value={search} onChange={(v) => { setSearch(v); setPage(1); }} />
+            <div className="flex items-center gap-3">
+              <Link
+                href="/docs#register"
+                className="hidden items-center gap-1.5 rounded-lg border border-[rgba(167,139,250,0.2)] bg-[rgba(167,139,250,0.06)] px-3 py-1.5 text-xs font-semibold text-[#A78BFA] transition-colors hover:bg-[rgba(167,139,250,0.1)] sm:inline-flex"
+              >
+                <BookOpen className="h-3 w-3" />
+                How to Register
+              </Link>
+              <div data-tour="scanner-search">
+                <SearchBar value={search} onChange={(v) => { setSearch(v); setPage(1); }} />
+              </div>
+            </div>
           </div>
 
           {/* Table */}
@@ -174,7 +186,7 @@ export default function ScannerPage() {
         </div>
 
         {/* Right sidebar: Filters */}
-        <div className="hidden w-64 flex-shrink-0 xl:block">
+        <div data-tour="scanner-filters" className="hidden w-64 flex-shrink-0 xl:block">
           <div className="glass p-4">
             <p className="mb-4 text-[10px] font-semibold uppercase tracking-widest text-[#475569]">
               Filters
@@ -186,6 +198,7 @@ export default function ScannerPage() {
           </div>
         </div>
       </div>
+
     </div>
   );
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { Search, Plus, Filter } from 'lucide-react';
+import { Search, Plus, Filter, BookOpen } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 
@@ -52,21 +52,33 @@ export function EmptyState({ variant = 'no-agents', onResetFilters }: EmptyState
         {description}
       </p>
 
-      <div className="flex gap-3">
-        {cta && (
-          <Button asChild>
-            <Link href={cta.href}>
-              <Plus className="mr-2 h-4 w-4" />
-              {cta.label}
-            </Link>
-          </Button>
-        )}
+      <div className="flex flex-col items-center gap-3">
+        <div className="flex gap-3">
+          {cta && (
+            <Button asChild>
+              <Link href={cta.href}>
+                <Plus className="mr-2 h-4 w-4" />
+                {cta.label}
+              </Link>
+            </Button>
+          )}
 
-        {(variant === 'no-results' || variant === 'filtered') && onResetFilters && (
-          <Button variant="outline" onClick={onResetFilters}>
-            <Filter className="mr-2 h-4 w-4" />
-            Reset Filters
-          </Button>
+          {(variant === 'no-results' || variant === 'filtered') && onResetFilters && (
+            <Button variant="outline" onClick={onResetFilters}>
+              <Filter className="mr-2 h-4 w-4" />
+              Reset Filters
+            </Button>
+          )}
+        </div>
+
+        {variant === 'no-agents' && (
+          <Link
+            href="/docs#register"
+            className="inline-flex items-center gap-1.5 text-xs text-[#A78BFA] hover:text-[#C4B5FD] transition-colors"
+          >
+            <BookOpen className="h-3 w-3" />
+            Learn how to register
+          </Link>
         )}
       </div>
     </div>

@@ -83,8 +83,8 @@ export function DashboardSidebar({ isOpen = false, onClose }: DashboardSidebarPr
         {/* Org Card */}
         <div className="border-b border-[rgba(255,255,255,0.06)] p-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-lg">
-              <Image src="/enigma.png" alt="Enigma" width={32} height={32} className="object-contain" />
+            <div className="flex h-8 w-8 items-center justify-center overflow-hidden">
+              <Image src="/logo-f1-waves-dark.svg" alt="Enigma" width={32} height={32} className="object-contain" />
             </div>
             <div className="min-w-0">
               <p className="truncate text-sm font-semibold text-white">Enigma Platform</p>
