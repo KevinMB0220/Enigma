@@ -129,10 +129,13 @@ export async function syncAgentsFromRoutescan(maxPages = 20): Promise<RoutesScan
         // tokenURI may not exist
       }
 
-      // If agent exists and already has metadata + token_id, skip
-      if (existing && existing.metadata && existing.token_id) {
-        skipped++;
-        continue;
+      // If agent exists, skip only if tokenURI hasn't changed
+      if (existing) {
+        if (tokenURI === existing.token_uri) {
+          skipped++;
+          continue;
+        }
+        // tokenURI changed → fall through to update block below
       }
 
       // Resolve agent info from tokenURI
@@ -228,6 +231,77 @@ export async function syncAgentsFromRoutescan(maxPages = 20): Promise<RoutesScan
 
   logger.info(result, 'Routescan indexer completed');
 
+  return result;
+}
+
+/**
+ * Re-check every indexed agent in the DB against the current on-chain tokenURI.
+ * Updates name, description, token_uri and metadata for any agent whose tokenURI changed.
+ * This is the "full sweep" that catches agents that updated their metadata after indexing.
+ */
+export async function refreshAllMetadata(): Promise<RoutesScanIndexerResult> {
+  logger.info('Starting full metadata refresh for all indexed agents');
+
+  // Fetch all agents that have a token_id (i.e. were indexed from the registry)
+  // Match both lowercase and checksummed registry address variants
+  const agents = await prisma.agent.findMany({
+    where: {
+      registry_address: { in: [REGISTRY.toLowerCase(), REGISTRY] },
+      token_id: { not: null },
+    },
+    select: { address: true, token_id: true, token_uri: true },
+  });
+
+  logger.info({ total: agents.length }, 'Agents to check');
+
+  let indexed = 0;
+  let skipped = 0;
+  let failed = 0;
+
+  for (const agent of agents) {
+    const tokenId = BigInt(agent.token_id!);
+
+    // Read current tokenURI from chain
+    let tokenURI = '';
+    try {
+      tokenURI = await client.readContract({
+        address: REGISTRY,
+        abi: ABI,
+        functionName: 'tokenURI',
+        args: [tokenId],
+      }) as string;
+    } catch {
+      // tokenURI may not be set
+    }
+
+    // Skip if unchanged
+    if (tokenURI === agent.token_uri) {
+      skipped++;
+      continue;
+    }
+
+    // tokenURI changed → re-fetch metadata and update
+    try {
+      const agentInfo = await resolveAgentInfo(tokenURI, Number(tokenId));
+      await prisma.agent.update({
+        where: { address: agent.address },
+        data: {
+          name: agentInfo.name,
+          description: agentInfo.description,
+          token_uri: tokenURI,
+          metadata: agentInfo.metadata as Prisma.InputJsonValue,
+        },
+      });
+      indexed++;
+      logger.info({ tokenId: Number(tokenId), name: agentInfo.name }, 'Agent metadata refreshed');
+    } catch (error) {
+      failed++;
+      logger.error({ tokenId: Number(tokenId), error }, 'Failed to refresh agent metadata');
+    }
+  }
+
+  const result = { indexed, skipped, failed, total: agents.length };
+  logger.info(result, 'Full metadata refresh completed');
   return result;
 }
 

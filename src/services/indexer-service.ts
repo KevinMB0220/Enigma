@@ -1,4 +1,5 @@
 import { createPublicClient, http, keccak256, encodePacked, type Address, type PublicClient } from 'viem';
+import { type Prisma } from '@prisma/client';
 import { createLogger } from '@/lib/utils/logger';
 import { avalanche, avalancheFuji } from '@/lib/blockchain/config';
 import { IDENTITY_REGISTRY_ABI } from '@/lib/blockchain/abis/identity-registry';
@@ -191,34 +192,35 @@ export async function syncNetwork(network: Network, limit = 0): Promise<IndexerR
 
   logger.info({ network, uniqueTokens: tokenMap.size }, 'Found unique minted tokens');
 
-  // Get existing agents from DB to skip duplicates
+  // Get existing agents from DB (including token_uri to detect metadata changes)
+  // Use lowercase registry address since DB stores addresses in lowercase
   const existingAgents = await prisma.agent.findMany({
-    where: { registry_address: registry },
-    select: { token_id: true },
+    where: { registry_address: registry.toLowerCase() },
+    select: { token_id: true, token_uri: true, address: true },
   });
 
-  const existingTokenIds = new Set(existingAgents.map((a) => a.token_id));
-
-  // Filter tokens to process (only new ones)
-  let tokensToProcess = Array.from(tokenMap.entries()).filter(
-    ([tokenId]) => !existingTokenIds.has(Number(tokenId))
+  const existingByTokenId = new Map(
+    existingAgents
+      .filter((a) => a.token_id != null)
+      .map((a) => [a.token_id!, a])
   );
 
-  // Apply limit if specified
+  // Process all tokens; skip/update/insert decided inside the loop after reading on-chain tokenURI
+  let allTokens = Array.from(tokenMap.entries());
   if (limit > 0) {
-    tokensToProcess = tokensToProcess.slice(0, limit);
+    allTokens = allTokens.slice(0, limit);
   }
 
-  result.total = tokensToProcess.length;
+  result.total = allTokens.length;
 
-  logger.info({ network, tokensToProcess: tokensToProcess.length }, 'Processing new tokens');
+  logger.info({ network, tokensToProcess: allTokens.length }, 'Processing tokens (new + metadata updates)');
 
   // Process each token
-  for (const [tokenId, owner] of tokensToProcess) {
+  for (const [tokenId, owner] of allTokens) {
     const agentAddress = deriveAgentAddress(registry, tokenId);
 
     try {
-      // Read tokenURI
+      // Read tokenURI from chain
       let tokenURI = '';
       try {
         tokenURI = await client.readContract({
@@ -231,10 +233,48 @@ export async function syncNetwork(network: Network, limit = 0): Promise<IndexerR
         // tokenURI may not exist for some tokens
       }
 
-      // Resolve agent info from URI
+      const existing = existingByTokenId.get(Number(tokenId));
+
+      if (existing) {
+        // Skip if tokenURI hasn't changed
+        if (tokenURI === existing.token_uri) {
+          result.skipped++;
+          result.details.push({
+            tokenId: Number(tokenId),
+            owner,
+            name: '',
+            status: 'skipped',
+            reason: 'tokenURI unchanged',
+          });
+          continue;
+        }
+
+        // tokenURI changed → update metadata
+        const agentInfo = await resolveAgentInfo(tokenId, owner, tokenURI);
+        await prisma.agent.update({
+          where: { address: existing.address },
+          data: {
+            name: agentInfo.name,
+            description: agentInfo.description,
+            token_uri: tokenURI,
+            metadata: agentInfo.metadata as Prisma.InputJsonValue,
+          },
+        });
+
+        result.indexed++;
+        result.details.push({
+          tokenId: Number(tokenId),
+          owner,
+          name: agentInfo.name,
+          status: 'indexed',
+        });
+        logger.info({ tokenId: Number(tokenId), name: agentInfo.name }, 'Agent metadata updated');
+        continue;
+      }
+
+      // New agent → insert
       const agentInfo = await resolveAgentInfo(tokenId, owner, tokenURI);
 
-      // Save to database
       const agentData: CreateAgentInput = {
         address: agentAddress,
         name: agentInfo.name,

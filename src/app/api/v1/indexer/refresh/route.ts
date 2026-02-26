@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import { successResponse, handleError } from '@/lib/utils/api-helpers';
 import { createLogger } from '@/lib/utils/logger';
-import { syncAgentsFromRoutescan } from '@/services/routescan-indexer-service';
+import { syncAgentsFromRoutescan, refreshAllMetadata } from '@/services/routescan-indexer-service';
 import { recalculateAllScores } from '@/services/trust-score-service';
 
 export const dynamic = 'force-dynamic';
@@ -26,22 +26,29 @@ export async function POST(_request: NextRequest) {
 
     const startTime = Date.now();
 
-    // Sync agents from Routescan API (max 20 pages for quick refresh)
-    const result = await syncAgentsFromRoutescan(20);
+    // Run both in parallel: discover new agents (Routescan) + refresh metadata of all existing
+    const [syncResult, refreshResult] = await Promise.all([
+      syncAgentsFromRoutescan(20),
+      refreshAllMetadata(),
+    ]);
 
-    // Recalculate trust scores if new agents were indexed
+    const totalIndexed = syncResult.indexed + refreshResult.indexed;
+
+    // Recalculate trust scores if anything changed
     let updatedScores = 0;
-    if (result.indexed > 0) {
+    if (totalIndexed > 0) {
       updatedScores = await recalculateAllScores();
     }
 
     const duration = Date.now() - startTime;
 
     const stats = {
-      indexed: result.indexed,
-      skipped: result.skipped,
-      failed: result.failed,
-      total: result.total,
+      indexed: totalIndexed,
+      skipped: syncResult.skipped + refreshResult.skipped,
+      failed: syncResult.failed + refreshResult.failed,
+      total: syncResult.total + refreshResult.total,
+      newAgents: syncResult.indexed,
+      metadataUpdated: refreshResult.indexed,
       trustScoresUpdated: updatedScores,
       duration: `${(duration / 1000).toFixed(2)}s`,
     };
