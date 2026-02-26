@@ -204,6 +204,7 @@ export async function getAgents(
         take: limit,
         orderBy: [
           { metadata: { sort: 'desc', nulls: 'last' } },
+          { token_id: { sort: 'desc', nulls: 'last' } },
           { trust_score: 'desc' },
         ],
         include: {
