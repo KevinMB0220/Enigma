@@ -26,7 +26,7 @@ const navItems = [
   { href: '/scanner/agents', label: 'Agents',   icon: Bot,             exact: false },
   { href: '/register',       label: 'Register', icon: PlusCircle,      exact: true  },
   { href: '/docs',           label: 'Docs',     icon: BookOpen,        exact: false },
-] as const;
+];
 
 const disabledItems = [
   { label: 'Analytics', icon: BarChart2 },
@@ -115,7 +115,8 @@ export function DashboardSidebar({ isOpen = false, onClose }: DashboardSidebarPr
             return (
               <Link
                 key={`${item.href}-${item.label}`}
-                href={item.href}
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                href={item.href as any}
                 onClick={onClose}
                 className={cn(
                   'group flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-all duration-150',

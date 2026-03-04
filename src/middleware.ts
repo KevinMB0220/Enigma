@@ -117,11 +117,41 @@ export async function middleware(request: NextRequest) {
   // Add rate limit headers to response
   const remaining = request.headers.get('X-RateLimit-Remaining');
   const reset = request.headers.get('X-RateLimit-Reset');
-  if (remaining) {
-    response.headers.set('X-RateLimit-Remaining', remaining);
+
+  // Collect security + CORS headers to apply (and re-apply after Supabase setAll)
+  const origin = request.headers.get('origin');
+  const allowedOrigins = [
+    process.env.NEXT_PUBLIC_APP_URL || 'https://enigma-scanner.vercel.app',
+    'http://localhost:3000',
+  ];
+
+  function applySecurityHeaders(res: NextResponse) {
+    res.headers.set(
+      'Content-Security-Policy',
+      "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://*.supabase.co https://*.walletconnect.com wss://*.walletconnect.com https://api.snowtrace.io https://api.routescan.io https://facilitator.ultravioletadao.xyz; frame-ancestors 'none';"
+    );
+    res.headers.set('X-Content-Type-Options', 'nosniff');
+    res.headers.set('X-Frame-Options', 'DENY');
+    res.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+
+    if (pathname.startsWith('/api')) {
+      if (origin && allowedOrigins.includes(origin)) {
+        res.headers.set('Access-Control-Allow-Origin', origin);
+      }
+      res.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+      res.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+      res.headers.set('Access-Control-Max-Age', '86400');
+    }
+
+    if (remaining) res.headers.set('X-RateLimit-Remaining', remaining);
+    if (reset) res.headers.set('X-RateLimit-Reset', reset);
   }
-  if (reset) {
-    response.headers.set('X-RateLimit-Reset', reset);
+
+  applySecurityHeaders(response);
+
+  // Handle preflight
+  if (pathname.startsWith('/api') && request.method === 'OPTIONS') {
+    return new NextResponse(null, { status: 204, headers: response.headers });
   }
 
   const supabase = createServerClient(
@@ -141,13 +171,7 @@ export async function middleware(request: NextRequest) {
               headers: request.headers,
             },
           });
-          // Re-add rate limit headers after recreating response
-          if (remaining) {
-            response.headers.set('X-RateLimit-Remaining', remaining);
-          }
-          if (reset) {
-            response.headers.set('X-RateLimit-Reset', reset);
-          }
+          applySecurityHeaders(response);
           cookiesToSet.forEach(({ name, value, options }) =>
             response.cookies.set(name, value, options)
           );
