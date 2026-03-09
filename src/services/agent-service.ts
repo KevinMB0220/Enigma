@@ -135,6 +135,19 @@ export async function getAgent(address: string): Promise<Agent | null> {
 }
 
 /**
+ * Check if agent metadata contains services with real endpoints
+ */
+function hasRealEndpoints(metadata: unknown): boolean {
+  if (!metadata || typeof metadata !== 'object') return false;
+  const meta = metadata as Record<string, unknown>;
+  const services = meta.services;
+  if (!Array.isArray(services)) return false;
+  return services.some(
+    (svc) => typeof svc === 'object' && svc !== null && 'endpoint' in svc && (svc as Record<string, unknown>).endpoint
+  );
+}
+
+/**
  * Get agents with filters and pagination
  *
  * @param filters - Filter criteria
@@ -196,17 +209,13 @@ export async function getAgents(
     }
 
     // Execute queries in parallel
-    // Agents with metadata come first (CASE WHEN), then by trust_score desc
+    // Agents with real endpoints in metadata come first, then by trust_score desc
     const [agents, total] = await Promise.all([
       prisma.agent.findMany({
         where,
         skip,
         take: limit,
-        orderBy: [
-          { metadata: { sort: 'desc', nulls: 'last' } },
-          { token_id: { sort: 'desc', nulls: 'last' } },
-          { trust_score: 'desc' },
-        ],
+        orderBy: [{ trust_score: 'desc' }],
         include: {
           trustScores: {
             orderBy: { calculatedAt: 'desc' },
@@ -216,6 +225,15 @@ export async function getAgents(
       }),
       prisma.agent.count({ where }),
     ]);
+
+    // Re-sort: agents with metadata services that have endpoints go first
+    agents.sort((a, b) => {
+      const aHasEndpoints = hasRealEndpoints(a.metadata);
+      const bHasEndpoints = hasRealEndpoints(b.metadata);
+      if (aHasEndpoints && !bHasEndpoints) return -1;
+      if (!aHasEndpoints && bHasEndpoints) return 1;
+      return (b.trust_score ?? 0) - (a.trust_score ?? 0);
+    });
 
     const totalPages = Math.ceil(total / limit);
 
