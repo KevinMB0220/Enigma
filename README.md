@@ -1,6 +1,8 @@
 <div align="center">
 
-# ERC-8004 Scan.
+<img src="docs/assets/flare-banner.png" alt="Flare" width="100%" />
+
+# Flare ERC-8004 Scan.
 
 **Discovery, Verification, and Trust Scoring Platform for Autonomous Agents on Avalanche**
 
@@ -11,7 +13,7 @@
 
 [Live Demo](https://www.erc-8004scan.xyz/) · [Documentation](./docs/README.md) · [API Reference](./docs/api/endpoints.md) · [Report Bug](https://github.com/Enigma-Team-org/Enigma/issues)
 
-<img src="docs/assets/scanner-screenshot.png" alt="ERC-8004 Scan — Agent Scanner" width="100%" />
+<img src="docs/assets/scanner-screenshot.png" alt="Flare ERC-8004 Scan — Agent Scanner" width="100%" />
 
 </div>
 
