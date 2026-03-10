@@ -7,7 +7,7 @@ import { FeaturesSection, HowItWorksSection, CTASection } from '@/components/hom
 import { VisitorStats } from '@/components/shared/visitor-stats';
 import { cn } from '@/lib/utils';
 
-export const revalidate = 60;
+export const dynamic = 'force-dynamic';
 
 const getHomeStats = unstable_cache(
   async () => {
