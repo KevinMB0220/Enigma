@@ -78,7 +78,7 @@ export function DashboardNavbar({ onMenuToggle }: DashboardNavbarProps) {
     )}>
 
       {/* Left — Hamburger (mobile) + Logo + Chain Status */}
-      <div className="flex items-center gap-3">
+      <div className="flex flex-1 items-center gap-3">
         {/* Mobile menu toggle */}
         <button
           onClick={onMenuToggle}
@@ -103,7 +103,7 @@ export function DashboardNavbar({ onMenuToggle }: DashboardNavbarProps) {
       {/* Center — Global Search */}
       <form
         onSubmit={handleSearch}
-        className="mx-auto hidden max-w-sm flex-1 md:flex"
+        className="hidden w-full max-w-sm md:block px-4"
       >
         <div className="relative w-full">
           <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#475569]" />
@@ -132,7 +132,7 @@ export function DashboardNavbar({ onMenuToggle }: DashboardNavbarProps) {
       </form>
 
       {/* Right — Actions */}
-      <div className="ml-auto flex items-center gap-2">
+      <div className="flex flex-1 items-center justify-end gap-2">
 
         {/* Tour Help */}
         {currentTourPage && <TourTriggerButton page={currentTourPage} />}

@@ -35,14 +35,14 @@ export const Footer: FC<FooterProps> = ({ className }) => {
     <footer
       className={cn(
         // Layout
-        'w-full py-12 px-4',
+        'w-full py-12 px-6',
         // Glassmorphism
         'bg-[rgba(15,17,23,0.6)] backdrop-blur-[20px]',
         'border-t border-[rgba(255,255,255,0.06)]',
         className
       )}
     >
-      <div className="mx-auto max-w-7xl">
+      <div className="mx-auto max-w-6xl">
         {/* Main Footer Content */}
         <div className="grid grid-cols-1 gap-8 md:grid-cols-3 lg:grid-cols-4">
           {/* Branding Section */}

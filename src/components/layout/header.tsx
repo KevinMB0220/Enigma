@@ -40,21 +40,23 @@ export function Header() {
             : 'border-transparent bg-[rgba(11,15,20,0.4)] backdrop-blur-[12px]',
         )}
       >
-        <div className="mx-auto flex h-full max-w-7xl items-center justify-between px-5 md:px-8">
+        <div className="mx-auto flex h-full max-w-6xl items-center justify-between px-6">
 
           {/* Logo */}
-          <Link href="/" className="group flex items-center">
-            <Image
+          <div className="flex flex-1 items-center">
+            <Link href="/" className="group flex items-center">
+              <Image
               src="/logo-f1-waves-dark.svg"
               alt="Enigma"
               width={36}
               height={36}
-              className="object-contain transition-transform group-hover:scale-105"
-            />
-          </Link>
+                className="object-contain transition-transform group-hover:scale-105"
+              />
+            </Link>
+          </div>
 
           {/* Desktop nav */}
-          <nav className="hidden items-center gap-1 md:flex">
+          <nav className="hidden items-center justify-center gap-1 md:flex">
             {navLinks.map((link) => {
               const active = link.exact ? pathname === link.href : pathname.startsWith(link.href);
               return (
@@ -75,7 +77,7 @@ export function Header() {
           </nav>
 
           {/* Right actions */}
-          <div className="flex items-center gap-2">
+          <div className="flex flex-1 items-center justify-end gap-2">
             <div className="hidden sm:block">
               <WalletConnectButton className="h-8 text-xs" />
             </div>
