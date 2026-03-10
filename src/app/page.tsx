@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { unstable_cache } from 'next/cache';
 import { ArrowRight, ShieldCheck, Activity, Cpu, MessageCircle } from 'lucide-react';
 import { Header, Footer } from '@/components/layout';
 import { prisma } from '@/lib/database/prisma';
@@ -6,28 +7,32 @@ import { FeaturesSection, HowItWorksSection, CTASection } from '@/components/hom
 import { VisitorStats } from '@/components/shared/visitor-stats';
 import { cn } from '@/lib/utils';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 60;
 
-async function getHomeStats() {
-  const [total, verified, avgResult, recentAgents] = await Promise.all([
-    prisma.agent.count(),
-    prisma.agent.count({ where: { status: 'VERIFIED' } }),
-    prisma.agent.aggregate({ _avg: { trust_score: true } }),
-    prisma.agent.findMany({
-      take: 3,
-      orderBy: { created_at: 'desc' },
-      select: { name: true, trust_score: true, status: true, address: true },
-    }),
-  ]);
+const getHomeStats = unstable_cache(
+  async () => {
+    const [total, verified, avgResult, recentAgents] = await Promise.all([
+      prisma.agent.count(),
+      prisma.agent.count({ where: { status: 'VERIFIED' } }),
+      prisma.agent.aggregate({ _avg: { trust_score: true } }),
+      prisma.agent.findMany({
+        take: 3,
+        orderBy: { created_at: 'desc' },
+        select: { name: true, trust_score: true, status: true, address: true },
+      }),
+    ]);
 
-  return {
-    total,
-    verified,
-    avgTrustScore: Math.round(avgResult._avg.trust_score ?? 0),
-    verifiedPct: total > 0 ? Math.round((verified / total) * 100) : 0,
-    recentAgents,
-  };
-}
+    return {
+      total,
+      verified,
+      avgTrustScore: Math.round(avgResult._avg.trust_score ?? 0),
+      verifiedPct: total > 0 ? Math.round((verified / total) * 100) : 0,
+      recentAgents,
+    };
+  },
+  ['home-stats'],
+  { revalidate: 60, tags: ['agents'] }
+);
 
 function TrustBadge({ score }: { score: number }) {
   const color = score >= 80 ? '#4ADE80' : score >= 60 ? '#22D3EE' : score >= 40 ? '#FCD34D' : '#FB7185';
@@ -50,7 +55,7 @@ export default async function HomePage() {
       <Header />
 
       {/* HERO */}
-      <section className="relative flex min-h-[88vh] flex-col items-center justify-center overflow-hidden px-6 text-center">
+      <section className="relative flex min-h-[88vh] flex-col items-center justify-center overflow-hidden px-6 pb-20 text-center">
 
         {/* Background glows */}
         <div
