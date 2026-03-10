@@ -112,6 +112,8 @@ model Agent {
   @@index([status])
   @@index([trust_score(sort: Desc)])
   @@index([owner_address])
+  @@index([status, trust_score(sort: Desc)])
+  @@index([created_at(sort: Desc)])
   @@map("agents")
 }
 

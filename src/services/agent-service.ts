@@ -300,11 +300,12 @@ export async function updateAgent(
  */
 export async function agentExists(address: string): Promise<boolean> {
   try {
-    const count = await prisma.agent.count({
+    const agent = await prisma.agent.findFirst({
       where: { address: address.toLowerCase() },
+      select: { address: true },
     });
 
-    return count > 0;
+    return agent !== null;
   } catch (error) {
     logger.error({ address, error }, 'Failed to check agent existence');
     throw error;
