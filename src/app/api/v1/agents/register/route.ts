@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server';
 import { z } from 'zod';
+import { revalidatePath } from 'next/cache';
 import { registerAgentSchema } from '@/lib/utils/validation';
 import { successResponse, handleError } from '@/lib/utils/api-helpers';
 import { ValidationError, ContractNotFoundError } from '@/lib/utils/errors';
@@ -68,6 +69,8 @@ export async function POST(request: NextRequest) {
     };
 
     const agent = await createAgent(agentData);
+
+    revalidatePath('/', 'layout');
 
     logger.info(
       { address: agent.address, name: agent.name },

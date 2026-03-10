@@ -3,7 +3,7 @@ import { successResponse, handleError } from '@/lib/utils/api-helpers';
 import { createLogger } from '@/lib/utils/logger';
 import { prisma } from '@/lib/database/prisma';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 30;
 
 const logger = createLogger('api-agents-stats');
 
