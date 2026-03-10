@@ -9,7 +9,7 @@
 [![Avalanche](https://img.shields.io/badge/Avalanche-C--Chain-E84142?logo=data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEyIDI0YzYuNjI3IDAgMTItNS4zNzMgMTItMTJTMTguNjI3IDAgMTIgMCAwIDUuMzczIDAgMTJzNS4zNzMgMTIgMTIgMTJ6IiBmaWxsPSIjRTg0MTQyIi8+CjxwYXRoIGQ9Ik0xNi41IDE3SDEzLjVMMTIgMTRMOC41IDE3SDUuNUwxMiA2TDE2LjUgMTdaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4=)](https://www.avax.network/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-[Live Demo](https://enigma.io) · [Documentation](./docs/README.md) · [API Reference](./docs/api/endpoints.md) · [Report Bug](https://github.com/ColombiaBlockChain/Enigma/issues)
+[Live Demo](https://www.erc-8004scan.xyz/) · [Documentation](./docs/README.md) · [API Reference](./docs/api/endpoints.md) · [Report Bug](https://github.com/Enigma-Team-org/Enigma/issues)
 
 </div>
 
@@ -90,8 +90,8 @@ Trust Score = (Volume × 0.25) + (Proxy × 0.20) + (Uptime × 0.25) + (OZ Match 
 
 ```bash
 # Clone the repository
-git clone https://github.com/ColombiaBlockChain/Enigma.git
-cd enigma
+git clone https://github.com/Enigma-Team-org/Enigma.git
+cd Enigma
 
 # Install dependencies
 npm install
@@ -228,15 +228,15 @@ We welcome contributions! Please follow these steps:
 ## Roadmap
 
 - [x] **Phase 0**: Project Setup & Infrastructure
-- [ ] **Phase 1**: Authentication & Backend Core
-- [ ] **Phase 2**: Agent Registration
-- [ ] **Phase 3**: Scanner/Directory
-- [ ] **Phase 4**: Centinela Verification Engine
-- [ ] **Phase 5**: Trust Score System
-- [ ] **Phase 6**: Agent Profiles
-- [ ] **Phase 7**: Feedback System
-- [ ] **Phase 8**: Polish & Testing
-- [ ] **Phase 9**: Deploy & Launch
+- [x] **Phase 1**: Authentication & Backend Core
+- [x] **Phase 2**: Agent Registration
+- [x] **Phase 3**: Scanner/Directory
+- [x] **Phase 4**: Centinela Verification Engine
+- [x] **Phase 5**: Trust Score System
+- [x] **Phase 6**: Agent Profiles
+- [x] **Phase 7**: Feedback System
+- [x] **Phase 8**: Polish & Testing
+- [x] **Phase 9**: Deploy & Launch — **Live at [erc-8004scan.xyz](https://www.erc-8004scan.xyz/)**
 
 See [Development Roadmap](./docs/business/roadmap.md) for details.
 
@@ -271,6 +271,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Built with dedication for the Avalanche ecosystem**
 
-[Colombia Blockchain](https://github.com/ColombiaBlockChain)
+[Enigma Team](https://github.com/Enigma-Team-org)
 
 </div>
