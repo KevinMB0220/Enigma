@@ -11,6 +11,8 @@
 
 [Live Demo](https://www.erc-8004scan.xyz/) · [Documentation](./docs/README.md) · [API Reference](./docs/api/endpoints.md) · [Report Bug](https://github.com/Enigma-Team-org/Enigma/issues)
 
+<img src="docs/assets/scanner-screenshot.png" alt="ERC-8004 Scan — Agent Scanner" width="100%" />
+
 </div>
 
 ---
