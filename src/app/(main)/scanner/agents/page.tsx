@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Bot, SlidersHorizontal, X, LayoutList, LayoutGrid } from 'lucide-react';
 import { useAgents } from '@/hooks/use-agents';
 import { useAgentSparklines } from '@/hooks/use-agent-sparklines';
@@ -76,8 +76,14 @@ export default function AgentsPage() {
   const [page, setPage] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>('list');
+  const contentRef = useRef<HTMLDivElement>(null);
 
   const isFiltered = !!filters.service || !!filters.status || filters.trustScoreRange[0] > 0 || filters.trustScoreRange[1] < 100;
+
+  const handlePage = (p: number) => {
+    setPage(p);
+    contentRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
 
   const { data, isLoading, isError, refetch } = useAgents({
     ...(filters.service       && { service: filters.service }),
@@ -125,7 +131,7 @@ export default function AgentsPage() {
       <div className="flex gap-4">
 
         {/* Main panel */}
-        <div className="glass flex min-w-0 flex-1 flex-col overflow-hidden">
+        <div ref={contentRef} className="glass flex min-w-0 flex-1 flex-col overflow-hidden">
 
           {/* Toolbar */}
           <div className="flex items-center gap-2 border-b border-[rgba(255,255,255,0.06)] px-5 py-3">
@@ -187,6 +193,9 @@ export default function AgentsPage() {
             </div>
           )}
 
+          {/* Top pagination */}
+          <Pagination page={page} meta={meta} onPage={handlePage} />
+
           {/* Content */}
           <div className="min-w-0">
             {isLoading ? (
@@ -215,7 +224,8 @@ export default function AgentsPage() {
             )}
           </div>
 
-          <Pagination page={page} meta={meta} onPage={setPage} />
+          {/* Bottom pagination */}
+          <Pagination page={page} meta={meta} onPage={handlePage} />
         </div>
 
         {/* Right panel: persistent Filters on xl */}
