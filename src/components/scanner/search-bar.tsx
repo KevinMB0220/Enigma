@@ -13,36 +13,19 @@ interface SearchBarProps {
   className?: string;
 }
 
-/**
- * Debounce hook
- */
 function useDebounce<T>(value: T, delay: number): T {
   const [debouncedValue, setDebouncedValue] = useState<T>(value);
-
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedValue(value);
-    }, delay);
-
-    return () => {
-      clearTimeout(timer);
-    };
+    const timer = setTimeout(() => { setDebouncedValue(value); }, delay);
+    return () => { clearTimeout(timer); };
   }, [value, delay]);
-
   return debouncedValue;
 }
 
-/**
- * Truncate address for display
- */
 function truncateAddress(address: string): string {
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
 }
 
-/**
- * SearchBar component with autocomplete
- * Provides search with debounced input and dropdown results
- */
 export function SearchBar({ value, onChange, className }: SearchBarProps) {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -57,10 +40,7 @@ export function SearchBar({ value, onChange, className }: SearchBarProps) {
     width: number;
   } | null>(null);
 
-  // Debounce search input
   const debouncedSearch = useDebounce(value, 300);
-
-  // Fetch agents for autocomplete
   const { data, isLoading } = useAgents({
     search: debouncedSearch,
     limit: 5,
@@ -69,34 +49,24 @@ export function SearchBar({ value, onChange, className }: SearchBarProps) {
   const results = useMemo(() => data?.agents || [], [data?.agents]);
   const showDropdown = isFocused && value.length > 0 && results.length > 0;
 
-  // Handle click outside to close dropdown (incl. no cerrar al clic en el portal)
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Node;
-      const inContainer =
-        containerRef.current?.contains(target) ?? false;
-      const inDropdown =
-        dropdownRef.current?.contains(target) ?? false;
-      if (!inContainer && !inDropdown) {
+      if (!containerRef.current?.contains(target) && !dropdownRef.current?.contains(target)) {
         setIsFocused(false);
       }
     };
-
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Reset selected index when results change
-  useEffect(() => {
-    setSelectedIndex(-1);
-  }, [results]);
+  useEffect(() => { setSelectedIndex(-1); }, [results]);
 
-  // Update dropdown position for portal (so it stays on top and blocks clicks)
   const updateDropdownRect = () => {
     if (containerRef.current && showDropdown) {
       const rect = containerRef.current.getBoundingClientRect();
       setDropdownRect({
-        top: rect.bottom + 4,
+        top: rect.bottom + 1,
         left: rect.left,
         width: rect.width,
       });
@@ -106,10 +76,7 @@ export function SearchBar({ value, onChange, className }: SearchBarProps) {
   };
 
   useEffect(() => {
-    if (!showDropdown) {
-      setDropdownRect(null);
-      return;
-    }
+    if (!showDropdown) { setDropdownRect(null); return; }
     updateDropdownRect();
     window.addEventListener('scroll', updateDropdownRect, true);
     window.addEventListener('resize', updateDropdownRect);
@@ -132,13 +99,10 @@ export function SearchBar({ value, onChange, className }: SearchBarProps) {
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (!showDropdown) return;
-
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault();
-        setSelectedIndex((prev) =>
-          prev < results.length - 1 ? prev + 1 : prev
-        );
+        setSelectedIndex((prev) => prev < results.length - 1 ? prev + 1 : prev);
         break;
       case 'ArrowUp':
         e.preventDefault();
@@ -146,9 +110,7 @@ export function SearchBar({ value, onChange, className }: SearchBarProps) {
         break;
       case 'Enter':
         e.preventDefault();
-        if (selectedIndex >= 0 && results[selectedIndex]) {
-          handleSelect(results[selectedIndex]);
-        }
+        if (selectedIndex >= 0 && results[selectedIndex]) { handleSelect(results[selectedIndex]); }
         break;
       case 'Escape':
         setIsFocused(false);
@@ -157,10 +119,12 @@ export function SearchBar({ value, onChange, className }: SearchBarProps) {
   };
 
   return (
-    <div ref={containerRef} className={cn('relative', className)}>
-      {/* Search Input */}
+    <div ref={containerRef} className={cn('relative group', className)}>
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[rgba(255,255,255,0.4)]" />
+        <Search className={cn(
+          "absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors duration-300",
+          isFocused ? "text-flare-accent" : "text-flare-text-l opacity-30"
+        )} />
         <input
           ref={inputRef}
           type="text"
@@ -168,45 +132,40 @@ export function SearchBar({ value, onChange, className }: SearchBarProps) {
           onChange={(e) => onChange(e.target.value)}
           onFocus={() => setIsFocused(true)}
           onKeyDown={handleKeyDown}
-          placeholder="Search by name or address..."
+          placeholder="Registry search_v1.0..."
           className={cn(
-            'w-full pl-10 pr-10 py-2.5 rounded-lg',
-            'bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)]',
-            'text-white placeholder:text-[rgba(255,255,255,0.4)]',
-            'focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50',
-            'transition-all'
+            'w-full pl-12 pr-12 py-3.5 rounded-none transition-all duration-300',
+            'bg-[#05070A]/80 border border-transparent font-mono text-[11px] font-bold uppercase tracking-[0.2em] relative z-10',
+            'text-flare-text-h placeholder:text-flare-text-l placeholder:opacity-40',
+            'focus:outline-none focus:bg-flare-accent/[0.03] ring-1 ring-inset ring-white/[0.05]',
+            isFocused && "shadow-[0_0_30px_rgba(0,0,0,0.5)] ring-flare-accent/30"
           )}
         />
-        {/* Loading/Clear button */}
-        <div className="absolute right-3 top-1/2 -translate-y-1/2">
-          {isLoading && value.length > 0 ? (
-            <Loader2 className="h-4 w-4 text-[rgba(255,255,255,0.4)] animate-spin" />
-          ) : value.length > 0 ? (
-            <button
-              onClick={handleClear}
-              className="p-0.5 rounded hover:bg-[rgba(255,255,255,0.1)] transition-colors"
-            >
-              <X className="h-4 w-4 text-[rgba(255,255,255,0.4)]" />
+        {/* Invisible default border cleaner */}
+        <div className="absolute inset-0 border border-transparent ring-1 ring-inset ring-white/[0.03] pointer-events-none" />
+
+        <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2 z-20">
+          {isLoading && value.length > 0 && <Loader2 className="h-4 w-4 text-flare-accent animate-spin" />}
+          {value.length > 0 && (
+            <button onClick={handleClear} className="p-1 text-flare-text-l hover:text-flare-accent transition-colors">
+              <X className="h-4 w-4" />
             </button>
-          ) : null}
+          )}
         </div>
       </div>
 
-      {/* Autocomplete Dropdown - portal para que quede encima y con fondo opaco */}
-      {typeof document !== 'undefined' &&
-        showDropdown &&
-        dropdownRect &&
+      {typeof document !== 'undefined' && showDropdown && dropdownRect &&
         createPortal(
           <div
             ref={dropdownRef}
-            className="py-1 rounded-lg shadow-[0_4px_24px_rgba(0,0,0,0.6)] border border-[rgba(255,255,255,0.12)] overflow-hidden"
+            className="rounded-none border border-transparent ring-1 ring-inset ring-white/[0.05] overflow-hidden shadow-[0_40px_80px_rgba(0,0,0,0.9)]"
             style={{
               position: 'fixed',
               top: dropdownRect.top,
               left: dropdownRect.left,
               width: dropdownRect.width,
               zIndex: 9999,
-              backgroundColor: '#0f1117',
+              backgroundColor: '#0F1219',
               pointerEvents: 'auto',
             }}
           >
@@ -216,30 +175,28 @@ export function SearchBar({ value, onChange, className }: SearchBarProps) {
                 type="button"
                 onClick={() => handleSelect(agent)}
                 className={cn(
-                  'w-full px-3 py-2 flex items-center gap-3 text-left',
-                  'hover:bg-[rgba(255,255,255,0.1)] transition-colors',
-                  selectedIndex === index && 'bg-[rgba(255,255,255,0.1)]'
+                  'w-full px-6 py-5 flex items-center justify-between gap-8 text-left border-b border-white/[0.03] last:border-0 relative group/item transition-all duration-300',
+                  (selectedIndex === index) ? 'bg-flare-accent/[0.05]' : 'bg-transparent',
+                  'hover:bg-flare-accent/[0.08]'
                 )}
               >
+                <div className="absolute left-0 top-0 bottom-0 w-[4px] bg-flare-accent scale-y-0 group-hover/item:scale-y-100 transition-all duration-300 origin-top z-10" />
+                
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium text-white truncate">
+                  <div className="font-black text-[14px] text-flare-text-h uppercase tracking-tight truncate group-hover/item:text-flare-accent transition-colors">
                     {agent.name}
                   </div>
-                  <div className="text-xs text-[rgba(255,255,255,0.5)] font-mono">
+                  <div className="text-[10px] text-flare-text-l font-mono uppercase tracking-widest opacity-30 mt-1">
                     {truncateAddress(agent.address)}
                   </div>
                 </div>
-                <div
-                  className={cn(
-                    'px-2 py-0.5 rounded text-xs font-medium',
-                    agent.trust_score >= 70
-                      ? 'bg-green-500/10 text-green-400'
-                      : agent.trust_score >= 50
-                      ? 'bg-yellow-500/10 text-yellow-400'
-                      : 'bg-red-500/10 text-red-400'
-                  )}
-                >
-                  {agent.trust_score}
+                <div className={cn(
+                  'px-4 py-1.5 font-mono text-[12px] font-black rounded-none border transition-all',
+                  agent.trust_score >= 80 ? 'text-flare-accent border-flare-accent/20 bg-flare-accent/5' :
+                  agent.trust_score >= 60 ? 'text-[#22D3EE] border-[#22D3EE]/20 bg-[#22D3EE]/05' :
+                  'text-[#FB7185] border-[#FB7185]/20 bg-[#FB7185]/05'
+                )}>
+                  {agent.trust_score}.0
                 </div>
               </button>
             ))}

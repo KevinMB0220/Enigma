@@ -2,25 +2,26 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Shield, Eye, Zap } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 const features = [
   {
     icon: Shield,
-    title: 'Trust Score',
+    title: 'Trust Indicator',
     description:
-      'Multi-factor scoring combining on-chain volume, proxy detection, uptime monitoring, OpenZeppelin compliance, and community ratings.',
+      'Multi-factor scoring combining on-chain volume, proxy detection, uptime monitoring, and OpenZeppelin compliance.',
   },
   {
     icon: Eye,
-    title: 'Centinela Verification',
+    title: 'Centinela Node',
     description:
-      'Automated contract analysis engine that monitors heartbeat, detects proxy patterns, and matches against known OpenZeppelin implementations.',
+      'Automated verification engine that monitors heartbeat, detects proxy patterns, and matches implementation against known OASF standards.',
   },
   {
     icon: Zap,
-    title: 'Real-time Monitoring',
+    title: 'Live Telemetry',
     description:
-      'Continuous heartbeat checks, uptime tracking, and volume analysis ensure you always have the latest data on agent health.',
+      'Continuous uptime tracking and volume analysis ensure you have real-time data on agent health and network status.',
   },
 ];
 
@@ -45,7 +46,7 @@ export function FeaturesSection() {
           }
         });
       },
-      { threshold: 0.2, rootMargin: '0px 0px -50px 0px' }
+      { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
     );
 
     if (header) observer.observe(header);
@@ -55,16 +56,22 @@ export function FeaturesSection() {
   }, []);
 
   return (
-    <section className="relative z-10 mx-auto max-w-6xl px-6 py-20">
+    <section id="features" className="relative z-10 mx-auto max-w-6xl px-6 py-32 border-t border-flare-stroke">
       <div
         ref={headerRef}
-        className={`mb-16 text-center ${headerVisible ? 'animate-fade-in-up' : 'opacity-0'}`}
+        className={cn(
+          "mb-20 text-center transition-all duration-700",
+          headerVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
+        )}
       >
-        <h2 className="mb-4 text-3xl font-bold text-white lg:text-4xl">
+        <div className="inline-block px-3 py-1 mb-4 rounded-none border border-flare-stroke bg-flare-surface font-mono text-[9px] uppercase tracking-[0.25em] text-flare-accent">
+          Core Logic
+        </div>
+        <h2 className="mb-4 text-4xl font-bold text-flare-text-h lg:text-5xl tracking-tight">
           Why Enigma?
         </h2>
-        <p className="mx-auto max-w-2xl text-text-secondary">
-          A comprehensive platform for evaluating and monitoring autonomous agents on Avalanche.
+        <p className="mx-auto max-w-2xl text-flare-text-l text-balance">
+          A high-precision infrastructure for evaluating and monitoring autonomous agents on Avalanche network.
         </p>
       </div>
 
@@ -72,14 +79,17 @@ export function FeaturesSection() {
         {features.map((feature, index) => (
           <div
             key={feature.title}
-            className={`glass group p-8 interactive-card gradient-border ${cardsVisible ? 'animate-fade-in-up' : 'opacity-0'}`}
-            style={{ animationDelay: cardsVisible ? `${index * 150}ms` : '0ms' }}
+            className={cn(
+              "p-8 border border-flare-stroke bg-flare-surface rounded-none transition-all duration-500 hover:border-flare-accent/30 hover:translate-y-[-4px] group",
+              cardsVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
+            )}
+            style={{ transitionDelay: `${index * 150}ms` }}
           >
-            <div className="mb-4 inline-flex rounded-lg bg-[rgba(59,130,246,0.1)] p-3 transition-all group-hover:bg-[rgba(59,130,246,0.2)] group-hover:scale-110">
-              <feature.icon className="h-6 w-6 text-primary" />
+            <div className="mb-6 flex h-10 w-10 items-center justify-center rounded-none border border-flare-stroke bg-flare-bg transition-colors group-hover:border-flare-accent/30 group-hover:bg-flare-accent/5">
+              <feature.icon className="h-5 w-5 text-flare-accent" />
             </div>
-            <h3 className="mb-2 text-lg font-semibold text-white">{feature.title}</h3>
-            <p className="text-sm leading-relaxed text-text-secondary">
+            <h3 className="mb-3 text-[16px] font-bold text-flare-text-h uppercase tracking-wide">{feature.title}</h3>
+            <p className="text-sm leading-relaxed text-flare-text-l">
               {feature.description}
             </p>
           </div>

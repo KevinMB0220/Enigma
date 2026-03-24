@@ -36,24 +36,26 @@ export const WalletConnectButton: FC<WalletConnectButtonProps> = ({
       <Button
         variant="outline"
         onClick={handleDisconnect}
-        className={cn(className)}
+        className={cn(
+          "rounded-none border border-[#4ADE80] text-[#4ADE80] bg-transparent hover:bg-flare-accent/10 transition-all font-black uppercase tracking-widest text-[10px]",
+          className
+        )}
       >
         {truncateAddress(address)}
       </Button>
     );
   }
 
-  if (isPending) {
-    return (
-      <Button disabled className={cn(className)}>
-        Connecting...
-      </Button>
-    );
-  }
-
   return (
-    <Button onClick={() => handleConnect(0)} className={cn(className)}>
-      Connect Wallet
+    <Button 
+      onClick={() => handleConnect(0)} 
+      disabled={isPending}
+      className={cn(
+        "rounded-none border border-[#4ADE80] text-[#4ADE80] bg-transparent hover:bg-flare-accent/10 transition-all font-black uppercase tracking-widest text-[10px]",
+        className
+      )}
+    >
+      {isPending ? 'Connecting...' : 'Connect Wallet'}
     </Button>
   );
 };
