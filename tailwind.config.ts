@@ -8,64 +8,86 @@ const config: Config = {
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
+    container: {
+      center: true,
+      padding: "2rem",
+      screens: {
+        "2xl": "1400px",
+      },
+    },
     extend: {
       colors: {
-        // Enigma Design System Colors — Fintech Glassmorphism
-        background: "var(--bg-base)",
-        foreground: "var(--text-primary)",
-
-        primary: {
-          DEFAULT: "#4ADE80",   // Green — brand primary
-          dark: "#22C55E",
-          deeper: "#16A34A",
-          foreground: "#0B0F14",
-        },
-
-        // shadcn semantic tokens — Enigma dark theme
-        muted: {
-          DEFAULT: "rgba(31, 41, 55, 0.5)",
-          foreground: "#9CA3AF",
-        },
-        accent: {
-          DEFAULT: "rgba(255, 255, 255, 0.06)",
-          foreground: "#FFFFFF",
+        // Standard Shadcn UI mappings (aligned with flare-ui V4 theme)
+        background: "var(--background)",
+        foreground: "var(--foreground)",
+        card: {
+          DEFAULT: "var(--card)",
+          foreground: "var(--card-foreground)",
         },
         popover: {
-          DEFAULT: "#0E141B",
-          foreground: "#E5E7EB",
+          DEFAULT: "var(--popover)",
+          foreground: "var(--popover-foreground)",
+        },
+        primary: {
+          DEFAULT: "var(--primary)",
+          dark: "#22C55E",
+          deeper: "#16A34A",
+          foreground: "var(--primary-foreground)",
         },
         secondary: {
-          DEFAULT: "rgba(31, 41, 55, 0.5)",
-          foreground: "#FFFFFF",
+          DEFAULT: "var(--secondary)",
+          foreground: "var(--secondary-foreground)",
+        },
+        muted: {
+          DEFAULT: "var(--muted)",
+          foreground: "var(--muted-foreground)",
+        },
+        accent: {
+          DEFAULT: "var(--accent)",
+          foreground: "var(--accent-foreground)",
+          cyan: "#22D3EE",
+          yellow: "#FCD34D",
+          red: "#FB7185",
+          purple: "#A78BFA",
+          orange: "#FB923C",
+          blue: "#60A5FA",
         },
         destructive: {
-          DEFAULT: "#FB7185",
-          foreground: "#FFFFFF",
+          DEFAULT: "var(--destructive)",
+          foreground: "var(--destructive-foreground)",
         },
-        input: "rgba(255, 255, 255, 0.08)",
-        ring: "rgba(74, 222, 128, 0.4)",
+        border: "var(--border)",
+        input: "var(--input)",
+        ring: "var(--ring)",
 
+        // Flare custom classes (to support direct usage on pages)
+        "flare-bg": "var(--flare-bg)",
+        "flare-surface": "var(--flare-surface)",
+        "flare-accent": {
+          DEFAULT: "var(--flare-accent)",
+          cyan: "var(--flare-accent-cyan)",
+        },
+        "flare-muted": "var(--flare-muted)",
+        "flare-stroke": "var(--flare-stroke)",
+        "flare-text-h": "var(--flare-text-h)",
+        "flare-text-l": "var(--flare-text-l)",
+        "flare-chart-white": "var(--flare-chart-white)",
+
+        // Enigma Legacy Fallbacks
         glass: {
-          DEFAULT: "rgba(255, 255, 255, 0.04)",
-          dark: "rgba(255, 255, 255, 0.02)",
+          DEFAULT: "rgba(74, 222, 128, 0.04)",
+          dark: "rgba(74, 222, 128, 0.02)",
         },
-
         status: {
           success: "#4ADE80",
           warning: "#FCD34D",
           error: "#FB7185",
         },
-
         text: {
           primary: "#E5E7EB",
           secondary: "#94A3B8",
           muted: "#64748B",
-        },
-
-        border: {
-          subtle: "rgba(255, 255, 255, 0.05)",
-          light: "rgba(255, 255, 255, 0.08)",
-          primary: "rgba(74, 222, 128, 0.3)",
+          disabled: "#475569",
         },
       },
 
@@ -82,37 +104,42 @@ const config: Config = {
 
       borderRadius: {
         "glass": "12px",
+        "sm": "8px",
+        "md": "12px",
+        "lg": "16px",
+        "xl": "24px",
       },
 
       backdropBlur: {
         "glass": "20px",
+        "heavy": "60px",
       },
 
       boxShadow: {
         "glass": "0 8px 32px rgba(0, 0, 0, 0.35)",
-        "glass-premium": "0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255,255,255,0.05)",
+        "glass-premium": "0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(74, 222, 128, 0.05)",
         "primary": "0 4px 12px rgba(74, 222, 128, 0.25)",
         "primary-hover": "0 6px 20px rgba(74, 222, 128, 0.35)",
       },
 
       animation: {
-        "twinkle": "twinkle 3s ease-in-out infinite",
-        "spotlight-pulse": "spotlight-pulse 6s ease-in-out infinite",
         "fade-in": "fade-in 200ms ease-in-out",
+        "accordion-down": "accordion-down 0.2s ease-out",
+        "accordion-up": "accordion-up 0.2s ease-out",
       },
 
       keyframes: {
-        twinkle: {
-          "0%, 100%": { opacity: "0.3" },
-          "50%": { opacity: "1" },
-        },
-        "spotlight-pulse": {
-          "0%, 100%": { opacity: "0.15", transform: "scale(1)" },
-          "50%": { opacity: "0.25", transform: "scale(1.1)" },
-        },
         "fade-in": {
           from: { opacity: "0", transform: "translateY(10px)" },
           to: { opacity: "1", transform: "translateY(0)" },
+        },
+        "accordion-down": {
+          from: { height: "0" },
+          to: { height: "var(--radix-accordion-content-height)" },
+        },
+        "accordion-up": {
+          from: { height: "var(--radix-accordion-content-height)" },
+          to: { height: "0" },
         },
       },
     },
