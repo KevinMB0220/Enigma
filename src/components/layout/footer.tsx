@@ -16,7 +16,6 @@ const footerLinks = {
   ],
   resources: [
     { href: '/docs',           label: 'Documentation'  },
-    { href: '/docs/api',       label: 'API Reference'  },
   ],
   social: [
     {
@@ -34,47 +33,38 @@ export const Footer: FC<FooterProps> = ({ className }) => {
   return (
     <footer
       className={cn(
-        // Layout
-        'w-full py-12 px-6',
-        // Glassmorphism
-        'bg-[rgba(15,17,23,0.6)] backdrop-blur-[20px]',
-        'border-t border-[rgba(255,255,255,0.06)]',
+        'w-full py-16 px-6 border-t border-flare-stroke bg-flare-bg',
         className
       )}
     >
       <div className="mx-auto max-w-6xl">
-        {/* Main Footer Content */}
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-3 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-12 md:grid-cols-4">
           {/* Branding Section */}
-          <div className="flex flex-col gap-4">
-            <Link
-              href="/"
-              className="flex items-center transition-opacity duration-200 hover:opacity-80"
-            >
-              <Image src="/logo-full-dark.svg" alt="Enigma" width={140} height={40} className="object-contain" />
+          <div className="flex flex-col gap-6">
+            <Link href="/" className="flex items-center gap-3 group">
+              <Image
+                src="/logo-f1-waves-dark.svg"
+                alt="Enigma"
+                width={28}
+                height={28}
+                className="object-contain transition-transform group-hover:scale-105"
+              />
+              <span className="text-sm font-bold text-flare-text-h tracking-tight uppercase">Enigma Platform</span>
             </Link>
-            <p className="text-sm text-[#9CA3AF]">
-              AI Agent Transparency for Avalanche
+            <p className="text-xs text-flare-text-l leading-relaxed uppercase tracking-wider">
+              Autonomous Agent <br /> Reputation Layer <br /> Avalanche network
             </p>
-            {/* Built for Avalanche Badge */}
-            <div className="flex items-center gap-2">
-              <div className="rounded-[8px] bg-[rgba(232,65,66,0.15)] border border-[rgba(232,65,66,0.3)] px-3 py-1.5">
-                <span className="text-xs font-semibold text-[#E84142]">
-                  Built for Avalanche
-                </span>
-              </div>
-            </div>
           </div>
 
           {/* Product Links */}
           <div className="flex flex-col gap-4">
-            <h3 className="text-sm font-semibold text-white">Product</h3>
+            <h3 className="text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-flare-text-h">Registry</h3>
             <nav className="flex flex-col gap-2">
               {footerLinks.product.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href as '/'}
-                  className="text-sm text-[#9CA3AF] transition-colors duration-200 hover:text-white"
+                  className="text-sm text-flare-text-l transition-colors duration-200 hover:text-flare-accent"
                 >
                   {link.label}
                 </Link>
@@ -84,13 +74,13 @@ export const Footer: FC<FooterProps> = ({ className }) => {
 
           {/* Resources Links */}
           <div className="flex flex-col gap-4">
-            <h3 className="text-sm font-semibold text-white">Resources</h3>
+            <h3 className="text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-flare-text-h">Resources</h3>
             <nav className="flex flex-col gap-2">
               {footerLinks.resources.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href as '/'}
-                  className="text-sm text-[#9CA3AF] transition-colors duration-200 hover:text-white"
+                  className="text-sm text-flare-text-l transition-colors duration-200 hover:text-flare-accent"
                 >
                   {link.label}
                 </Link>
@@ -100,20 +90,19 @@ export const Footer: FC<FooterProps> = ({ className }) => {
 
           {/* Social Links */}
           <div className="flex flex-col gap-4">
-            <h3 className="text-sm font-semibold text-white">Social</h3>
-            <nav className="flex gap-3">
+            <h3 className="text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-flare-text-h">Network</h3>
+            <nav className="flex gap-2">
               {footerLinks.social.map((link) => {
                 const Icon = link.icon;
                 return (
                   <Link
                     key={link.href}
                     href={link.href as '/'}
-                    className="rounded-[8px] p-2 text-[#9CA3AF] transition-all duration-200 hover:bg-[rgba(255,255,255,0.06)] hover:text-white"
+                    className="h-8 w-8 rounded-sm bg-flare-surface border border-flare-stroke flex items-center justify-center text-flare-text-l transition-all duration-200 hover:text-flare-accent hover:border-flare-accent/30"
                     target="_blank"
                     rel="noopener noreferrer"
-                    aria-label={link.label}
                   >
-                    <Icon size={20} />
+                    <Icon size={16} />
                   </Link>
                 );
               })}
@@ -121,15 +110,14 @@ export const Footer: FC<FooterProps> = ({ className }) => {
           </div>
         </div>
 
-        {/* Bottom Section - Copyright */}
-        <div className="mt-12 border-t border-[rgba(255,255,255,0.06)] pt-8">
-          <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
-            <p className="text-sm text-[#6B7280]">
-              © {currentYear} Enigma. All rights reserved.
-            </p>
-            <p className="text-sm text-[#6B7280]">
-              Made with ❤️ for the Avalanche ecosystem
-            </p>
+        {/* Bottom Section */}
+        <div className="mt-16 pt-8 border-t border-flare-stroke flex flex-col md:flex-row items-center justify-between gap-4">
+          <p className="text-[10px] font-mono text-flare-text-l uppercase tracking-widest">
+            © {currentYear} ENIGMA. REPUTATION LAYER FOR THE AGENTIC AGE.
+          </p>
+          <div className="flex items-center gap-2">
+            <div className="h-1.5 w-1.5 rounded-full bg-flare-accent animate-pulse" />
+            <span className="text-[10px] font-mono text-flare-text-l uppercase tracking-widest">Avalanche Verified</span>
           </div>
         </div>
       </div>
