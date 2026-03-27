@@ -112,7 +112,7 @@ export function useTour(page: TourPage) {
         scrollTo: { behavior: 'smooth', block: 'center' },
         cancelIcon: { enabled: true },
         modalOverlayOpeningPadding: 8,
-        modalOverlayOpeningRadius: 8,
+        modalOverlayOpeningRadius: 0,
       },
     });
 

@@ -1,59 +1,54 @@
 /* ============================================
-   Shepherd.js Enigma Theme - Premium Glassmorphism
+   Shepherd.js Enigma Theme - Neo-Precisión ZERO-WHITE
    ============================================ */
 
-/* Modal overlay - cinematic dark with gradient */
+/* Modal overlay - cinematic dark */
 .shepherd-modal-overlay-container {
-  fill: rgba(5, 8, 12, 0.85);
+  fill: rgba(5, 7, 10, 0.92);
 }
 
-/* Main tooltip container - premium glassmorphism */
+/* Main tooltip container - Neo-Precisión Glass */
 .shepherd-element {
   background: linear-gradient(
     165deg,
-    rgba(20, 28, 38, 0.98) 0%,
-    rgba(12, 18, 26, 0.98) 100%
+    rgba(15, 18, 25, 0.98) 0%,
+    rgba(11, 14, 20, 0.98) 100%
   );
   backdrop-filter: blur(24px) saturate(180%);
   -webkit-backdrop-filter: blur(24px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-top-color: rgba(255, 255, 255, 0.15);
-  border-radius: 16px;
+  border: 1px solid rgba(74, 222, 128, 0.12); /* Emerald Tinted Border */
+  border-top-color: rgba(74, 222, 128, 0.4);
+  border-radius: 0px !important;
   box-shadow:
-    0 0 0 1px rgba(74, 222, 128, 0.1),
-    0 4px 6px -1px rgba(0, 0, 0, 0.3),
-    0 20px 40px -8px rgba(0, 0, 0, 0.5),
-    0 0 80px -20px rgba(74, 222, 128, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  max-width: 380px;
+    0 0 0 1px rgba(0, 0, 0, 0.6),
+    0 24px 60px rgba(0, 0, 0, 0.8),
+    0 0 100px -20px rgba(74, 222, 128, 0.15);
+  max-width: 400px;
   min-width: 320px;
   z-index: 10000;
-  overflow: hidden;
+  overflow: visible;
   position: relative;
 }
 
-/* Subtle gradient accent line at top */
+/* Vertical Accent Line - Pure Emerald/Cyan Gradient */
 .shepherd-element::before {
   content: '';
   position: absolute;
   top: 0;
   left: 0;
-  right: 0;
-  height: 2px;
+  bottom: 0;
+  width: 2px;
   background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(74, 222, 128, 0.6) 20%,
-    rgba(34, 211, 238, 0.4) 80%,
-    transparent 100%
+    to bottom,
+    #4ADE80 0%,
+    #22D3EE 100%
   );
-  opacity: 0.8;
+  opacity: 1;
 }
 
 /* Header */
 .shepherd-header {
-  padding: 20px 20px 12px;
-  border-bottom: none;
+  padding: 24px 24px 12px;
   background: transparent;
   display: flex;
   align-items: center;
@@ -61,12 +56,14 @@
 }
 
 .shepherd-title {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  font-size: 16px;
-  font-weight: 600;
-  color: #F1F5F9;
+  font-family: var(--font-inter, 'Inter'), system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: #4ADE80; /* Emerald Title (Zero White) */
   margin: 0;
-  letter-spacing: -0.02em;
+  line-height: 1.2;
 }
 
 /* Cancel/Close button */
@@ -74,60 +71,64 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  width: 28px;
+  height: 28px;
+  border-radius: 0px;
+  background: rgba(74, 222, 128, 0.05);
+  border: 1px solid rgba(74, 222, 128, 0.1);
   color: #64748B;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-top: -12px;
+  margin-right: -12px;
 }
 
 .shepherd-cancel-icon:hover {
   background: rgba(251, 113, 133, 0.1);
-  border-color: rgba(251, 113, 133, 0.3);
+  border-color: rgba(251, 113, 133, 0.4);
   color: #FB7185;
-  transform: scale(1.05);
 }
 
 .shepherd-cancel-icon span {
-  font-size: 20px;
+  font-size: 18px;
   line-height: 1;
-  font-weight: 300;
 }
 
 /* Content */
 .shepherd-text {
-  padding: 0 20px 20px;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  font-size: 14px;
-  line-height: 1.7;
-  color: #94A3B8;
+  padding: 12px 24px 24px;
+  font-family: var(--font-inter, 'Inter'), system-ui, sans-serif;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #94A3B8; /* Slate Text (Zero White) */
+  font-weight: 500;
 }
 
-.shepherd-text p {
-  margin: 0;
+.shepherd-text strong {
+  color: #22D3EE; /* Cyan Highlights */
+  font-weight: 800;
 }
 
 /* Footer buttons container */
 .shepherd-footer {
-  padding: 16px 20px 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
-  background: rgba(0, 0, 0, 0.15);
+  padding: 16px 24px 24px;
+  border-top: 1px solid rgba(74, 222, 128, 0.08);
+  background: rgba(0, 0, 0, 0.2);
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 10px;
+  gap: 12px;
 }
 
 /* All buttons base */
 .shepherd-button {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  font-size: 13px;
-  font-weight: 600;
+  font-family: var(--font-mono, 'JetBrains Mono'), monospace;
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
   padding: 10px 20px;
-  border-radius: 10px;
+  border-radius: 0px !important;
   border: none;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
@@ -135,261 +136,90 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  position: relative;
-  overflow: hidden;
 }
 
-/* Primary button (Next, Done, Start) */
+/* Primary button (Next) */
 .shepherd-button-primary,
 .shepherd-button.shepherd-button-primary {
-  background: linear-gradient(135deg, rgba(74, 222, 128, 0.2) 0%, rgba(74, 222, 128, 0.1) 100%);
-  border: 1px solid rgba(74, 222, 128, 0.4);
-  color: #4ADE80;
-  text-shadow: 0 0 20px rgba(74, 222, 128, 0.5);
+  background: #4ADE80;
+  color: #05070A;
+  box-shadow: 0 0 20px rgba(74, 222, 128, 0.2);
 }
 
 .shepherd-button-primary:hover,
 .shepherd-button.shepherd-button-primary:hover {
-  background: linear-gradient(135deg, rgba(74, 222, 128, 0.3) 0%, rgba(74, 222, 128, 0.15) 100%);
-  border-color: rgba(74, 222, 128, 0.6);
-  box-shadow:
-    0 0 20px rgba(74, 222, 128, 0.25),
-    0 4px 12px rgba(74, 222, 128, 0.15);
+  background: #22C55E;
+  box-shadow: 0 0 30px rgba(74, 222, 128, 0.4);
   transform: translateY(-1px);
 }
 
-.shepherd-button-primary:active,
-.shepherd-button.shepherd-button-primary:active {
-  transform: translateY(0);
-}
-
-/* Secondary button (Back, Skip) */
+/* Secondary button (Back/Skip) */
 .shepherd-button-secondary,
 .shepherd-button.shepherd-button-secondary {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #94A3B8;
+  background: rgba(34, 211, 238, 0.05);
+  border: 1px solid rgba(34, 211, 238, 0.2);
+  color: #22D3EE;
 }
 
 .shepherd-button-secondary:hover,
 .shepherd-button.shepherd-button-secondary:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.2);
-  color: #E5E7EB;
+  background: rgba(34, 211, 238, 0.1);
+  border-color: rgba(34, 211, 238, 0.4);
   transform: translateY(-1px);
 }
 
-/* Arrow styling - improved */
+/* Arrow styling */
 .shepherd-arrow,
 .shepherd-arrow::before {
   position: absolute;
-  width: 14px;
-  height: 14px;
+  width: 12px;
+  height: 12px;
   z-index: -1;
 }
 
-.shepherd-arrow {
-  visibility: hidden;
-}
-
 .shepherd-arrow::before {
-  visibility: visible;
   content: '';
   transform: rotate(45deg);
-  background: linear-gradient(
-    135deg,
-    rgba(20, 28, 38, 0.98) 0%,
-    rgba(12, 18, 26, 0.98) 100%
-  );
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: -2px -2px 4px rgba(0, 0, 0, 0.1);
+  background: #0f1219;
+  border: 1px solid rgba(74, 222, 128, 0.15);
 }
 
-.shepherd-element[data-popper-placement^='top'] > .shepherd-arrow {
-  bottom: -7px;
-}
-
-.shepherd-element[data-popper-placement^='top'] > .shepherd-arrow::before {
-  border-top: none;
-  border-left: none;
-}
-
-.shepherd-element[data-popper-placement^='bottom'] > .shepherd-arrow {
-  top: -7px;
-}
-
-.shepherd-element[data-popper-placement^='bottom'] > .shepherd-arrow::before {
-  border-bottom: none;
-  border-right: none;
-}
-
-.shepherd-element[data-popper-placement^='left'] > .shepherd-arrow {
-  right: -7px;
-}
-
-.shepherd-element[data-popper-placement^='left'] > .shepherd-arrow::before {
-  border-bottom: none;
-  border-left: none;
-}
-
-.shepherd-element[data-popper-placement^='right'] > .shepherd-arrow {
-  left: -7px;
-}
-
-.shepherd-element[data-popper-placement^='right'] > .shepherd-arrow::before {
-  border-top: none;
-  border-right: none;
-}
-
-/* Highlighted element ring - premium green glow */
+/* Highlighted element ring - ZERO WHITE Glow */
 .shepherd-target.shepherd-enabled {
   box-shadow:
-    0 0 0 3px rgba(74, 222, 128, 0.25),
-    0 0 0 6px rgba(74, 222, 128, 0.1),
-    0 0 30px rgba(74, 222, 128, 0.2) !important;
-  border-radius: 12px;
+    0 0 0 1px rgba(74, 222, 128, 0.4),
+    0 0 0 4px rgba(74, 222, 128, 0.05),
+    0 0 40px rgba(74, 222, 128, 0.25) !important;
+  border-radius: 0px !important;
   position: relative;
   z-index: 9999;
-  transition: box-shadow 0.3s ease;
 }
 
-/* Progress indicator (step counter) */
+/* Progress indicator - Dashes */
 .shepherd-progress {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 12px 20px;
+  gap: 6px;
+  padding: 12px 24px;
   background: rgba(0, 0, 0, 0.1);
-  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  border-top: 1px solid rgba(74, 222, 128, 0.06);
 }
 
 .shepherd-progress-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 12px;
+  height: 2px;
+  background: rgba(34, 211, 238, 0.1);
+  transition: all 0.3s ease;
 }
 
 .shepherd-progress-dot.active {
   background: #4ADE80;
-  border-color: #4ADE80;
-  box-shadow: 0 0 12px rgba(74, 222, 128, 0.6);
-  transform: scale(1.2);
+  box-shadow: 0 0 10px rgba(74, 222, 128, 0.5);
+  width: 20px;
 }
 
-.shepherd-progress-dot.completed {
-  background: rgba(74, 222, 128, 0.4);
-  border-color: rgba(74, 222, 128, 0.5);
-}
-
-/* Mobile responsive */
-@media (max-width: 640px) {
-  .shepherd-element {
-    max-width: calc(100vw - 24px);
-    min-width: auto;
-    margin: 0 12px;
-  }
-
-  .shepherd-header {
-    padding: 16px 16px 10px;
-  }
-
-  .shepherd-text {
-    padding: 0 16px 16px;
-    font-size: 13px;
-  }
-
-  .shepherd-footer {
-    padding: 12px 16px 16px;
-    flex-direction: column-reverse;
-  }
-
-  .shepherd-button {
-    width: 100%;
-    justify-content: center;
-    padding: 12px 20px;
-  }
-}
-
-/* Animation for entering - smooth spring effect */
-.shepherd-element {
-  animation: shepherd-enter 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-@keyframes shepherd-enter {
-  0% {
-    opacity: 0;
-    transform: scale(0.9) translateY(8px);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
-
-/* Center modal (no attachment) styling - welcome screens */
-.shepherd-element.shepherd-centered {
-  position: fixed !important;
-  top: 50% !important;
-  left: 50% !important;
-  transform: translate(-50%, -50%) !important;
-  animation: shepherd-center-enter 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-@keyframes shepherd-center-enter {
-  0% {
-    opacity: 0;
-    transform: translate(-50%, -50%) scale(0.85);
-  }
-  100% {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
-  }
-}
-
-/* Step exit animation */
-.shepherd-element.shepherd-step-exit {
-  animation: shepherd-exit 0.2s ease-in forwards;
-}
-
-@keyframes shepherd-exit {
-  to {
-    opacity: 0;
-    transform: scale(0.95) translateY(-4px);
-  }
-}
-
-/* Smooth transitions between steps */
-.shepherd-element .shepherd-content {
-  transition: all 0.2s ease;
-}
-
-/* Focus states for accessibility */
-.shepherd-button:focus-visible {
-  outline: 2px solid rgba(74, 222, 128, 0.5);
-  outline-offset: 2px;
-}
-
-.shepherd-cancel-icon:focus-visible {
-  outline: 2px solid rgba(74, 222, 128, 0.5);
-  outline-offset: 2px;
-}
-
-/* Hide default shepherd styles we don't want */
-.shepherd-has-title .shepherd-content .shepherd-header {
-  background: transparent;
-  padding: 20px 20px 12px;
-}
-
-/* Ensure our styles override defaults */
-.shepherd-theme-default .shepherd-element,
-.shepherd-element.shepherd-theme-default {
-  background: linear-gradient(
-    165deg,
-    rgba(20, 28, 38, 0.98) 0%,
-    rgba(12, 18, 26, 0.98) 100%
-  ) !important;
+/* Ensure no rounded corners for the overlay box */
+.shepherd-modal-overlay-container path {
+  shape-rendering: crispEdges;
 }

@@ -19,9 +19,9 @@ export function TourTriggerButton({ page, className }: TourTriggerButtonProps) {
       onClick={startTour}
       disabled={!isReady}
       className={cn(
-        'flex h-8 w-8 items-center justify-center rounded-lg transition-all duration-150',
-        'border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.04)]',
-        'text-[#94A3B8] hover:border-[rgba(74,222,128,0.3)] hover:bg-[rgba(74,222,128,0.06)] hover:text-primary',
+        'flex h-8 w-8 items-center justify-center rounded-none transition-all duration-150',
+        'border border-white/[0.08] bg-white/[0.04]',
+        'text-[#94A3B8] hover:border-flare-accent/40 hover:bg-flare-accent/[0.06] hover:text-flare-accent',
         'disabled:opacity-50 disabled:cursor-not-allowed',
         !isCompleted && isReady && 'animate-pulse',
         className

@@ -1,118 +1,70 @@
-# Design System
+# Neo-Precisión Design System
 
-## Design Philosophy
+## Filosofía de Diseño: Neo-Precisión
 
-The Enigma design system is based on the following principles:
+Neo-Precisión es un lenguaje visual que combina minimalismo técnico, claridad estructural y una estética oscura premium. No busca ser decorativo ni experimental, sino sólido, confiable y perfectamente construido.
 
-- **Professional minimalism**: Clean interfaces without unnecessary decorative elements
-- **Data and clarity focus**: Information is the protagonist, not decoration
-- **Elegance over spectacle**: Subtle effects that improve experience without distraction
-- **Dark-first**: Designed for dark mode as the primary experience
+### Principios Clave:
+- **Fondo Oscuro Estructurado**: Base profunda para resaltar información sin fatigar la vista.
+- **Superficies Secundarias**: Profundidad lograda mediante capas controladas y cambios sutiles de tono, no sombras pesadas.
+- **Bordes Definidos**: Líneas finas de 1px que construyen ritmo visual y delimitan espacios con elegancia.
+- **Radios Moderados**: Evitamos bordes demasiado redondeados para mantener una sensación de sistema técnico y profesional (preferencia por `radius-0` o radios mínimos).
+- **Tipografía Híbrida**: Sans-serif para la interfaz general + Monosepaciada para datos técnicos y métricas.
+- **Paleta Semántica Disciplinada**: El color guía la atención con intención, no se usa por decoración.
 
-**Inspiration**: Linear, Stripe, Vercel - interfaces that prioritize functionality and clarity.
+---
 
-## Color Palette
+## Paleta de Colores
 
-### Primary Colors (Brand)
+### Colores de Fundación (Core)
 
-| Name | Hex | RGB | Usage |
-|------|-----|-----|-------|
-| Primary Blue | `#3B82F6` | `rgb(59, 130, 246)` | Primary buttons, accents, active links |
-| Primary Blue Dark | `#2563EB` | `rgb(37, 99, 235)` | Gradients, hover states |
-| Primary Blue Deep | `#1E40AF` | `rgb(30, 64, 175)` | Gradients, color shadows |
+| Nombre | Hex | Propósito |
+|:---|:---|:---|
+| **Background Base** | `#05070A` | Fondo principal de la aplicación. |
+| **Surface Base** | `#0F1219` | Superficie de tarjetas y paneles. |
+| **Foundation Stroke**| `#1E293B` | Bordes y divisores estructurales. |
 
-```css
-/* Primary gradient for buttons and accents */
-background: linear-gradient(135deg, #3B82F6, #2563EB);
+### Colores Semánticos (Signal)
 
-/* Color shadow for buttons */
-box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-```
+| Nombre | Hex | Uso |
+|:---|:---|:---|
+| **Emerald (Primary)** | `#4ADE80` | Acciones principales, estados activos, éxito. |
+| **Cyan (Secondary)** | `#22D3EE` | Información técnica, tendencias, métricas. |
+| **Amber (Warning)** | `#FCD34D` | Estados pendientes, advertencias. |
+| **Rose (Error)** | `#FB7185` | Alertas de seguridad, errores críticos. |
 
-### Background Colors
+---
 
-| Name | Hex/RGBA | Usage |
-|------|----------|-------|
-| Background Base | `#0A0B0F` | Main body background |
-| Glass Background | `rgba(15, 17, 23, 0.6)` | Header, cards, filters |
-| Table Header | `rgba(17, 24, 39, 0.8)` | Table headers |
-| Input Background | `rgba(31, 41, 55, 0.5)` | Form fields |
-| Row Hover | `rgba(59, 130, 246, 0.05)` | Table row hover |
+## Tipografía
 
-### Text Colors
+El sistema utiliza una combinación de dos fuentes para transmitir precisión:
+- **Inter**: Para interfaz de usuario, títulos y lectura general.
+- **JetBrains Mono**: Para direcciones on-chain, métricas, timestamps e identificadores únicos.
 
-| Name | Hex | Usage |
-|------|-----|-------|
-| Text Primary | `#FFFFFF` | Titles, primary text |
-| Text Secondary | `#9CA3AF` | Paragraphs, descriptions |
-| Text Muted | `#6B7280` | Labels, tertiary text |
+---
 
-### Status Colors
-
-| Status | Color | Hex | Background | Border |
-|--------|-------|-----|------------|--------|
-| Excellent/Verified | Green | `#10B981` | `rgba(16, 185, 129, 0.15)` | `rgba(16, 185, 129, 0.3)` |
-| Good | Blue | `#3B82F6` | `rgba(59, 130, 246, 0.15)` | `rgba(59, 130, 246, 0.3)` |
-| Medium/Pending | Yellow | `#F59E0B` | `rgba(245, 158, 11, 0.15)` | `rgba(245, 158, 11, 0.3)` |
-| Flagged/Error | Red | `#EF4444` | `rgba(239, 68, 68, 0.15)` | `rgba(239, 68, 68, 0.3)` |
-
-### Border Colors
-
-| Name | RGBA | Usage |
-|------|------|-------|
-| Border Light | `rgba(255, 255, 255, 0.06)` | Card and container borders |
-| Border Input | `rgba(255, 255, 255, 0.08)` | Input borders |
-| Border Hover | `rgba(255, 255, 255, 0.1)` | Hover borders |
-| Border Active | `rgba(59, 130, 246, 0.3)` | Active/focus borders |
-
-## CSS Variables
+## Variables de CSS (Neo-Precisión Core)
 
 ```css
 :root {
   /* Backgrounds */
-  --bg-base: #0A0B0F;
-  --bg-glass: rgba(15, 17, 23, 0.6);
-  --bg-glass-darker: rgba(17, 24, 39, 0.8);
+  --background: #05070A;
+  --flare-surface: #0F1219;
+  
+  /* Signals */
+  --flare-accent: #4ADE80;
+  --flare-accent-cyan: #22D3EE;
+  
+  /* Strokes */
+  --flare-stroke: rgba(74, 222, 128, 0.08);
+  --border-subtle: #1E293B;
 
-  /* Primary */
-  --color-primary: #3B82F6;
-  --color-primary-dark: #2563EB;
-  --color-primary-darker: #1E40AF;
-
-  /* Text */
-  --text-primary: #FFFFFF;
-  --text-secondary: #9CA3AF;
-  --text-muted: #6B7280;
-
-  /* Status */
-  --color-success: #10B981;
-  --color-warning: #F59E0B;
-  --color-error: #EF4444;
-
-  /* Borders */
-  --border-subtle: rgba(255, 255, 255, 0.06);
-  --border-light: rgba(255, 255, 255, 0.1);
-  --border-primary: rgba(59, 130, 246, 0.3);
-
-  /* Shadows */
-  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.2);
-  --shadow-md: 0 4px 24px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.3);
-  --shadow-primary: 0 4px 12px rgba(59, 130, 246, 0.3);
-
-  /* Effects */
-  --blur-amount: 20px;
-  --blur-heavy: 60px;
-
-  /* Transitions */
-  --transition-fast: 200ms;
-  --transition-normal: 300ms;
-  --transition-slow: 400ms;
+  /* Typography */
+  --text-primary: #F8FAFC;
+  --text-secondary: #94A3B8;
+  --text-muted: #64748B;
 
   /* Radius */
-  --radius-sm: 6px;
-  --radius-md: 8px;
-  --radius-lg: 16px;
-  --radius-full: 9999px;
+  --radius: 0px; /* Estética industrial pura */
 }
 ```

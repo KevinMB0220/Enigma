@@ -109,40 +109,36 @@ export function TourCta({ page, title, description, className }: TourCtaProps) {
   return (
     <div
       className={cn(
-        'fixed bottom-6 right-6 z-[9998] max-w-sm',
+        'fixed bottom-8 right-8 z-[9998] max-w-sm',
         'transition-all duration-300 ease-out',
         isAnimatingOut
-          ? 'translate-y-4 opacity-0 scale-95'
-          : 'translate-y-0 opacity-100 scale-100',
+          ? 'translate-y-4 opacity-0'
+          : 'translate-y-0 opacity-100',
         className
       )}
     >
       <div
         className={cn(
-          'relative overflow-hidden rounded-2xl',
-          'bg-gradient-to-br from-[rgba(20,28,38,0.98)] to-[rgba(12,18,26,0.98)]',
-          'backdrop-blur-xl',
-          'border border-[rgba(255,255,255,0.1)]',
-          'shadow-[0_8px_32px_rgba(0,0,0,0.4),0_0_60px_-10px_rgba(74,222,128,0.2)]',
-          'p-5'
+          'relative overflow-hidden rounded-none',
+          'bg-[#0F1219]/95 backdrop-blur-xl',
+          'border border-white/[0.08] border-t-flare-accent/40',
+          'shadow-[0_20px_50px_rgba(0,0,0,0.6),0_0_80px_-20px_rgba(74,222,128,0.1)]',
+          'p-6'
         )}
       >
-        {/* Accent gradient line */}
-        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[rgba(74,222,128,0.6)] to-transparent" />
-
         {/* Close button */}
         <button
           onClick={handleDismiss}
           className={cn(
-            'absolute top-3 right-3',
-            'flex h-7 w-7 items-center justify-center rounded-lg',
-            'bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.08)]',
-            'text-[#64748B] hover:text-white hover:bg-[rgba(255,255,255,0.1)]',
+            'absolute top-4 right-4',
+            'flex h-6 w-6 items-center justify-center rounded-none',
+            'bg-white/[0.03] border border-white/[0.06]',
+            'text-[#64748B] hover:text-white hover:bg-white/[0.1] hover:border-white/[0.2]',
             'transition-all duration-200'
           )}
           aria-label="Dismiss"
         >
-          <X className="h-4 w-4" />
+          <X className="h-3.5 w-3.5" />
         </button>
 
         {/* Content */}
@@ -150,20 +146,19 @@ export function TourCta({ page, title, description, className }: TourCtaProps) {
           {/* Icon */}
           <div
             className={cn(
-              'flex h-11 w-11 shrink-0 items-center justify-center rounded-xl',
-              'bg-gradient-to-br from-[rgba(74,222,128,0.2)] to-[rgba(34,211,238,0.1)]',
-              'border border-[rgba(74,222,128,0.3)]'
+              'flex h-10 w-10 shrink-0 items-center justify-center rounded-none',
+              'bg-flare-accent/10 border border-flare-accent/30 shadow-[0_0_15px_rgba(74,222,128,0.1)]'
             )}
           >
-            <HelpCircle className="h-5 w-5 text-[#4ADE80]" />
+            <HelpCircle className="h-5 w-5 text-flare-accent" />
           </div>
 
           {/* Text */}
           <div className="flex-1 pr-6">
-            <h3 className="text-sm font-semibold text-white mb-1">
+            <h3 className="text-[12px] font-black text-white uppercase tracking-[0.2em] mb-1">
               {displayTitle}
             </h3>
-            <p className="text-xs text-[#94A3B8] leading-relaxed mb-4">
+            <p className="text-[11px] text-[#94A3B8] leading-relaxed mb-5 font-medium">
               {displayDescription}
             </p>
 
@@ -172,33 +167,31 @@ export function TourCta({ page, title, description, className }: TourCtaProps) {
               onClick={handleStartTour}
               disabled={isStarting}
               className={cn(
-                'inline-flex items-center gap-2 px-4 py-2 rounded-lg',
-                'bg-gradient-to-r from-[rgba(74,222,128,0.15)] to-[rgba(74,222,128,0.1)]',
-                'border border-[rgba(74,222,128,0.3)]',
-                'text-[#4ADE80] text-xs font-semibold',
-                'hover:from-[rgba(74,222,128,0.25)] hover:to-[rgba(74,222,128,0.15)]',
-                'hover:border-[rgba(74,222,128,0.5)]',
-                'hover:shadow-[0_0_20px_rgba(74,222,128,0.2)]',
+                'inline-flex items-center gap-3 px-5 py-2.5 rounded-none',
+                'bg-flare-accent text-[#05070A]',
+                'text-[10px] font-black uppercase tracking-[0.2em]',
+                'hover:bg-[#22C55E]',
+                'hover:shadow-[0_0_20px_rgba(74,222,128,0.3)]',
                 'transition-all duration-200',
                 'disabled:opacity-70 disabled:cursor-wait',
                 'group'
               )}
             >
-              {isStarting ? 'Loading...' : 'Take the Tour'}
+              {isStarting ? 'Syncing...' : 'Initialize Tour'}
               {isStarting ? (
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
               ) : (
-                <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+                <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
               )}
             </button>
           </div>
         </div>
 
-        {/* Decorative dots */}
-        <div className="absolute bottom-3 left-5 flex gap-1.5">
-          <div className="h-1.5 w-1.5 rounded-full bg-[rgba(74,222,128,0.4)]" />
-          <div className="h-1.5 w-1.5 rounded-full bg-[rgba(74,222,128,0.25)]" />
-          <div className="h-1.5 w-1.5 rounded-full bg-[rgba(74,222,128,0.15)]" />
+        {/* Technical metadata markers */}
+        <div className="absolute bottom-4 left-6 flex gap-2">
+          <div className="h-1 w-4 bg-flare-accent/40" />
+          <div className="h-1 w-1 bg-flare-accent/20" />
+          <div className="h-1 w-1 bg-flare-accent/10" />
         </div>
       </div>
     </div>

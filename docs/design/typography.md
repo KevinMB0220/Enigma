@@ -1,16 +1,19 @@
-# Typography
+# Typografía: Dualidad Técnica
 
-## Font Family
+El sistema Neo-Precisión utiliza una combinación de fuentes sans-serif y monoespaciadas para diferenciar entre la interfaz de usuario y los datos operacionales de la blockchain.
 
-**Primary Font**: Inter
+## Font Families
+
+### Inter (Sans-Serif)
+Utilizada para la estructura general, navegación, títulos y contenido descriptivo. Proporciona claridad y modernidad.
+
+### JetBrains Mono (Monospace)
+Utilizada estrictamente para datos técnicos: direcciones on-chain, métricas, identificadores de transacciones, timestamps y estados de sistema. Refuerza la identidad "Neo-Precisión".
 
 ```css
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-
-body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  font-feature-settings: 'cv11', 'ss01';
-  -webkit-font-smoothing: antialiased;
+:root {
+  --font-inter: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
 }
 ```
 
@@ -106,33 +109,28 @@ body {
 }
 ```
 
-## Text Colors
+## Jerarquía Tipográfica
+
+| Rol | Familia | Tamaño | Peso | Uso |
+|:---|:---|:---|:---|:---|
+| **Hero Title** | Inter | 64px/90px | 900 | Título principal landing |
+| **Section Header** | Inter | 32px | 800 | Cabeceras de sección |
+| **Component Header**| Inter | 14px | 700 | Títulos dentro de cards |
+| **Technical Data** | Mono | 12px/14px | 500 | Direcciones, hashes, contadores |
+| **Label/Meta** | Inter/Mono | 10px | 800/900 | Subtítulos industriales, telemetry |
+
+## Colores de Texto (Semánticos)
 
 ```css
-/* Primary - High emphasis */
-.text-primary { color: #FFFFFF; }
+/* Primario: Alta legibilidad */
+.text-flare-text-h { color: #F8FAFC; }
 
-/* Secondary - Medium emphasis */
-.text-secondary { color: #9CA3AF; }
+/* Secundario: Métrica y descripción */
+.text-flare-text-l { color: #94A3B8; }
 
-/* Muted - Low emphasis */
-.text-muted { color: #6B7280; }
+/* Signal: Emerald para éxito/acción */
+.text-flare-accent { color: #4ADE80; }
 
-/* Brand - Accent */
-.text-brand { color: #3B82F6; }
-
-/* Status colors */
-.text-success { color: #10B981; }
-.text-warning { color: #F59E0B; }
-.text-error { color: #EF4444; }
-```
-
-## Monospace (Addresses)
-
-```css
-.address {
-  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
-  font-size: 12px;
-  color: #6B7280;
-}
+/* Signal: Cyan para telemetría */
+.text-flare-accent-cyan { color: #22D3EE; }
 ```

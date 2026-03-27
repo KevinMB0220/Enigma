@@ -137,7 +137,7 @@ export default function ScannerPage() {
                   <BookOpen className="h-4 w-4 text-[#A0A5B5]" />
                   How to Register
                 </a>
-                <div className="w-full md:w-[280px]">
+                <div className="w-full md:w-[280px]" data-tour="scanner-search">
                   <SearchBar value={search} onChange={(v) => { setSearch(v); setPage(1); }} className="bg-[#1a1b23] h-10 border-flare-stroke" />
                 </div>
               </div>

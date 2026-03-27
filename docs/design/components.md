@@ -1,186 +1,79 @@
-# UI Components
+# Componentes de Interfaz: Neo-Precisión
 
-## Glassmorphism Pattern
+Todos los componentes deben compartir la misma lógica visual: superficies base consistentes, criterios de borde definidos y jerarquía tipográfica técnica.
+
+## 1. Contenedores y Cards (Surfaces)
+
+Las tarjetas Neo-Precisión utilizan fondos profundos y bordes finos. El radio es moderado o nulo (`0px`) para mantener la seriedad técnica.
 
 ```css
-.glass-panel {
-  background: rgba(15, 17, 23, 0.6);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 16px;
-}
-
-.glass-panel-glow {
-  background: rgba(15, 17, 23, 0.6);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(59, 130, 246, 0.3);
-  box-shadow: 0 0 30px rgba(59, 130, 246, 0.1);
+.glass-card {
+  background: var(--flare-surface); /* #0F1219 */
+  border: 1px solid var(--flare-stroke); /* rgba(74, 222, 128, 0.08) */
+  border-radius: var(--radius); /* 0px */
+  position: relative;
+  overflow: hidden;
 }
 ```
 
-## Header
-
-```css
-.header-glass {
-  background: rgba(15, 17, 23, 0.6);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 16px;
-  padding: 16px 32px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+### Industrial Corners
+Adornos de esquina que refuerzan la sensación de construcción sólida.
+```tsx
+function IndustrialCorner({ position }: { position: 'tl' | 'tr' | 'bl' | 'br' }) {
+  const classes = {
+    tl: "top-0 left-0 border-t-2 border-l-2",
+    tr: "top-0 right-0 border-t-2 border-r-2",
+    bl: "bottom-0 left-0 border-b-2 border-l-2",
+    br: "bottom-0 right-0 border-b-2 border-r-2",
+  };
+  return <div className={cn("absolute w-4 h-4 border-flare-accent/20", classes[position])} />;
 }
 ```
 
-## Buttons
+---
+
+## 2. Botones y Controles (Actions)
+
+Los botones deben ser claros y directos. El color se usa solo para acciones primarias.
+
+| Tipo | Estilo Neo-Precisión |
+|:---|:---|
+| **Primary** | Fondo `var(--flare-accent)`, texto oscuro. Tracking espaciado y uppercase. |
+| **Secondary** | Borde `var(--flare-stroke)`, fondo translúcido. |
 
 ```css
 .btn-primary {
-  background: linear-gradient(135deg, #3B82F6, #2563EB);
-  color: #FFFFFF;
-  padding: 10px 24px;
-  border-radius: 8px;
-  font-weight: 600;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-  transition: all 200ms;
-}
-
-.btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
-}
-
-.btn-secondary {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #FFFFFF;
+  background: var(--flare-accent); /* Emerald */
+  color: #05070A;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  border-radius: 0;
 }
 ```
 
-## Cards
+---
+
+## 3. Estados de Confianza (Semántica)
+
+La paleta semántica guía la atención según el nivel de riesgo o confianza.
+
+- **TRUSTED (Emerald)**: `#4ADE80`. Instancias verificadas y seguras.
+- **PENDING (Amber)**: `#FCD34D`. Operaciones en curso o verificación media.
+- **RISK (Rose)**: `#FB7185`. Fallos críticos o falta de reputación.
+
+---
+
+## 4. Tablas (Registry Grid)
+
+Las tablas utilizan `tabular-nums` (Mono) para asegurar que los datos numéricos estén perfectamente alineados, facilitando el escaneo rápido.
 
 ```css
-.stat-card {
-  background: rgba(15, 17, 23, 0.6);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 16px;
-  padding: 28px;
-  transition: all 300ms;
+.agent-table th {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.3em;
+  color: var(--text-secondary);
 }
-
-.stat-card:hover {
-  transform: translateY(-4px);
-  border-color: rgba(59, 130, 246, 0.3);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
-}
-```
-
-## Trust Badges
-
-```css
-.trust-badge {
-  padding: 8px 14px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 700;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.trust-excellent {
-  background: rgba(16, 185, 129, 0.15);
-  color: #10B981;
-  border: 1px solid rgba(16, 185, 129, 0.3);
-}
-
-.trust-good {
-  background: rgba(59, 130, 246, 0.15);
-  color: #3B82F6;
-  border: 1px solid rgba(59, 130, 246, 0.3);
-}
-
-.trust-medium {
-  background: rgba(245, 158, 11, 0.15);
-  color: #F59E0B;
-  border: 1px solid rgba(245, 158, 11, 0.3);
-}
-
-.trust-low {
-  background: rgba(239, 68, 68, 0.15);
-  color: #EF4444;
-  border: 1px solid rgba(239, 68, 68, 0.3);
-}
-```
-
-## Tables
-
-```css
-.table-container {
-  background: rgba(15, 17, 23, 0.6);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 16px;
-  overflow: hidden;
-}
-
-thead {
-  background: rgba(17, 24, 39, 0.8);
-}
-
-tbody tr:hover {
-  background: rgba(59, 130, 246, 0.05);
-}
-
-thead th,
-tbody td {
-  padding: 20px 24px;
-}
-```
-
-## Inputs
-
-```css
-.filter-input,
-.filter-select {
-  background: rgba(31, 41, 55, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
-  padding: 12px 16px;
-  color: #FFFFFF;
-  transition: all 200ms;
-}
-
-.filter-input:focus,
-.filter-select:focus {
-  border-color: rgba(59, 130, 246, 0.5);
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-```
-
-## Progress Bars
-
-```css
-.progress-bar {
-  background: rgba(31, 41, 55, 0.6);
-  border-radius: 9999px;
-  height: 6px;
-  overflow: hidden;
-}
-
-.progress-fill {
-  height: 100%;
-  border-radius: 9999px;
-  transition: width 400ms ease;
-}
-
-.progress-fill.excellent { background: #10B981; }
-.progress-fill.good { background: #3B82F6; }
-.progress-fill.medium { background: #F59E0B; }
-.progress-fill.low { background: #EF4444; }
 ```
