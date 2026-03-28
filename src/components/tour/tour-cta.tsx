@@ -5,6 +5,7 @@ import { X, HelpCircle, ArrowRight, Loader2 } from 'lucide-react';
 import { useTour } from './use-tour';
 import { useTourState, type TourPage } from './tour-provider';
 import { cn } from '@/lib/utils';
+import { IndustrialCorner } from '@/components/shared/industrial-corner';
 
 interface TourCtaProps {
   page: TourPage;
@@ -40,23 +41,18 @@ export function TourCta({ page, title, description, className }: TourCtaProps) {
   const [isStarting, setIsStarting] = useState(false);
   const isReadyRef = useRef(isReady);
 
-  // Keep ref in sync with isReady
   useEffect(() => {
     isReadyRef.current = isReady;
   }, [isReady]);
 
-  // Show CTA after a short delay if tour not completed and not dismissed
   useEffect(() => {
     if (isCompleted || isCtaDismissed(page)) {
       setIsVisible(false);
       return;
     }
-
-    // Show immediately with a minimal delay for smoother UX
     const timer = setTimeout(() => {
       setIsVisible(true);
-    }, 500); // Show after 0.5s
-
+    }, 800);
     return () => clearTimeout(timer);
   }, [isCompleted, isCtaDismissed, page]);
 
@@ -82,7 +78,6 @@ export function TourCta({ page, title, description, className }: TourCtaProps) {
   const handleStartTour = () => {
     if (!isReadyRef.current) {
       setIsStarting(true);
-      // Wait for Shepherd to be ready, then start
       const checkReady = setInterval(() => {
         if (isReadyRef.current) {
           clearInterval(checkReady);
@@ -90,7 +85,6 @@ export function TourCta({ page, title, description, className }: TourCtaProps) {
           startTourAndClose();
         }
       }, 100);
-      // Timeout after 5 seconds
       setTimeout(() => {
         clearInterval(checkReady);
         setIsStarting(false);
@@ -111,87 +105,56 @@ export function TourCta({ page, title, description, className }: TourCtaProps) {
       className={cn(
         'fixed bottom-8 right-8 z-[9998] max-w-sm',
         'transition-all duration-300 ease-out',
-        isAnimatingOut
-          ? 'translate-y-4 opacity-0'
-          : 'translate-y-0 opacity-100',
+        isAnimatingOut ? 'translate-y-4 opacity-0' : 'translate-y-0 opacity-100',
         className
       )}
     >
+      {/* Industrial Toast Container */}
       <div
         className={cn(
           'relative overflow-hidden rounded-none',
-          'bg-[#0F1219]/98 backdrop-blur-xl',
-          'border border-flare-accent/15 border-t-flare-accent/40',
-          'shadow-[0_24px_60px_rgba(0,0,0,0.8),0_0_80px_-20px_rgba(74,222,128,0.1)]',
-          'p-6'
+          'bg-[#0F1219] p-8',
+          'border border-[#4ADE80]/20 shadow-[0_24px_60px_rgba(0,0,0,1)]',
         )}
       >
-        {/* Close button */}
+        <IndustrialCorner position="top-right" size={20} color="#4ADE80" opacity={0.2} />
+        
+        {/* Close Button - Industrial Style */}
         <button
           onClick={handleDismiss}
-          className={cn(
-            'absolute top-4 right-4',
-            'flex h-6 w-6 items-center justify-center rounded-none',
-            'bg-flare-accent/[0.03] border border-flare-accent/[0.08]',
-            'text-[#64748B] hover:text-flare-accent hover:bg-flare-accent/[0.08] hover:border-flare-accent/20',
-            'transition-all duration-200'
-          )}
-          aria-label="Dismiss"
+          className="absolute top-4 right-4 h-6 w-6 flex items-center justify-center border border-[#4ADE80]/10 bg-[#4ADE80]/5 text-[#4ADE80]/40 hover:text-[#4ADE80] transition-all"
         >
-          <X className="h-3.5 w-3.5" />
+          <X className="h-3 w-3" />
         </button>
 
-        {/* Content */}
-        <div className="flex items-start gap-4">
-          {/* Icon */}
-          <div
-            className={cn(
-              'flex h-10 w-10 shrink-0 items-center justify-center rounded-none',
-              'bg-flare-accent/10 border border-flare-accent/30 shadow-[0_0_20px_rgba(74,222,128,0.15)]'
-            )}
-          >
-            <span className="font-mono text-[20px] font-black text-flare-accent mt-0.5">?</span>
-          </div>
+        <div className="flex gap-6">
+           {/* Visual ID Badge */}
+           <div className="h-10 w-10 shrink-0 border border-[#4ADE80]/30 bg-[#4ADE80]/5 flex items-center justify-center">
+              <span className="font-mono text-xl font-black text-[#4ADE80]">?</span>
+           </div>
 
-          {/* Text */}
-          <div className="flex-1 pr-6">
-            <h3 className="text-[12px] font-black text-flare-accent uppercase tracking-[0.2em] mb-1">
-              {displayTitle}
-            </h3>
-            <p className="text-[11px] text-[#94A3B8] leading-relaxed mb-5 font-medium">
-              {displayDescription}
-            </p>
-
-            {/* Action button */}
-            <button
-              onClick={handleStartTour}
-              disabled={isStarting}
-              className={cn(
-                'inline-flex items-center gap-3 px-5 py-2.5 rounded-none',
-                'bg-flare-accent text-[#05070A]',
-                'text-[10px] font-black uppercase tracking-[0.2em]',
-                'hover:bg-[#22C55E]',
-                'hover:shadow-[0_0_20px_rgba(74,222,128,0.3)]',
-                'transition-all duration-200',
-                'disabled:opacity-70 disabled:cursor-wait',
-                'group'
-              )}
-            >
-              {isStarting ? 'Syncing...' : 'Initialize Tour'}
-              {isStarting ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              ) : (
-                <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
-              )}
-            </button>
-          </div>
+           <div className="flex-1 min-w-0">
+              <h3 className="text-[11px] font-black uppercase tracking-[0.4em] text-[#4ADE80] mb-2">{displayTitle}</h3>
+              <p className="text-[11px] font-medium text-[#64748B] uppercase tracking-tight leading-relaxed mb-6">{displayDescription}</p>
+              
+              <button
+                onClick={handleStartTour}
+                disabled={isStarting}
+                className={cn(
+                  "h-10 px-6 flex items-center gap-3 bg-[#4ADE80] text-[#05070A] font-black uppercase tracking-widest text-[10px] hover:brightness-110 active:scale-95 transition-all w-full justify-center",
+                  "shadow-[0_0_20px_rgba(74,222,128,0.2)] disabled:opacity-50"
+                )}
+              >
+                 {isStarting ? "SYNCING..." : "INITIALIZE_TOUR"}
+                 {!isStarting && <ArrowRight className="h-3.5 w-3.5" />}
+              </button>
+           </div>
         </div>
 
-        {/* Technical metadata markers */}
-        <div className="absolute bottom-4 left-6 flex gap-2">
-          <div className="h-1 w-4 bg-flare-accent/40" />
-          <div className="h-1 w-1 bg-flare-accent/20" />
-          <div className="h-1 w-1 bg-flare-accent/10" />
+        {/* Binary Footer Label */}
+        <div className="mt-6 flex items-center gap-3 justify-end opacity-20">
+           <div className="h-px flex-1 bg-gradient-to-r from-transparent to-[#4ADE80]/20" />
+           <span className="text-[8px] font-mono font-black text-[#4ADE80]">TOUR_SEQUENCE_v4.0</span>
         </div>
       </div>
     </div>

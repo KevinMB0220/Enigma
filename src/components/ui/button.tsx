@@ -5,20 +5,20 @@ import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/utils'
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-none text-[11px] font-black uppercase tracking-[0.2em] transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:ring-flare-accent/30 focus-visible:ring-[2px]",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-none text-[11px] font-black uppercase tracking-[0.2em] transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:ring-[#4ADE80]/30 focus-visible:ring-[2px]",
   {
     variants: {
       variant: {
-        default: 'bg-flare-accent text-flare-bg hover:opacity-90 shadow-[0_0_15px_rgba(74,222,128,0.2)]',
+        default: 'bg-[#4ADE80] text-[#05070A] hover:brightness-110 shadow-[0_0_15px_rgba(74,222,128,0.2)]',
         destructive:
-          'bg-[#FB7185] text-white hover:bg-[#FB7185]/90',
+          'bg-[#FB7185] text-[#05070A] hover:bg-[#FB7185]/90',
         outline:
-          'border border-white/10 bg-black/20 hover:bg-white/5 hover:text-flare-text-h text-flare-text-l',
+          'border border-[#4ADE80]/20 bg-[#05070A]/80 hover:bg-[#4ADE80]/5 hover:text-white text-[#64748B] hover:border-[#4ADE80]/40',
         secondary:
-          'bg-black/40 text-flare-text-l hover:bg-black/60',
+          'bg-[#0B0E14] text-[#64748B] hover:bg-[#0B0E14]/80 border border-white/5', 
         ghost:
-          'hover:bg-white/5 hover:text-flare-text-h text-flare-text-l',
-        link: 'text-flare-accent underline-offset-4 hover:underline',
+          'hover:bg-[#4ADE80]/5 hover:text-[#4ADE80] text-[#475569]',
+        link: 'text-[#4ADE80] underline-offset-4 hover:underline',
       },
       size: {
         default: 'h-10 px-8 py-2',

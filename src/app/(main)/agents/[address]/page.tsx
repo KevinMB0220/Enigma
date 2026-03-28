@@ -1,79 +1,85 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft, ExternalLink, GitBranch, Bot, BookOpen } from 'lucide-react';
+import { 
+  ArrowLeft, 
+  ExternalLink, 
+  GitBranch, 
+  Bot, 
+  BookOpen, 
+  Shield, 
+  Activity, 
+  Users, 
+  FileCode2, 
+  AlertCircle, 
+  Share2, 
+  LayoutDashboard, 
+  Lock,
+  Copy,
+  CheckCircle2,
+  AlertTriangle
+} from 'lucide-react';
 import Link from 'next/link';
 import { RatingForm } from '@/components/agent/rating-form';
 import { ReportModal } from '@/components/agent/report-modal';
 import { Spinner } from '@/components/shared/spinner';
 import { TourCta } from '@/components/tour';
 import { useAgent, type AgentDetail } from '@/hooks/use-agent';
-import { cn } from '@/lib/utils/index';
+import { cn } from '@/lib/utils';
+import { IndustrialCorner } from '@/components/shared/industrial-corner';
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+// ── Shared Primitives (Neo-Precisión) ──────────────────────────────────────────────
+
+function MetricBadge({ label, value, color = "#4ADE80" }: { label: string; value: string; color?: string }) {
+  return (
+    <div className="flex flex-col gap-1 px-4 py-2 border-l border-white/5">
+       <span className="text-[9px] font-black uppercase tracking-[0.2em] text-[#475569]">{label}</span>
+       <span className="text-sm font-black text-white font-mono" style={{ color: value === '—' ? '#475569' : 'white' }}>{value}</span>
+    </div>
+  );
+}
+
+function SectionHeading({ title, icon: Icon }: { title: string; icon: any }) {
+  return (
+    <div className="flex items-center gap-3 mb-8">
+       <div className="h-8 w-8 flex items-center justify-center bg-[#4ADE80]/5 border border-[#4ADE80]/10">
+          <Icon className="h-4 w-4 text-[#4ADE80]" />
+       </div>
+       <h3 className="text-sm font-black text-white uppercase tracking-[0.3em]">{title}</h3>
+    </div>
+  );
+}
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
 
 function truncateAddress(address: string): string {
+  if (!address) return '0x...';
   return `${address.slice(0, 6)}…${address.slice(-4)}`;
 }
 
 function formatRelativeTime(dateString: string): string {
-  const diffMs = Date.now() - new Date(dateString).getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-  const diffHours = Math.floor(diffMins / 60);
-  const diffDays = Math.floor(diffHours / 24);
-  if (diffMins < 1) return 'just now';
-  if (diffMins < 60) return `${diffMins}m ago`;
-  if (diffHours < 24) return `${diffHours}h ago`;
-  if (diffDays < 30) return `${diffDays}d ago`;
-  return new Date(dateString).toLocaleDateString();
-}
-
-function formatAge(dateString: string): string {
-  const diffDays = Math.floor((Date.now() - new Date(dateString).getTime()) / 86400000);
-  if (diffDays === 0) return 'today';
-  if (diffDays === 1) return '1 day';
-  if (diffDays < 30) return `${diffDays} days`;
-  const months = Math.floor(diffDays / 30);
-  return months === 1 ? '1 month' : `${months} months`;
-}
-
-function formatEventDate(dateString: string): string {
-  return new Date(dateString).toLocaleDateString('en-US', {
-    month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
-  });
-}
-
-/** Format DB enum values into readable labels (TRADING → Trading, EIP1967 → EIP-1967) */
-function formatEnumValue(value: string): string {
-  if (value === 'EIP1967') return 'EIP-1967';
-  if (value === 'UUPS') return 'UUPS';
-  if (value === 'NONE') return 'None';
-  return value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
-}
-
-// ─── Status helpers ───────────────────────────────────────────────────────────
-
-function statusClass(status: string): string {
-  if (status === 'VERIFIED') return 'text-[#4ADE80] border-[rgba(74,222,128,0.25)] bg-[rgba(74,222,128,0.08)]';
-  if (status === 'FLAGGED' || status === 'SUSPENDED') return 'text-[#FB7185] border-[rgba(251,113,133,0.25)] bg-[rgba(251,113,133,0.08)]';
-  return 'text-[#475569] border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.04)]';
-}
-
-// ─── Service tag colors ──────────────────────────────────────────────────────
-
-function getServiceTagStyle(name: string): string {
-  switch (name.toLowerCase()) {
-    case 'mcp':  return 'bg-[rgba(74,222,128,0.1)] text-[#4ADE80] border-[rgba(74,222,128,0.2)]';
-    case 'a2a':  return 'bg-[rgba(252,211,77,0.1)] text-[#FCD34D] border-[rgba(252,211,77,0.2)]';
-    case 'web':  return 'bg-[rgba(34,211,238,0.1)] text-[#22D3EE] border-[rgba(34,211,238,0.2)]';
-    case 'oasf': return 'bg-[rgba(167,139,250,0.1)] text-[#A78BFA] border-[rgba(167,139,250,0.2)]';
-    default:     return 'bg-[rgba(255,255,255,0.05)] text-[#64748B] border-[rgba(255,255,255,0.1)]';
+  try {
+    const diffMs = Date.now() - new Date(dateString).getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
+    if (diffMins < 1) return 'just now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 30) return `${diffDays}d ago`;
+    return new Date(dateString).toLocaleDateString();
+  } catch {
+    return 'unknown';
   }
 }
 
-// ─── Known protocols ─────────────────────────────────────────────────────────
+function statusClass(status: string): string {
+  if (status === 'VERIFIED') return 'text-[#4ADE80] border-[#4ADE80]/30 bg-[#4ADE80]/5';
+  if (status === 'FLAGGED' || status === 'SUSPENDED') return 'text-red-400 border-red-500/30 bg-red-500/5';
+  return 'text-[#475569] border-white/10 bg-white/[0.02]';
+}
 
 const KNOWN_PROTOCOLS = ['MCP', 'A2A', 'x402', 'web', 'github', 'attestations'] as const;
 
@@ -83,704 +89,423 @@ function isProtocolActive(protocol: string, agent: AgentDetail): boolean {
   );
 }
 
-// ─── Sub-components ───────────────────────────────────────────────────────────
+// ── Main page ────────────────────────────────────────────────────────────────
 
-function IdentityRow({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
+type Tab = 'overview' | 'activity' | 'community' | 'metadata';
+
+export default function AgentProfilePage() {
+  const params = useParams();
+  const address = (params?.address as string) || '';
+  
+  const [copied, setCopied] = useState(false);
+  const [activeTab, setActiveTab] = useState<Tab>('overview');
+  const [imageError, setImageError] = useState(false);
+
+  const { data: agent, isLoading, isError, error, refetch } = useAgent(address, {
+    enabled: !!address,
+  });
+
+  const { data: heartbeats } = useQuery({
+    queryKey: ['heartbeats-recent', address],
+    queryFn: async () => {
+      const res = await fetch(`/api/v1/agents/${address}/heartbeats?period=7d&limit=10`);
+      if (!res.ok) return null;
+      const json = await res.json();
+      return json.data || null;
+    },
+    enabled: !!address,
+  });
+
+  const handleCopy = () => {
+    if (address) {
+      navigator.clipboard.writeText(address);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen bg-[#05070A] items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Spinner size="lg" />
+          <p className="text-[10px] font-black uppercase tracking-[0.4em] text-[#4ADE80]">INITIALIZING_SECURE_SYNC...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (isError || !agent) {
+    return (
+      <div className="min-h-screen bg-[#05070A] flex flex-col items-center justify-center p-8">
+        <div className="border border-red-500/20 bg-red-500/5 p-12 text-center max-w-xl">
+           <AlertCircle className="h-12 w-12 text-red-400 mx-auto mb-6" />
+           <h1 className="text-3xl font-black text-white uppercase tracking-tighter mb-4">PROFILE_NOT_LOCATED</h1>
+           <p className="text-sm text-[#64748B] mb-8 font-mono">{error instanceof Error ? error.message : 'The requested agent address does not exist in the Enigma registry.'}</p>
+           <div className="flex items-center justify-center gap-4">
+              <Link href="/scanner" className="h-12 px-8 bg-white/5 border border-white/10 text-white font-black uppercase tracking-widest text-[11px] flex items-center justify-center hover:bg-white/10 transition-all text-center">RETURN_TO_BASE</Link>
+              <button onClick={() => refetch()} className="h-12 px-8 bg-[#4ADE80] text-[#05070A] font-black uppercase tracking-widest text-[11px] flex items-center justify-center hover:brightness-110 transition-all">RETRY_SYNC</button>
+           </div>
+        </div>
+      </div>
+    );
+  }
+
+  const vol24hDisplay = agent.volumes?.['24h'] ? `${parseFloat(agent.volumes['24h'].volumeAvax).toFixed(1)} AVAX` : '—';
+
+  const breakdownRows = [
+    { label: 'Volume', score: agent.trustScore?.breakdown?.volume?.score || 0 },
+    { label: 'Uptime', score: agent.trustScore?.breakdown?.uptime?.score || 0 },
+    { label: 'Proxy',  score: agent.trustScore?.breakdown?.proxy?.score || 0 },
+    { label: 'Security', score: agent.trustScore?.breakdown?.ozMatch?.score || 0 },
+    { label: 'Ratings', score: agent.trustScore?.breakdown?.ratings?.score || 0 },
+  ];
+
+  const allEvents = [
+    ...(heartbeats?.logs || []).map((h: any) => ({ 
+      id: h.id, 
+      type: 'HEARTBEAT', 
+      time: h.timestamp, 
+      label: `${h.result} · ${h.responseTimeMs}ms`, 
+      sortKey: new Date(h.timestamp).getTime() 
+    })),
+    ...(agent.ratings?.recent || []).map((r) => ({ 
+      id: r.id, 
+      type: 'RATING', 
+      time: r.createdAt, 
+      label: `${r.rating}★ from ${truncateAddress(r.userAddress)}`, 
+      sortKey: new Date(r.createdAt).getTime() 
+    })),
+  ].sort((a, b) => b.sortKey - a.sortKey).slice(0, 10);
+
+  const tabs = [
+    { id: 'overview' as Tab,  label: 'Overview', icon: LayoutDashboard },
+    { id: 'activity' as Tab,  label: 'Activity', icon: Activity, count: allEvents.length },
+    { id: 'community' as Tab, label: 'Community', icon: Users, count: agent.ratings?.count || 0 },
+    ...(agent.metadata ? [{ id: 'metadata' as Tab, label: 'Metadata', icon: FileCode2 }] : []),
+  ];
+
   return (
-    <div className="flex items-center justify-between py-2.5">
-      <span className="text-xs text-[#475569]">{label}</span>
-      <span className={cn('text-xs text-[#94A3B8]', mono && 'font-data')}>{value}</span>
+    <div className="min-h-screen bg-[#05070A] relative overflow-hidden selection:bg-[#4ADE80] selection:text-[#05070A]">
+      {/* Background Decor */}
+      <div className="fixed inset-0 bg-[linear-gradient(to_right,#80808008_1px,transparent_1px),linear-gradient(to_bottom,#80808008_1px,transparent_1px)] bg-[size:32px_32px] pointer-events-none" />
+
+      <div className="mx-auto max-w-7xl px-8 pt-8 relative z-10 flex flex-col gap-8 pb-32">
+        
+        {/* Navigation / Header Info */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6" data-tour="agent-stats">
+           <Link href="/scanner" className="group flex items-center gap-3 w-fit">
+              <div className="h-8 w-8 flex items-center justify-center border border-[#4ADE80]/10 bg-[#4ADE80]/5 group-hover:border-[#4ADE80]/40 transition-all">
+                 <ArrowLeft className="h-4 w-4 text-[#4ADE80]" />
+              </div>
+              <span className="text-[10px] font-black uppercase tracking-widest text-[#475569] group-hover:text-white transition-colors">Scanner_Index</span>
+           </Link>
+
+           <div className="flex items-center gap-6">
+              <MetricBadge label="UPTIME" value={`${agent.uptime?.percentage?.toFixed(1) || 0}%`} />
+              <MetricBadge label="VOLUME_24H" value={vol24hDisplay} />
+              <MetricBadge label="TRUST_SCORE" value={`${agent.trustScore?.score || 0}/100`} />
+              <div className={cn("px-4 py-1.5 border text-[10px] font-black uppercase tracking-widest ml-4 shadow-xl", statusClass(agent.status))}>
+                 {agent.status}
+              </div>
+           </div>
+        </div>
+
+        {/* Profile Card Main */}
+        <div 
+           className="border border-white/10 bg-[#0F1219]/60 p-8 md:p-12 relative overflow-hidden group shadow-[0_40px_100px_rgba(0,0,0,0.8)]"
+           data-tour="agent-header"
+        >
+           <IndustrialCorner position="tr" size={6} />
+           <IndustrialCorner position="bl" size={6} />
+           
+           <div className="flex flex-col md:flex-row gap-12 items-start relative z-10">
+              {/* Avatar Section */}
+              <div className="flex flex-col items-center gap-4 shrink-0">
+                 <div className="h-32 w-32 border-2 border-[#4ADE80]/20 bg-[#05070A] flex items-center justify-center relative shadow-[0_0_30px_rgba(74,222,128,0.05)]">
+                    {agent.metadata?.image && !imageError ? (
+                       <img 
+                          src={agent.metadata.image} 
+                          className="h-full w-full object-cover grayscale brightness-90 hover:grayscale-0 hover:brightness-100 transition-all duration-700" 
+                          alt={agent.name}
+                          onError={() => setImageError(true)} 
+                       />
+                    ) : (
+                       <Bot className="h-12 w-12 text-[#4ADE80]/30" />
+                    )}
+                    {/* Visual ID Marker */}
+                    <div className="absolute top-0 right-0 w-8 h-8 flex items-center justify-center">
+                       <span className="text-[9px] font-mono text-[#4ADE80]/40">#ID</span>
+                    </div>
+                 </div>
+                 <div className="flex flex-col items-center gap-1">
+                    <span className="text-[9px] font-mono text-[#475569] uppercase tracking-[0.3em]">VERSION_1.0.4</span>
+                 </div>
+              </div>
+
+              {/* Identity Section */}
+              <div className="flex-1 min-w-0">
+                 <div className="flex flex-col gap-2 mb-6">
+                    <h1 className="text-4xl md:text-6xl font-black text-white uppercase tracking-tighter leading-none">{agent.name}</h1>
+                    <div className="flex items-center gap-3">
+                       <p className="text-sm font-mono text-[#4ADE80]/60 truncate max-w-md">{address}</p>
+                       <button onClick={handleCopy} className="text-[#4ADE80]/30 hover:text-[#4ADE80] transition-colors">
+                          {copied ? <CheckCircle2 className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                       </button>
+                    </div>
+                 </div>
+
+                 <p className="text-lg font-medium text-[#94A3B8] leading-relaxed max-w-3xl mb-8">
+                    {agent.description || "Experimental autonomous agent instance protocol active on Enigma core layer."}
+                 </p>
+
+                 <div className="flex flex-wrap gap-4 mt-auto pt-6 border-t border-white/5" data-tour="agent-actions">
+                    <div className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 text-[10px] font-black text-[#64748B] uppercase tracking-widest">
+                       TYPE::{agent.type}
+                    </div>
+                    {agent.registryAddress && (
+                       <div className="flex items-center gap-2 px-4 py-2 bg-[#4ADE80]/5 border border-[#4ADE80]/20 text-[10px] font-black text-[#4ADE80] uppercase tracking-widest">
+                          REGISTRY::{truncateAddress(agent.registryAddress)}
+                       </div>
+                    )}
+                    <button className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 text-[10px] font-black text-[#64748B] uppercase tracking-widest hover:bg-white/10 transition-all">
+                       <Share2 className="h-3 w-3" /> EXPORT_CERT
+                    </button>
+                    <ReportModal agentAddress={address} />
+                 </div>
+              </div>
+
+              {/* Right Side - Trust Score Chart / Summary */}
+              <div className="w-full md:w-64 space-y-6 shrink-0 pt-4" data-tour="agent-score">
+                 <div className="flex justify-between items-baseline mb-2">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-[#4ADE80]">CORE_TRUST</span>
+                    <span className="text-2xl font-black text-white">{agent.trustScore?.score || 0}%</span>
+                 </div>
+                 <div className="h-2 w-full bg-[#05070A] border border-white/5 overflow-hidden">
+                    <div 
+                       className="h-full bg-[#4ADE80] transition-all duration-[1500ms] shadow-[0_0_20px_#4ADE80]" 
+                       style={{ width: `${agent.trustScore?.score || 0}%` }} 
+                    />
+                 </div>
+                 <div className="space-y-3 pt-4">
+                    {breakdownRows.map(row => (
+                       <div key={row.label} className="flex justify-between items-center text-[10px] font-black uppercase">
+                          <span className="text-[#475569]">{row.label}</span>
+                          <span className="text-[#94A3B8] font-mono">{row.score}pt</span>
+                       </div>
+                    ))}
+                 </div>
+              </div>
+           </div>
+        </div>
+
+        {/* Horizontal Navigation Console */}
+        <div className="flex border-b border-white/10 bg-[#0F1219]/20 px-8" data-tour="agent-tabs">
+           {tabs.map((tab) => (
+             <button
+               key={tab.id}
+               onClick={() => setActiveTab(tab.id)}
+               className={cn(
+                 "px-8 py-5 text-[11px] font-black uppercase tracking-widest transition-all relative group",
+                 activeTab === tab.id ? "text-white" : "text-[#475569] hover:text-[#94A3B8]"
+               )}
+             >
+                {activeTab === tab.id && (
+                   <div className="absolute left-0 right-0 bottom-0 h-1 bg-[#4ADE80] shadow-[0_0_12px_#4ADE80]" />
+                )}
+                <div className="flex items-center gap-3">
+                   <tab.icon className={cn("h-3.5 w-3.5", activeTab === tab.id ? "text-[#4ADE80]" : "text-[#475569]")} />
+                   {tab.label}
+                   {tab.count !== undefined && tab.count > 0 && (
+                      <span className="text-[9px] opacity-40 font-mono">({tab.count})</span>
+                   )}
+                </div>
+             </button>
+           ))}
+        </div>
+
+        {/* Tab Content Display */}
+        <div className="bg-[#05070A]/20 min-h-[400px]">
+           
+           {activeTab === 'overview' && (
+              <div className="animate-fade-in-up grid grid-cols-1 lg:grid-cols-3 gap-8">
+                 <div className="lg:col-span-2 space-y-8">
+                    <div className="p-8 border border-white/5 bg-[#0F1219]/40">
+                       <SectionHeading title="Identity_Protocol" icon={Shield} />
+                       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
+                          <DetailRow label="Contract_Hash" value={address} mono />
+                          <DetailRow label="Registry_Core" value={agent.registryAddress || 'GENESIS'} mono />
+                          <DetailRow label="Authority_Key" value={agent.ownerAddress || 'SYSTEM'} mono />
+                          <DetailRow label="Cycle_Longevity" value={formatAge(agent.createdAt)} />
+                          <DetailRow label="Status_Verified" value={agent.status} />
+                          <DetailRow label="Network_L1" value="Avalanche C-Chain" />
+                       </div>
+                    </div>
+
+                    <div className="p-8 border border-white/5 bg-[#0F1219]/40">
+                       <SectionHeading title="Capability_Matrix" icon={GitBranch} />
+                       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                          {KNOWN_PROTOCOLS.map(p => (
+                             <div key={p} className={cn(
+                                "p-4 border text-center transition-all",
+                                isProtocolActive(p, agent) 
+                                   ? "border-[#4ADE80]/20 bg-[#4ADE80]/5 text-[#4ADE80]" 
+                                   : "border-white/5 bg-white/[0.02] text-[#475569]"
+                             )}>
+                                <p className="text-[10px] font-black uppercase tracking-widest">{p}</p>
+                             </div>
+                          ))}
+                       </div>
+                    </div>
+                 </div>
+
+                 <div className="space-y-8">
+                    <div className="p-8 border border-[#4ADE80]/10 bg-[#4ADE80]/[0.03] relative overflow-hidden">
+                       <IndustrialCorner position="tr" size={4} />
+                       <SectionHeading title="Security_Policy" icon={Lock} />
+                       <div className="space-y-5">
+                          <div className="flex items-center gap-4">
+                             <div className="h-10 w-10 shrink-0 flex items-center justify-center bg-[#4ADE80]/10 border border-[#4ADE80]/20">
+                                <Shield className="h-5 w-5 text-[#4ADE80]" />
+                             </div>
+                             <div>
+                                <p className="text-[10px] font-black text-white uppercase">Multi-Sig Guard</p>
+                                <p className="text-[9px] text-[#64748B] uppercase">Active on Registry</p>
+                             </div>
+                          </div>
+                          <div className="flex items-center gap-4">
+                             <div className="h-10 w-10 shrink-0 flex items-center justify-center bg-[#4ADE80]/10 border border-[#4ADE80]/20">
+                                <FileCode2 className="h-5 w-5 text-[#4ADE80]" />
+                             </div>
+                             <div>
+                                <p className="text-[10px] font-black text-white uppercase">Audit Status</p>
+                                <p className="text-[9px] text-[#64748B] uppercase">Verified Protocol</p>
+                             </div>
+                          </div>
+                       </div>
+                    </div>
+
+                    <Link 
+                       href={agent?.registryAddress ? `https://snowtrace.io/token/${agent.registryAddress}?a=${agent.tokenId}` : `https://snowtrace.io/address/${address}`}
+                       target="_blank"
+                       className="group flex items-center justify-between p-8 border border-white/5 bg-[#0F1219]/40 hover:bg-[#4ADE80]/5 hover:border-[#4ADE80]/20 transition-all"
+                    >
+                       <div>
+                          <p className="text-[10px] font-black text-[#475569] uppercase group-hover:text-[#4ADE80]">External_Explorer</p>
+                          <p className="text-xs font-black text-white uppercase mt-1">View_on_Snowtrace</p>
+                       </div>
+                       <ExternalLink className="h-5 w-5 text-[#475569] group-hover:text-[#4ADE80] transition-colors" />
+                    </Link>
+                 </div>
+              </div>
+           )}
+
+           {activeTab === 'activity' && (
+              <div className="animate-fade-in-up p-8 border border-white/5 bg-[#0F1219]/40">
+                 <SectionHeading title="System_Event_Log" icon={Activity} />
+                 <div className="space-y-2">
+                    {allEvents.length > 0 ? allEvents.map((evt) => (
+                       <div key={evt.id} className="group flex items-center gap-8 p-4 border-b border-white/5 hover:bg-[#4ADE80]/5 transition-all">
+                          <span className="text-[10px] font-mono text-[#475569] w-32">{formatEventDate(evt.time)}</span>
+                          <span className={cn(
+                             "text-[9px] font-black uppercase px-3 py-1 border",
+                             evt.type === 'HEARTBEAT' ? "text-[#4ADE80] border-[#4ADE80]/20" : "text-[#22D3EE] border-[#22D3EE]/20"
+                          )}>{evt.type}</span>
+                          <span className="text-sm font-medium text-white flex-1">{evt.label}</span>
+                          <div className="h-2 w-2 rounded-full bg-[#4ADE80] opacity-0 group-hover:opacity-100 shadow-[0_0_8px_#4ADE80] transition-opacity" />
+                       </div>
+                    )) : (
+                       <div className="py-24 text-center">
+                          <AlertTriangle className="h-10 w-10 text-[#475569] mx-auto mb-4 opacity-20" />
+                          <p className="uppercase tracking-[0.4em] text-[#475569] text-[10px]">No_Event_Logs_Synchronized</p>
+                       </div>
+                    )}
+                 </div>
+              </div>
+           )}
+
+           {activeTab === 'community' && (
+              <div className="animate-fade-in-up grid grid-cols-1 lg:grid-cols-3 gap-12">
+                 <div className="lg:col-span-2 space-y-6">
+                    {(agent.ratings?.recent || []).map((r, idx) => (
+                       <div key={idx} className="p-8 border border-white/5 bg-[#0F1219]/40 relative">
+                          <div className="flex items-center justify-between mb-6">
+                             <div className="flex gap-1">
+                                {Array.from({ length: 5 }).map((_, i) => (
+                                   <div key={i} className={cn("h-4 w-4", i < r.rating ? "text-[#FCD34D]" : "text-[#475569]/20")}>★</div>
+                                ))}
+                             </div>
+                             <span className="text-[10px] font-mono text-[#475569]">{formatRelativeTime(r.createdAt)}</span>
+                          </div>
+                          <p className="text-white text-md mb-8 leading-relaxed font-medium">&quot;{r.review || 'Sequence validated without comment.'}&quot;</p>
+                          <div className="flex items-center gap-3">
+                             <div className="h-px w-8 bg-[#4ADE80]/40" />
+                             <p className="text-[10px] font-black text-[#4ADE80] uppercase tracking-widest">USER::{truncateAddress(r.userAddress)}</p>
+                          </div>
+                       </div>
+                    ))}
+                    {(!agent.ratings?.recent || agent.ratings.recent.length === 0) && (
+                       <div className="py-24 border border-white/5 bg-white/[0.02] text-center">
+                         <Users className="h-10 w-10 text-[#475569] mx-auto mb-4 opacity-10" />
+                         <p className="uppercase tracking-widest text-[#475569] text-[10px]">Awaiting_Agent_Appraisal</p>
+                       </div>
+                    )}
+                 </div>
+                 <div className="p-8 border border-[#4ADE80]/10 bg-[#4ADE80]/5 h-fit sticky top-8">
+                    <p className="text-[11px] font-black uppercase tracking-[0.2em] text-[#4ADE80] mb-8">INBOUND_RATING_CHANNEL</p>
+                    <RatingForm agentAddress={address} />
+                 </div>
+              </div>
+           )}
+
+           {activeTab === 'metadata' && (
+              <div className="animate-fade-in-up">
+                 <div className="relative border border-[#4ADE80]/10 bg-[#05070A]/80 p-10 shadow-inner overflow-hidden">
+                    <div className="absolute top-0 right-0 p-6 opacity-5 uppercase font-black text-8xl select-none">BLOB</div>
+                    <pre className="text-xs font-mono text-[#4ADE80] leading-relaxed overflow-x-auto whitespace-pre-wrap">
+                       {JSON.stringify(agent.metadata, null, 3)}
+                    </pre>
+                 </div>
+              </div>
+           )}
+
+        </div>
+
+      </div>
+
+      <TourCta page="agent" />
     </div>
   );
 }
 
-// ─── Tab types ────────────────────────────────────────────────────────────────
-
-type Tab = 'overview' | 'activity' | 'community' | 'metadata';
-
-// ─── Main page ────────────────────────────────────────────────────────────────
-
-export default function AgentProfilePage() {
-  const params = useParams();
-  const address = params.address as string;
-  const [copied, setCopied] = useState(false);
-  const [embedCopied, setEmbedCopied] = useState(false);
-  const [activeTab, setActiveTab] = useState<Tab>('overview');
-
-  const { data: agent, isLoading, isError, error, refetch } = useAgent(address, {
-    refetchInterval: 5 * 60 * 1000,
-  });
-
-  const { data: heartbeatData } = useQuery({
-    queryKey: ['heartbeats-recent', address],
-    queryFn: async () => {
-      const res = await fetch(`/api/v1/agents/${address}/heartbeats?period=7d&limit=10`);
-      const json = await res.json();
-      return json.data ?? null;
-    },
-    enabled: !!address,
-    staleTime: 5 * 60 * 1000,
-  });
-
-  const handleCopy = () => {
-    navigator.clipboard.writeText(address);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  const handleEmbed = () => {
-    const snippet = `<iframe src="${window.location.origin}/agents/${address}/embed" width="320" height="160" frameborder="0" style="border:none;"></iframe>`;
-    navigator.clipboard.writeText(snippet);
-    setEmbedCopied(true);
-    setTimeout(() => setEmbedCopied(false), 2000);
-  };
-
-  const handleShare = () => {
-    if (!agent) return;
-    const url = `${window.location.origin}/agents/${address}`;
-    const text = [
-      `\uD83D\uDD0D ${agent.name} \u2014 Trust Score: ${agent.trustScore.score}/100`,
-      `\u2705 ${agent.status} | ${agent.type}`,
-      ``,
-      `Verified on Enigma \u00B7 Avalanche`,
-    ].join('\n');
-    window.open(
-      `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`,
-      '_blank',
-      'noopener,noreferrer,width=600,height=500',
-    );
-  };
-
-  const snowtraceUrl =
-    agent?.registryAddress && agent?.tokenId
-      ? `https://snowtrace.io/token/${agent.registryAddress}?a=${agent.tokenId}#inventory`
-      : `https://snowtrace.io/address/${address}`;
-
-  // ─── Loading ─────────────────────────────────────────────────────────────────
-  if (isLoading) {
-    return (
-      <div className="flex min-h-[60vh] items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <Spinner size="lg" />
-          <p className="text-sm text-[#64748B]">Loading agent profile…</p>
-        </div>
+function DetailRow({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
+   return (
+      <div className="flex flex-col gap-2 border-b border-white/5 pb-4">
+         <span className="text-[9px] font-black uppercase text-[#475569] tracking-widest">{label}</span>
+         <span className={cn("text-[13px] font-semibold text-white truncate", mono && "font-mono text-[#4ADE80]")}>{value || '—'}</span>
       </div>
-    );
+   );
+}
+
+function formatAge(dateString: string): string {
+  try {
+    const diffDays = Math.floor((Date.now() - new Date(dateString).getTime()) / 86400000);
+    if (diffDays === 0) return 'today';
+    if (diffDays === 1) return '1 day';
+    if (diffDays < 30) return `${diffDays} days`;
+    const months = Math.floor(diffDays / 30);
+    return months === 1 ? '1 month' : `${months} months`;
+  } catch {
+    return '0 days';
   }
+}
 
-  // ─── Error ───────────────────────────────────────────────────────────────────
-  if (isError) {
-    return (
-      <div className="p-6">
-        <Link
-          href="/scanner/agents"
-          className="mb-6 inline-flex items-center gap-1.5 text-sm text-[#64748B] transition-colors hover:text-white"
-        >
-          <ArrowLeft className="h-3.5 w-3.5" />
-          Back to Agents
-        </Link>
-        <div className="mt-8 flex flex-col items-center justify-center py-16 text-center">
-          <h1 className="mb-2 text-lg font-bold text-white">Agent Not Found</h1>
-          <p className="mb-6 max-w-md text-sm text-[#64748B]">
-            {error?.message || 'Unable to load agent details.'}
-          </p>
-          <button
-            onClick={() => refetch()}
-            className="rounded-lg border border-[rgba(255,255,255,0.08)] px-4 py-2 text-sm text-white transition-colors hover:bg-[rgba(255,255,255,0.04)]"
-          >
-            Try Again
-          </button>
-        </div>
-      </div>
-    );
+function formatEventDate(dateString: string): string {
+  try {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
+    });
+  } catch {
+    return '01-01-1970';
   }
-
-  if (!agent) return null;
-
-  // ─── Derived values ───────────────────────────────────────────────────────────
-  const vol24h = agent.volumes?.['24h'];
-  const vol24hDisplay = vol24h ? `${parseFloat(vol24h.volumeAvax).toFixed(1)} AVAX` : '—';
-
-  const snapshotStats = [
-    { label: 'UPTIME',       value: `${agent.uptime.percentage.toFixed(0)}%` },
-    { label: 'VOLUME (24H)', value: vol24hDisplay },
-    { label: 'PROXY',        value: agent.proxy.detected ? formatEnumValue(agent.proxy.type) : 'None' },
-    { label: 'RATING',       value: agent.ratings.count > 0 ? `${agent.ratings.average.toFixed(1)} / 5` : '—' },
-    { label: 'AGE',          value: formatAge(agent.createdAt) },
-  ];
-
-  const breakdownRows = [
-    { label: 'Transaction Volume', score: agent.trustScore.breakdown.volume.score,  weight: agent.trustScore.breakdown.volume.weight },
-    { label: 'Uptime',             score: agent.trustScore.breakdown.uptime.score,   weight: agent.trustScore.breakdown.uptime.weight },
-    { label: 'Proxy Transparency', score: agent.trustScore.breakdown.proxy.score,    weight: agent.trustScore.breakdown.proxy.weight },
-    { label: 'Security Patterns',  score: agent.trustScore.breakdown.ozMatch.score,  weight: agent.trustScore.breakdown.ozMatch.weight },
-    { label: 'Community Ratings',  score: agent.trustScore.breakdown.ratings.score,  weight: agent.trustScore.breakdown.ratings.weight },
-  ];
-
-  type EventItem = {
-    id: string;
-    type: 'HEARTBEAT' | 'RATING';
-    time: string;
-    label: string;
-    sortKey: number;
-  };
-
-  const hbLogs: Array<{ id: string; timestamp: string; result: string; responseTimeMs: number }> =
-    heartbeatData?.logs ?? [];
-
-  const allEvents: EventItem[] = [
-    ...hbLogs.map((h) => ({
-      id: h.id,
-      type: 'HEARTBEAT' as const,
-      time: h.timestamp,
-      label: `${h.result} · ${h.responseTimeMs}ms`,
-      sortKey: new Date(h.timestamp).getTime(),
-    })),
-    ...(agent.ratings.recent ?? []).map((r) => ({
-      id: r.id,
-      type: 'RATING' as const,
-      time: r.createdAt,
-      label: `${r.rating}★ from ${truncateAddress(r.userAddress)}`,
-      sortKey: new Date(r.createdAt).getTime(),
-    })),
-  ]
-    .sort((a, b) => b.sortKey - a.sortKey)
-    .slice(0, 10);
-
-  const tabs: { id: Tab; label: string; count?: number }[] = [
-    { id: 'overview',  label: 'Overview' },
-    { id: 'activity',  label: 'Activity',  count: allEvents.length },
-    { id: 'community', label: 'Community', count: agent.ratings.count },
-    ...(agent.metadata ? [{ id: 'metadata' as const, label: 'Metadata' }] : []),
-  ];
-
-  // ─── Render ───────────────────────────────────────────────────────────────────
-  return (
-    <div className="mx-auto flex max-w-5xl flex-col gap-6 px-4 py-6 sm:px-6 sm:py-8">
-
-      {/* Back */}
-      <Link
-        href="/scanner/agents"
-        className="inline-flex w-fit items-center gap-1.5 text-xs text-[#475569] transition-colors hover:text-white"
-      >
-        <ArrowLeft className="h-3.5 w-3.5" />
-        Back to Agents
-      </Link>
-
-      {/* ── Header ── */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
-        <div data-tour="agent-header" className="flex min-w-0 flex-1 items-start gap-4">
-
-          {/* Agent avatar */}
-          <div className="shrink-0">
-            {agent.metadata?.image ? (
-              <img
-                src={agent.metadata.image}
-                alt={agent.name}
-                onError={(e) => {
-                  e.currentTarget.style.display = 'none';
-                  const fb = e.currentTarget.nextElementSibling as HTMLElement | null;
-                  if (fb) { fb.classList.remove('hidden'); fb.classList.add('flex'); }
-                }}
-                className="h-16 w-16 rounded-xl object-cover ring-1 ring-[rgba(255,255,255,0.08)]"
-              />
-            ) : null}
-            <div
-              className={cn(
-                'h-16 w-16 items-center justify-center rounded-xl bg-[rgba(255,255,255,0.04)] ring-1 ring-[rgba(255,255,255,0.08)]',
-                agent.metadata?.image ? 'hidden' : 'flex',
-              )}
-            >
-              <Bot className="h-7 w-7 text-[#475569]" />
-            </div>
-          </div>
-
-          <div className="min-w-0 flex-1">
-          <div className="mb-2 flex flex-wrap items-center gap-2">
-            <h1 className="text-3xl font-bold tracking-tight text-white">{agent.name}</h1>
-            <span className="rounded border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.04)] px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-[#475569]">
-              {formatEnumValue(agent.type)}
-            </span>
-            <span className={cn('rounded border px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider', statusClass(agent.status))}>
-              {formatEnumValue(agent.status)}
-            </span>
-            {(agent.metadata?.services ?? []).map((svc) => (
-              <span key={svc.name} className={cn('rounded border px-2 py-0.5 text-[10px] font-semibold', getServiceTagStyle(svc.name))}>
-                {svc.name}
-              </span>
-            ))}
-          </div>
-
-          {agent.description && (
-            <p className="mb-3 max-w-2xl text-sm leading-relaxed text-[#94A3B8]">
-              {agent.description}
-            </p>
-          )}
-
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 font-data text-xs text-[#475569]">
-            {agent.tokenId && <span>#{agent.tokenId}</span>}
-            {agent.tokenId && <span>·</span>}
-            <span>Registered {formatRelativeTime(agent.createdAt)}</span>
-            <span>·</span>
-            <button
-              onClick={handleCopy}
-              title="Copy address"
-              className="inline-flex items-center gap-1 transition-colors hover:text-white"
-            >
-              {truncateAddress(address)}
-              {copied && <span className="text-[#4ADE80]"> ✓</span>}
-            </button>
-            <span>·</span>
-            <span>Owner {truncateAddress(agent.ownerAddress)}</span>
-          </div>
-          </div>
-        </div>
-
-        {/* Score */}
-        <div data-tour="agent-score" className="shrink-0 sm:text-right">
-          <p className="font-data text-5xl font-bold leading-none text-[#4ADE80]">
-            {agent.trustScore.score}
-          </p>
-          <p className="mt-0.5 text-sm text-[#475569]">/100</p>
-          <Link
-            href={`/agents/${address}/trust-graph` as '/'}
-            className="mt-2 inline-flex items-center gap-1 text-[11px] text-[#475569] transition-colors hover:text-white"
-          >
-            Trust Graph →
-          </Link>
-        </div>
-      </div>
-
-      {/* Flagged / Suspended warning */}
-      {(agent.status === 'FLAGGED' || agent.status === 'SUSPENDED') && (
-        <div className="rounded-lg border border-[rgba(251,113,133,0.2)] bg-[rgba(251,113,133,0.06)] px-4 py-3 text-sm text-[#FB7185]">
-          This agent has been{' '}
-          {agent.status === 'FLAGGED'
-            ? 'flagged by the community and is under review'
-            : 'suspended'}.
-        </div>
-      )}
-
-      {/* ── Actions ── */}
-      <div data-tour="agent-actions" className="flex flex-wrap gap-2">
-        <button
-          onClick={handleShare}
-          className="rounded-lg border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.04)] px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-[rgba(255,255,255,0.08)]"
-        >
-          Share Certificate
-        </button>
-        <button
-          onClick={handleEmbed}
-          className="rounded-lg border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.04)] px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-[rgba(255,255,255,0.08)]"
-        >
-          {embedCopied ? 'Copied!' : 'Embed'}
-        </button>
-        <a
-          href={snowtraceUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 rounded-lg border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.04)] px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-[rgba(255,255,255,0.08)]"
-        >
-          Explorer
-          <ExternalLink className="h-3 w-3" />
-        </a>
-        <Link
-          href={`/agents/${address}/trust-graph` as '/'}
-          className="inline-flex items-center gap-1.5 rounded-lg border border-[rgba(74,222,128,0.2)] bg-[rgba(74,222,128,0.06)] px-4 py-2 text-xs font-semibold text-[#4ADE80] transition-colors hover:bg-[rgba(74,222,128,0.1)]"
-        >
-          <GitBranch className="h-3 w-3" />
-          Trust Graph
-        </Link>
-        <ReportModal agentAddress={address} />
-        <Link
-          href="/docs#register"
-          className="inline-flex items-center gap-1.5 rounded-lg border border-[rgba(167,139,250,0.2)] bg-[rgba(167,139,250,0.06)] px-4 py-2 text-xs font-semibold text-[#A78BFA] transition-colors hover:bg-[rgba(167,139,250,0.1)]"
-        >
-          <BookOpen className="h-3 w-3" />
-          How to Register
-        </Link>
-      </div>
-
-      {/* ── Trust Snapshot strip ── */}
-      <div data-tour="agent-stats" className="grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-[rgba(255,255,255,0.06)] sm:grid-cols-5">
-        {snapshotStats.map(({ label, value }) => (
-          <div key={label} className="bg-[rgba(255,255,255,0.02)] px-4 py-3">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-[#475569]">{label}</p>
-            <p className="font-data mt-1 text-sm font-bold text-white">{value}</p>
-          </div>
-        ))}
-      </div>
-
-      {/* ── Tabs ── */}
-      <div data-tour="agent-tabs" className="border-b border-[rgba(255,255,255,0.06)]">
-        <div className="flex">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={cn(
-                'relative px-4 py-2.5 text-sm font-medium transition-colors',
-                activeTab === tab.id
-                  ? 'text-white after:absolute after:bottom-0 after:left-0 after:right-0 after:h-px after:bg-[#4ADE80]'
-                  : 'text-[#475569] hover:text-[#94A3B8]',
-              )}
-            >
-              {tab.label}
-              {tab.count !== undefined && tab.count > 0 && (
-                <span className="ml-2 rounded-full bg-[rgba(255,255,255,0.06)] px-1.5 py-0.5 text-[10px] text-[#475569]">
-                  {tab.count}
-                </span>
-              )}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* ── Tab: Overview ── */}
-      {activeTab === 'overview' && (
-        <div className="flex flex-col gap-6">
-
-          {/* Two-column */}
-          <div className="grid gap-4 md:grid-cols-2">
-
-            {/* ERC-8004 Identity */}
-            <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.02)] p-5">
-              <p className="mb-4 text-[10px] font-semibold uppercase tracking-widest text-[#475569]">ERC-8004 Identity</p>
-              <div className="divide-y divide-[rgba(255,255,255,0.04)]">
-                <IdentityRow label="Agent ID"  value={agent.tokenId ? `#${agent.tokenId}` : '—'} />
-                <IdentityRow label="Type"      value={formatEnumValue(agent.type)} />
-                <IdentityRow label="Chain"     value="Avalanche C-Chain" />
-                <IdentityRow label="Owner"     value={truncateAddress(agent.ownerAddress)} mono />
-                {agent.registryAddress && (
-                  <IdentityRow label="Registry" value={truncateAddress(agent.registryAddress)} mono />
-                )}
-                {agent.tokenUri && (
-                  <div className="flex items-center justify-between py-2.5">
-                    <span className="text-xs text-[#475569]">Token URI</span>
-                    <a
-                      href={agent.tokenUri}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-xs text-[#94A3B8] transition-colors hover:text-white"
-                    >
-                      View <ExternalLink className="h-3 w-3" />
-                    </a>
-                  </div>
-                )}
-                <IdentityRow label="Storage"  value="On-chain" />
-              </div>
-            </div>
-
-            {/* Right column */}
-            <div className="flex flex-col gap-4">
-              <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.02)] p-5">
-                <p className="mb-4 text-[10px] font-semibold uppercase tracking-widest text-[#475569]">What Changed</p>
-                <ul className="space-y-2 text-xs text-[#94A3B8]">
-                  <li>Registered {formatRelativeTime(agent.createdAt)}</li>
-                  <li>Trust score updated {formatRelativeTime(agent.trustScore.lastUpdated)}</li>
-                  {agent.ratings.recent.length > 0 && (
-                    <li>Rating received {formatRelativeTime(agent.ratings.recent[0].createdAt)}</li>
-                  )}
-                  {heartbeatData?.logs?.[0] ? (
-                    <li>
-                      Heartbeat:{' '}
-                      {heartbeatData.logs[0].result === 'PASS' ? 'last check OK' : 'last check failed'}{' '}
-                      · {formatRelativeTime(heartbeatData.logs[0].timestamp)}
-                    </li>
-                  ) : (
-                    <li>Heartbeat: no data yet</li>
-                  )}
-                </ul>
-              </div>
-
-              <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.02)] p-5">
-                <p className="mb-4 text-[10px] font-semibold uppercase tracking-widest text-[#475569]">Connected Protocols</p>
-                <div className="divide-y divide-[rgba(255,255,255,0.04)]">
-                  {KNOWN_PROTOCOLS.map((protocol) => {
-                    const active = isProtocolActive(protocol, agent);
-                    return (
-                      <div key={protocol} className="flex items-center justify-between py-2.5">
-                        <span className="text-xs text-white">{protocol}</span>
-                        <span
-                          className={cn(
-                            'rounded px-2 py-0.5 text-[10px] font-semibold',
-                            active
-                              ? 'bg-[rgba(74,222,128,0.1)] text-[#4ADE80]'
-                              : 'bg-[rgba(255,255,255,0.04)] text-[#475569]',
-                          )}
-                        >
-                          {active ? 'Active' : 'Inactive'}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Trust Breakdown */}
-          <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.02)] p-5">
-            <div className="mb-5 flex items-center justify-between">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-[#475569]">Trust Breakdown</p>
-              <p className="font-data text-sm font-bold text-white">
-                {agent.trustScore.score}
-                <span className="ml-0.5 text-xs font-normal text-[#475569]">/100</span>
-              </p>
-            </div>
-            <div className="space-y-4">
-              {breakdownRows.map(({ label, score, weight }) => (
-                <div key={label}>
-                  <div className="mb-1.5 flex items-center justify-between">
-                    <span className="text-xs text-[#94A3B8]">{label}</span>
-                    <div className="flex items-center gap-3">
-                      <span className="text-[10px] text-[#475569]">{Math.round(weight * 100)}%</span>
-                      <span className="font-data w-7 text-right text-xs font-bold text-white">{score}</span>
-                    </div>
-                  </div>
-                  <div className="h-1 w-full overflow-hidden rounded-full bg-[rgba(255,255,255,0.06)]">
-                    <div
-                      className="h-full rounded-full bg-[#4ADE80] opacity-80 transition-all duration-700"
-                      style={{ width: `${score}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-        </div>
-      )}
-
-      {/* ── Tab: Activity ── */}
-      {activeTab === 'activity' && (
-        <div className="flex flex-col gap-6">
-
-          {/* Uptime summary */}
-          <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.02)] p-5">
-            <p className="mb-4 text-[10px] font-semibold uppercase tracking-widest text-[#475569]">Uptime Summary (7d)</p>
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-              {[
-                { label: 'Uptime',        value: `${agent.uptime.percentage.toFixed(1)}%` },
-                { label: 'Total Checks',  value: agent.uptime.totalPings.toString() },
-                { label: 'Successful',    value: agent.uptime.successfulPings.toString() },
-                { label: 'Avg Response',  value: `${agent.uptime.averageResponseTimeMs}ms` },
-              ].map(({ label, value }) => (
-                <div key={label}>
-                  <p className="text-[10px] uppercase tracking-widest text-[#475569]">{label}</p>
-                  <p className="font-data mt-1 text-sm font-bold text-white">{value}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Event history */}
-          {allEvents.length > 0 ? (
-            <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.02)]">
-              <div className="border-b border-[rgba(255,255,255,0.06)] px-5 py-3">
-                <p className="text-[10px] font-semibold uppercase tracking-widest text-[#475569]">Event History</p>
-              </div>
-              <div className="divide-y divide-[rgba(255,255,255,0.04)]">
-                {allEvents.map((evt) => (
-                  <div key={evt.id} className="flex items-center gap-3 px-5 py-2.5">
-                    <span className="font-data shrink-0 text-[10px] text-[#475569]">
-                      {formatEventDate(evt.time)}
-                    </span>
-                    <span
-                      className={cn(
-                        'shrink-0 rounded px-1.5 py-0.5 text-[10px] font-semibold',
-                        evt.type === 'HEARTBEAT'
-                          ? 'bg-[rgba(255,255,255,0.06)] text-[#94A3B8]'
-                          : 'bg-[rgba(74,222,128,0.08)] text-[#4ADE80]',
-                      )}
-                    >
-                      {evt.type}
-                    </span>
-                    <span className="truncate text-xs text-[#94A3B8]">{evt.label}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center py-16 text-center">
-              <p className="text-sm text-[#475569]">No activity recorded yet.</p>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* ── Tab: Metadata ── */}
-      {activeTab === 'metadata' && agent.metadata && (() => {
-        const SKIP_KEYS = new Set(['name', 'description', 'image', 'type', 'services', 'x402Support', 'active', 'registrations', 'supportedTrust']);
-        const extraEntries = Object.entries(agent.metadata).filter(
-          ([k, v]) => !SKIP_KEYS.has(k) && v !== undefined && v !== null,
-        );
-        return (
-          <div className="flex flex-col gap-4">
-
-            {/* Services */}
-            {(agent.metadata.services ?? []).length > 0 && (
-              <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.02)] p-5">
-                <p className="mb-3 text-[10px] font-semibold uppercase tracking-widest text-[#475569]">Services</p>
-                <div className="flex flex-col gap-2">
-                  {agent.metadata.services!.map((svc, i) => (
-                    <div key={i} className="rounded-lg border border-[rgba(255,255,255,0.05)] bg-[rgba(255,255,255,0.02)] px-4 py-3">
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <span className="text-xs font-semibold text-white">{svc.name}</span>
-                        {svc.version && (
-                          <span className="rounded bg-[rgba(255,255,255,0.06)] px-1.5 py-0.5 font-data text-[10px] text-[#475569]">
-                            v{svc.version}
-                          </span>
-                        )}
-                      </div>
-                      {svc.endpoint && (
-                        <p className="mt-1 break-all font-data text-[11px] text-[#475569]">{svc.endpoint}</p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Flags */}
-            {(agent.metadata.x402Support !== undefined || agent.metadata.active !== undefined) && (
-              <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.02)] p-5">
-                <p className="mb-3 text-[10px] font-semibold uppercase tracking-widest text-[#475569]">Capabilities</p>
-                <div className="flex flex-wrap gap-2">
-                  {agent.metadata.x402Support !== undefined && (
-                    <span className={cn(
-                      'rounded-full border px-3 py-1 text-[11px] font-semibold',
-                      agent.metadata.x402Support
-                        ? 'border-[rgba(74,222,128,0.25)] bg-[rgba(74,222,128,0.08)] text-[#4ADE80]'
-                        : 'border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.04)] text-[#475569]',
-                    )}>
-                      x402 {agent.metadata.x402Support ? 'Supported' : 'Not supported'}
-                    </span>
-                  )}
-                  {agent.metadata.active !== undefined && (
-                    <span className={cn(
-                      'rounded-full border px-3 py-1 text-[11px] font-semibold',
-                      agent.metadata.active
-                        ? 'border-[rgba(74,222,128,0.25)] bg-[rgba(74,222,128,0.08)] text-[#4ADE80]'
-                        : 'border-[rgba(251,113,133,0.25)] bg-[rgba(251,113,133,0.08)] text-[#FB7185]',
-                    )}>
-                      {agent.metadata.active ? 'Active' : 'Inactive'}
-                    </span>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Supported Trust */}
-            {(agent.metadata.supportedTrust ?? []).length > 0 && (
-              <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.02)] p-5">
-                <p className="mb-3 text-[10px] font-semibold uppercase tracking-widest text-[#475569]">Supported Trust</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {agent.metadata.supportedTrust!.map((t) => (
-                    <span key={t} className="rounded border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.04)] px-2 py-0.5 text-[11px] text-[#94A3B8]">
-                      {t}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Registrations */}
-            {(agent.metadata.registrations ?? []).length > 0 && (
-              <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.02)] p-5">
-                <p className="mb-3 text-[10px] font-semibold uppercase tracking-widest text-[#475569]">Registrations</p>
-                <div className="divide-y divide-[rgba(255,255,255,0.04)]">
-                  {agent.metadata.registrations!.map((reg, i) => (
-                    <div key={i} className="flex items-center justify-between py-2.5">
-                      <span className="font-data text-xs text-[#94A3B8]">#{reg.agentId}</span>
-                      <span className="font-data text-[11px] text-[#475569]">{truncateAddress(reg.agentRegistry)}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Additional fields */}
-            {extraEntries.length > 0 && (
-              <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.02)] p-5">
-                <p className="mb-3 text-[10px] font-semibold uppercase tracking-widest text-[#475569]">Additional Fields</p>
-                <div className="divide-y divide-[rgba(255,255,255,0.04)]">
-                  {extraEntries.map(([key, value]) => (
-                    <div key={key} className="flex items-start justify-between gap-4 py-2.5">
-                      <span className="shrink-0 text-xs text-[#475569]">{key}</span>
-                      <span className="break-all text-right font-data text-xs text-[#94A3B8]">
-                        {typeof value === 'object' ? JSON.stringify(value) : String(value)}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Empty state */}
-            {(agent.metadata.services ?? []).length === 0 &&
-              agent.metadata.x402Support === undefined &&
-              agent.metadata.active === undefined &&
-              (agent.metadata.supportedTrust ?? []).length === 0 &&
-              (agent.metadata.registrations ?? []).length === 0 &&
-              extraEntries.length === 0 && (
-              <div className="flex flex-col items-center justify-center py-16 text-center">
-                <p className="text-sm text-[#475569]">No metadata fields available for this agent.</p>
-              </div>
-            )}
-          </div>
-        );
-      })()}
-
-      {/* ── Tab: Community ── */}
-      {activeTab === 'community' && (
-        <div className="flex flex-col gap-4">
-          <RatingForm agentAddress={address} />
-
-          {agent.ratings.count > 0 ? (
-            <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.02)] p-5">
-              <div className="mb-4 flex items-center justify-between">
-                <p className="text-[10px] font-semibold uppercase tracking-widest text-[#475569]">Community Ratings</p>
-                <p className="font-data text-sm font-bold text-white">
-                  {agent.ratings.average.toFixed(1)}
-                  <span className="ml-1 text-xs font-normal text-[#475569]">
-                    / 5 · {agent.ratings.count} ratings
-                  </span>
-                </p>
-              </div>
-              <div className="space-y-3">
-                {agent.ratings.recent.map((rating) => (
-                  <div
-                    key={rating.id}
-                    className="rounded-lg border border-[rgba(255,255,255,0.05)] bg-[rgba(255,255,255,0.02)] p-4"
-                  >
-                    <div className="mb-1.5 flex items-center justify-between">
-                      <span className="text-[#94A3B8]">
-                        {'★'.repeat(rating.rating)}
-                        <span className="text-[#334155]">{'★'.repeat(5 - rating.rating)}</span>
-                      </span>
-                      <span className="font-data text-[10px] text-[#475569]">
-                        {formatRelativeTime(rating.createdAt)}
-                      </span>
-                    </div>
-                    {rating.review && <p className="text-xs text-[#94A3B8]">{rating.review}</p>}
-                    <p className="mt-1.5 font-data text-[10px] text-[#475569]">
-                      {truncateAddress(rating.userAddress)}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center py-8 text-center">
-              <p className="text-sm text-[#475569]">No ratings yet. Be the first to rate this agent.</p>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Tour CTA for first-time visitors */}
-      <TourCta page="agent" />
-    </div>
-  );
 }
