@@ -89,6 +89,7 @@ export function SearchBar({ value, onChange, className }: SearchBarProps) {
   const handleClear = () => {
     onChange('');
     inputRef.current?.focus();
+    router.push('/scanner');
   };
 
   const handleSelect = (agent: Agent) => {
@@ -123,7 +124,7 @@ export function SearchBar({ value, onChange, className }: SearchBarProps) {
       <div className="relative">
         <Search className={cn(
           "absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors duration-300",
-          isFocused ? "text-flare-accent" : "text-flare-text-l opacity-30"
+          isFocused ? "text-[#4ADE80]" : "text-[#475569]/60"
         )} />
         <input
           ref={inputRef}
@@ -132,22 +133,18 @@ export function SearchBar({ value, onChange, className }: SearchBarProps) {
           onChange={(e) => onChange(e.target.value)}
           onFocus={() => setIsFocused(true)}
           onKeyDown={handleKeyDown}
-          placeholder="Registry search_v1.0..."
+          placeholder="SEARCH_REGISTRY_v1.0..."
           className={cn(
-            'w-full pl-12 pr-12 py-3.5 rounded-none transition-all duration-300',
-            'bg-[#05070A]/80 border border-transparent font-mono text-[11px] font-bold uppercase tracking-[0.2em] relative z-10',
-            'text-flare-text-h placeholder:text-flare-text-l placeholder:opacity-40',
-            'focus:outline-none focus:bg-flare-accent/[0.03] ring-1 ring-inset ring-white/[0.05]',
-            isFocused && "shadow-[0_0_30px_rgba(0,0,0,0.5)] ring-flare-accent/30"
+            'w-full pl-12 pr-12 py-3.5 rounded-none transition-all duration-300 font-mono text-[11px] font-black uppercase tracking-[0.2em] relative z-10',
+            'bg-[#080B10]/80 border border-[#4ADE80]/10 text-white placeholder:text-[#4ADE80]/20',
+            'focus:outline-none focus:ring-0 focus:border-[#4ADE80]/40 focus:bg-[#4ADE80]/[0.02]',
+            isFocused && "shadow-[0_0_30px_rgba(74,222,128,0.1)] border-[#4ADE80]/50"
           )}
         />
-        {/* Invisible default border cleaner */}
-        <div className="absolute inset-0 border border-transparent ring-1 ring-inset ring-white/[0.03] pointer-events-none" />
-
         <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2 z-20">
-          {isLoading && value.length > 0 && <Loader2 className="h-4 w-4 text-flare-accent animate-spin" />}
+          {isLoading && value.length > 0 && <Loader2 className="h-4 w-4 text-[#4ADE80] animate-spin" />}
           {value.length > 0 && (
-            <button onClick={handleClear} className="p-1 text-flare-text-l hover:text-flare-accent transition-colors">
+            <button onClick={handleClear} className="p-1 text-[#4ADE80]/40 hover:text-[#4ADE80] transition-colors">
               <X className="h-4 w-4" />
             </button>
           )}
@@ -158,7 +155,7 @@ export function SearchBar({ value, onChange, className }: SearchBarProps) {
         createPortal(
           <div
             ref={dropdownRef}
-            className="rounded-none border border-transparent ring-1 ring-inset ring-white/[0.05] overflow-hidden shadow-[0_40px_80px_rgba(0,0,0,0.9)]"
+            className="rounded-none border-l-2 border-[#4ADE80] overflow-hidden shadow-[0_40px_80px_rgba(0,0,0,0.9)] ring-1 ring-[#4ADE80]/20"
             style={{
               position: 'fixed',
               top: dropdownRect.top,
@@ -175,25 +172,25 @@ export function SearchBar({ value, onChange, className }: SearchBarProps) {
                 type="button"
                 onClick={() => handleSelect(agent)}
                 className={cn(
-                  'w-full px-6 py-5 flex items-center justify-between gap-8 text-left border-b border-white/[0.03] last:border-0 relative group/item transition-all duration-300',
-                  (selectedIndex === index) ? 'bg-flare-accent/[0.05]' : 'bg-transparent',
-                  'hover:bg-flare-accent/[0.08]'
+                  'w-full px-6 py-5 flex items-center justify-between gap-8 text-left border-b border-[#4ADE80]/5 last:border-0 relative group/item transition-all duration-300',
+                  (selectedIndex === index) ? 'bg-[#4ADE80]/[0.05]' : 'bg-transparent',
+                  'hover:bg-[#4ADE80]/[0.08]'
                 )}
               >
-                <div className="absolute left-0 top-0 bottom-0 w-[4px] bg-flare-accent scale-y-0 group-hover/item:scale-y-100 transition-all duration-300 origin-top z-10" />
+                <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-[#4ADE80] scale-y-0 group-hover/item:scale-y-100 transition-all duration-300 origin-top z-10" />
                 
                 <div className="flex-1 min-w-0">
-                  <div className="font-black text-[14px] text-flare-text-h uppercase tracking-tight truncate group-hover/item:text-flare-accent transition-colors">
+                  <div className="font-black text-[13px] text-white uppercase tracking-tight truncate group-hover/item:text-[#4ADE80] transition-colors">
                     {agent.name}
                   </div>
-                  <div className="text-[10px] text-flare-text-l font-mono uppercase tracking-widest opacity-30 mt-1">
+                  <div className="text-[9px] text-[#475569] font-mono uppercase tracking-widest opacity-30 mt-1">
                     {truncateAddress(agent.address)}
                   </div>
                 </div>
                 <div className={cn(
-                  'px-4 py-1.5 font-mono text-[12px] font-black rounded-none border transition-all',
-                  agent.trust_score >= 80 ? 'text-flare-accent border-flare-accent/20 bg-flare-accent/5' :
-                  agent.trust_score >= 60 ? 'text-[#22D3EE] border-[#22D3EE]/20 bg-[#22D3EE]/05' :
+                  'px-4 py-1.5 font-mono text-[11px] font-black rounded-none border transition-all',
+                  agent.trust_score >= 80 ? 'text-[#4ADE80] border-[#4ADE80]/20 bg-[#4ADE80]/5' :
+                  agent.trust_score >= 60 ? 'text-[#10B981] border-[#10B981]/20 bg-[#10B981]/5' :
                   'text-[#FB7185] border-[#FB7185]/20 bg-[#FB7185]/05'
                 )}>
                   {agent.trust_score}.0

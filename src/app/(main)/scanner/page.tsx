@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Bot, ShieldCheck, Activity, Star, ChevronLeft, ChevronRight, SlidersHorizontal, Layers, BookOpen } from 'lucide-react';
 import { type AgentStatus } from '@prisma/client';
 import { useAgents } from '@/hooks/use-agents';
@@ -67,9 +68,19 @@ function TablePagination({ page, meta, onPage }: {
 }
 
 export default function ScannerPage() {
+  const searchParams = useSearchParams();
   const [filters, setFilters] = useState<FilterValues>(DEFAULT_FILTERS);
   const [page, setPage] = useState(1);
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState(searchParams.get('search') || '');
+
+  // Synchronize state with URL search param if it changes (e.g. from Navbar)
+  useEffect(() => {
+    const urlSearch = searchParams.get('search');
+    if (urlSearch !== null && urlSearch !== search) {
+      setSearch(urlSearch);
+      setPage(1);
+    }
+  }, [searchParams, search]);
 
   const { data, isLoading, isError, refetch } = useAgents({
     ...(search && { search }),

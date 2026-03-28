@@ -120,9 +120,9 @@ export function TourCta({ page, title, description, className }: TourCtaProps) {
       <div
         className={cn(
           'relative overflow-hidden rounded-none',
-          'bg-[#0F1219]/95 backdrop-blur-xl',
-          'border border-white/[0.08] border-t-flare-accent/40',
-          'shadow-[0_20px_50px_rgba(0,0,0,0.6),0_0_80px_-20px_rgba(74,222,128,0.1)]',
+          'bg-[#0F1219]/98 backdrop-blur-xl',
+          'border border-flare-accent/15 border-t-flare-accent/40',
+          'shadow-[0_24px_60px_rgba(0,0,0,0.8),0_0_80px_-20px_rgba(74,222,128,0.1)]',
           'p-6'
         )}
       >
@@ -132,8 +132,8 @@ export function TourCta({ page, title, description, className }: TourCtaProps) {
           className={cn(
             'absolute top-4 right-4',
             'flex h-6 w-6 items-center justify-center rounded-none',
-            'bg-white/[0.03] border border-white/[0.06]',
-            'text-[#64748B] hover:text-white hover:bg-white/[0.1] hover:border-white/[0.2]',
+            'bg-flare-accent/[0.03] border border-flare-accent/[0.08]',
+            'text-[#64748B] hover:text-flare-accent hover:bg-flare-accent/[0.08] hover:border-flare-accent/20',
             'transition-all duration-200'
           )}
           aria-label="Dismiss"
@@ -147,15 +147,15 @@ export function TourCta({ page, title, description, className }: TourCtaProps) {
           <div
             className={cn(
               'flex h-10 w-10 shrink-0 items-center justify-center rounded-none',
-              'bg-flare-accent/10 border border-flare-accent/30 shadow-[0_0_15px_rgba(74,222,128,0.1)]'
+              'bg-flare-accent/10 border border-flare-accent/30 shadow-[0_0_20px_rgba(74,222,128,0.15)]'
             )}
           >
-            <HelpCircle className="h-5 w-5 text-flare-accent" />
+            <span className="font-mono text-[20px] font-black text-flare-accent mt-0.5">?</span>
           </div>
 
           {/* Text */}
           <div className="flex-1 pr-6">
-            <h3 className="text-[12px] font-black text-white uppercase tracking-[0.2em] mb-1">
+            <h3 className="text-[12px] font-black text-flare-accent uppercase tracking-[0.2em] mb-1">
               {displayTitle}
             </h3>
             <p className="text-[11px] text-[#94A3B8] leading-relaxed mb-5 font-medium">

@@ -210,7 +210,7 @@ const columns: ColumnDef<Agent>[] = [
       const config = getStatusConfig(row.original.status);
       const Icon = config.icon;
       return (
-        <div className={cn('inline-flex items-center gap-2 text-[10px] tracking-wider font-bold px-3 py-1.5 rounded-full border bg-[#1a1b23]', config.className)}>
+        <div className={cn('inline-flex items-center gap-2 text-[9px] tracking-[0.2em] font-black px-3 py-1.5 rounded-none border bg-[#05070A]', config.className)}>
           <Icon className="h-3 w-3" />
           <span className="hidden sm:inline">{row.original.status}</span>
         </div>
