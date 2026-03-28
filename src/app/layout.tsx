@@ -5,8 +5,9 @@ import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { Providers } from './providers';
 import { WebsiteJsonLd } from '@/components/shared/json-ld';
-import { Starfield } from '@/components/shared/starfield';
+
 import { NavigationProgress } from '@/components/shared/navigation-progress';
+import { FlashlightCursor } from '@/components/shared/flashlight-cursor';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -20,18 +21,18 @@ const jetbrainsMono = JetBrains_Mono({
   variable: '--font-mono',
 });
 
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://enigma.app';
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://flare.app';
 
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),
   title: {
-    default: 'Enigma - Trust Score Platform for Autonomous Agents',
-    template: '%s | Enigma',
+    default: 'FLARE - Trust Score Platform for Autonomous Agents',
+    template: '%s | FLARE',
   },
   description:
     'Discovery, Verification, and Trust Scoring Platform for Autonomous Agents on Avalanche',
   keywords: ['blockchain', 'avalanche', 'autonomous agents', 'trust score', 'web3', 'defi', 'smart contracts', 'erc-804'],
-  authors: [{ name: 'Enigma Team' }],
+  authors: [{ name: 'FLARE Team' }],
   icons: {
     icon: [
       { url: '/favicon.svg', type: 'image/svg+xml' },
@@ -41,23 +42,23 @@ export const metadata: Metadata = {
     shortcut: '/favicon.svg',
   },
   openGraph: {
-    title: 'Enigma - Trust Score Platform for Autonomous Agents',
+    title: 'FLARE - Trust Score Platform for Autonomous Agents',
     description: 'Discover, verify, and monitor autonomous smart contract agents on Avalanche',
     type: 'website',
-    siteName: 'Enigma',
+    siteName: 'FLARE',
     url: BASE_URL,
     images: [
       {
         url: '/logo-full-dark.svg',
         width: 1200,
         height: 630,
-        alt: 'Enigma - Trust Score Platform',
+        alt: 'FLARE - Trust Score Platform',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Enigma - Trust Score Platform',
+    title: 'FLARE - Trust Score Platform',
     description: 'Discover, verify, and monitor autonomous smart contract agents on Avalanche',
     images: ['/logo-full-dark.svg'],
   },
@@ -76,9 +77,10 @@ export default function RootLayout({
     <html lang="en" className="dark scroll-smooth">
       <body className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased`}>
         <WebsiteJsonLd />
-        <Starfield />
+
         <NavigationProgress />
         <Providers>
+          <FlashlightCursor />
           {children}
         </Providers>
         <Analytics />

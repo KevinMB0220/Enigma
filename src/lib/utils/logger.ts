@@ -11,7 +11,7 @@ const isDevelopment = process.env.NODE_ENV === 'development';
 export const logger = pino({
   level: isDevelopment ? 'debug' : 'info',
   base: {
-    service: 'enigma',
+    service: 'flare',
     env: process.env.NODE_ENV || 'development',
   },
   // Avoid using pino-pretty transport in Next.js dev mode

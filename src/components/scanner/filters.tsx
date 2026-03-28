@@ -17,34 +17,40 @@ interface FiltersProps {
   onChange: (filters: FilterValues) => void;
 }
 
-// ---- option lists -------------------------------------------------------
 const SERVICES = [
-  { value: 'MCP',  label: 'MCP',  className: 'bg-[rgba(74,222,128,0.1)] text-[#4ADE80] border-[rgba(74,222,128,0.2)]' },
-  { value: 'A2A',  label: 'A2A',  className: 'bg-[rgba(252,211,77,0.1)] text-[#FCD34D] border-[rgba(252,211,77,0.2)]' },
-  { value: 'web',  label: 'web',  className: 'bg-[rgba(34,211,238,0.1)] text-[#22D3EE] border-[rgba(34,211,238,0.2)]' },
-  { value: 'OASF', label: 'OASF', className: 'bg-[rgba(167,139,250,0.1)] text-[#A78BFA] border-[rgba(167,139,250,0.2)]' },
+  { value: 'MCP',  label: 'MCP',  activeClass: 'bg-[#4ADE80]/10 text-[#4ADE80] border-[#4ADE80]' },
+  { value: 'A2A',  label: 'A2A',  activeClass: 'bg-[#FCD34D]/10 text-[#FCD34D] border-[#FCD34D]' },
+  { value: 'web',  label: 'WEB',  activeClass: 'bg-[#22D3EE]/10 text-[#22D3EE] border-[#22D3EE]' },
+  { value: 'OASF', label: 'OASF', activeClass: 'bg-[#A78BFA]/10 text-[#A78BFA] border-[#A78BFA]' },
 ];
 
 const STATUSES = [
-  { value: 'ALL',       label: 'All statuses' },
-  { value: 'VERIFIED',  label: 'Verified'     },
-  { value: 'PENDING',   label: 'Pending'      },
-  { value: 'FLAGGED',   label: 'Flagged'      },
-  { value: 'SUSPENDED', label: 'Suspended'    },
+  { value: 'ALL',       label: 'All protocols' },
+  { value: 'VERIFIED',  label: 'Verified only' },
+  { value: 'PENDING',   label: 'Pending sync'  },
+  { value: 'FLAGGED',   label: 'Flagged'        },
+  { value: 'SUSPENDED', label: 'Suspended node' },
 ];
 
 const SORT_FIELDS = [
-  { value: 'trust_score', label: 'Trust score' },
-  { value: 'created_at',  label: 'Date added'  },
+  { value: 'trust_score', label: 'Trust Score'  },
+  { value: 'created_at',  label: 'Sync Time'    },
   { value: 'name',        label: 'Name'         },
 ];
 
 const SORT_ORDERS = [
-  { value: 'desc', label: 'High → Low' },
-  { value: 'asc',  label: 'Low → High' },
+  { value: 'desc', label: 'Descending' },
+  { value: 'asc',  label: 'Ascending'  },
 ];
 
-// ---- tiny select --------------------------------------------------------
+function SectionLabel({ label }: { label: string }) {
+  return (
+    <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-flare-text-l mb-3">
+      {label}
+    </p>
+  );
+}
+
 function FilterSelect({
   label,
   value,
@@ -57,29 +63,34 @@ function FilterSelect({
   onChange: (v: string) => void;
 }) {
   return (
-    <div className="space-y-1.5">
-      <p className="text-[10px] font-semibold uppercase tracking-widest text-[#475569]">{label}</p>
-      <div className="grid grid-cols-1 gap-1">
-        {options.map((opt) => (
-          <button
-            key={opt.value}
-            onClick={() => onChange(opt.value)}
-            className={cn(
-              'w-full rounded-md px-3 py-1.5 text-left text-xs font-medium transition-all duration-100',
-              value === opt.value
-                ? 'bg-[rgba(74,222,128,0.1)] text-primary border border-[rgba(74,222,128,0.25)]'
-                : 'text-[#94A3B8] hover:bg-[rgba(255,255,255,0.04)] hover:text-white border border-transparent',
-            )}
-          >
-            {opt.label}
-          </button>
-        ))}
+    <div>
+      <SectionLabel label={label} />
+      <div className="flex flex-col gap-1">
+        {options.map((opt) => {
+          const active = value === opt.value;
+          return (
+            <button
+              key={opt.value}
+              onClick={() => onChange(opt.value)}
+              className={cn(
+                'w-full text-left px-4 py-2 text-[11px] font-semibold tracking-wide transition-all duration-150 rounded-sm relative',
+                active
+                  ? 'bg-[#4ADE80]/10 text-[#4ADE80]'
+                  : 'text-flare-text-l hover:bg-[#1e2130] hover:text-flare-text-h'
+              )}
+            >
+              {active && (
+                <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-4 bg-[#4ADE80] rounded-r-sm" />
+              )}
+              <span className="pl-1">{opt.label}</span>
+            </button>
+          );
+        })}
       </div>
     </div>
   );
 }
 
-// ---- main component -----------------------------------------------------
 export function Filters({ values, onChange }: FiltersProps) {
   const hasActive =
     !!values.service ||
@@ -91,12 +102,12 @@ export function Filters({ values, onChange }: FiltersProps) {
   const set = (patch: Partial<FilterValues>) => onChange({ ...values, ...patch });
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-8">
 
-      {/* Service Categories */}
-      <div className="space-y-1.5">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#475569]">Service Category</p>
-        <div className="flex flex-wrap gap-1.5">
+      {/* Access Layer */}
+      <div>
+        <SectionLabel label="Access Layer" />
+        <div className="grid grid-cols-2 gap-2">
           {SERVICES.map((svc) => {
             const active = values.service === svc.value;
             return (
@@ -104,10 +115,10 @@ export function Filters({ values, onChange }: FiltersProps) {
                 key={svc.value}
                 onClick={() => set({ service: active ? undefined : svc.value })}
                 className={cn(
-                  'rounded-md border px-2.5 py-1 text-[11px] font-semibold transition-all duration-100',
+                  'border px-3 py-2 text-[10px] font-bold uppercase tracking-widest transition-all duration-150 rounded-sm',
                   active
-                    ? svc.className
-                    : 'border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)] text-[#64748B] hover:bg-[rgba(255,255,255,0.06)] hover:text-[#94A3B8]',
+                    ? svc.activeClass
+                    : 'border-[#2a2d3a] bg-[#1a1b23] text-flare-text-l hover:border-[#4ADE80]/40 hover:text-[#4ADE80]'
                 )}
               >
                 {svc.label}
@@ -119,7 +130,7 @@ export function Filters({ values, onChange }: FiltersProps) {
 
       {/* Status */}
       <FilterSelect
-        label="Status"
+        label="Validation Protocol"
         value={values.status ?? 'ALL'}
         options={STATUSES}
         onChange={(v) => set({ status: v === 'ALL' ? undefined : v })}
@@ -127,7 +138,7 @@ export function Filters({ values, onChange }: FiltersProps) {
 
       {/* Sort by */}
       <FilterSelect
-        label="Sort By"
+        label="Ordering Logic"
         value={values.sortBy ?? 'trust_score'}
         options={SORT_FIELDS}
         onChange={(v) => set({ sortBy: v as FilterValues['sortBy'] })}
@@ -135,20 +146,18 @@ export function Filters({ values, onChange }: FiltersProps) {
 
       {/* Sort order */}
       <FilterSelect
-        label="Order"
+        label="Sequence Direction"
         value={values.sortOrder ?? 'desc'}
         options={SORT_ORDERS}
         onChange={(v) => set({ sortOrder: v as 'asc' | 'desc' })}
       />
 
       {/* Trust score range */}
-      <div className="space-y-2">
+      <div className="space-y-4 pt-6 border-t border-[#2a2d3a]">
         <div className="flex items-center justify-between">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#475569]">
-            Trust Score
-          </p>
-          <span className="font-data text-xs font-semibold text-white">
-            {values.trustScoreRange[0]} – {values.trustScoreRange[1]}
+          <SectionLabel label="Trust Horizon" />
+          <span className="font-mono text-[12px] font-bold text-[#4ADE80]">
+            {values.trustScoreRange[0]}–{values.trustScoreRange[1]}
           </span>
         </div>
         <Slider
@@ -156,29 +165,20 @@ export function Filters({ values, onChange }: FiltersProps) {
           onValueChange={(v) => set({ trustScoreRange: [v[0], v[1]] })}
           min={0}
           max={100}
-          step={5}
+          step={1}
           minStepsBetweenThumbs={1}
-          className="w-full"
+          className="w-full [&_[role=slider]]:bg-[#4ADE80] [&_[role=slider]]:h-3 [&_[role=slider]]:w-2 [&_[role=slider]]:rounded-sm [&_[role=track]]:bg-[#1e2130] ring-0"
         />
-        <div className="flex justify-between font-data text-[10px] text-[#334155]">
-          <span>0</span>
-          <span>50</span>
-          <span>100</span>
-        </div>
       </div>
 
       {/* Reset */}
       {hasActive && (
         <button
           onClick={() => onChange({ service: undefined, status: undefined, trustScoreRange: [0, 100], sortBy: undefined, sortOrder: undefined })}
-          className={cn(
-            'flex w-full items-center justify-center gap-1.5 rounded-md py-2 text-xs font-medium transition-all',
-            'border border-[rgba(251,113,133,0.2)] text-[#FB7185]',
-            'hover:bg-[rgba(251,113,133,0.08)]',
-          )}
+          className="flex w-full items-center justify-center gap-2 py-3 text-[11px] font-bold uppercase tracking-widest transition-all rounded-sm border border-[#2a2d3a] hover:border-[#4ADE80]/60 hover:bg-[#4ADE80]/5 text-flare-text-l hover:text-[#4ADE80]"
         >
           <RotateCcw className="h-3 w-3" />
-          Clear filters
+          Reset Filters
         </button>
       )}
     </div>

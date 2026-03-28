@@ -4,7 +4,7 @@ export const metadata: Metadata = {
   title: 'Agent Scanner',
   description: 'Browse and discover autonomous agents on Avalanche. Filter by type, status, and trust score.',
   openGraph: {
-    title: 'Agent Scanner | Enigma',
+    title: 'Agent Scanner | FLARE',
     description: 'Browse and discover autonomous agents on Avalanche',
   },
 };

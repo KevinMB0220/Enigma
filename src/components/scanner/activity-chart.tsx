@@ -1,173 +1,105 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo } from 'react';
 import {
-  ComposedChart,
-  Area,
+  BarChart,
   Bar,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  type TooltipProps,
+  Cell,
 } from 'recharts';
-import { Clock } from 'lucide-react';
+import { Activity, Radio } from 'lucide-react';
 import { useAgentActivity } from '@/hooks/use-agent-activity';
 import { Spinner } from '@/components/shared/spinner';
+import { IndustrialCorner } from '@/components/shared/industrial-corner';
 import { cn } from '@/lib/utils';
 
-type Timeframe = '1W' | '1M' | '3M' | 'ALL';
-
-const TIMEFRAME_DAYS: Record<Timeframe, number> = {
-  '1W':  7,
-  '1M':  30,
-  '3M':  90,
-  'ALL': 3650, // 10 years — effectively "all time"
-};
-
-function formatLabel(dateStr: string, timeframe: Timeframe) {
-  const d = new Date(dateStr + 'T00:00:00Z');
-  if (timeframe === '1W') return d.toLocaleDateString('en', { weekday: 'short' });
-  if (timeframe === '1M') return `${d.getDate()}/${d.getMonth() + 1}`;
-  return `${d.getMonth() + 1}/${d.getDate()}`;
-}
-
-function CustomTooltip({ active, payload, label }: TooltipProps<number, string>) {
-  if (!active || !payload?.length) return null;
-  return (
-    <div className={cn(
-      'rounded-xl border border-[rgba(255,255,255,0.1)] px-4 py-3',
-      'bg-[rgba(11,15,20,0.97)] shadow-[0_8px_32px_rgba(0,0,0,0.5)]',
-    )}>
-      <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-[#64748B]">{label}</p>
-      {payload.map((entry) => (
-        <div key={entry.name} className="flex items-center justify-between gap-6">
-          <div className="flex items-center gap-1.5">
-            <div className="h-2 w-2 rounded-full" style={{ background: entry.color }} />
-            <span className="text-xs capitalize text-[#94A3B8]">{entry.name}</span>
-          </div>
-          <span className="font-data text-sm font-bold text-white">{entry.value}</span>
-        </div>
-      ))}
-    </div>
-  );
-}
-
 export function ActivityChart() {
-  const [timeframe, setTimeframe] = useState<Timeframe>('ALL');
-  const days = TIMEFRAME_DAYS[timeframe];
-  const { data: raw, isLoading } = useAgentActivity(days);
+  const { data, isLoading } = useAgentActivity();
 
-  const tabs: Timeframe[] = ['1W', '1M', '3M', 'ALL'];
+  const chartData = useMemo(() => {
+    if (!data) return [];
+    return data.map((d: { date: string; registrations: number }) => ({
+      name: d.date.split('-').slice(1).join('/'),
+      count: d.registrations,
+    }));
+  }, [data]);
 
-  const data = (raw ?? []).map((d) => ({
-    label: formatLabel(d.date, timeframe),
-    registrations: d.registrations,
-    verifications: d.verifications,
-  }));
+  if (isLoading) {
+    return (
+      <div className="flex h-[280px] w-full items-center justify-center border border-flare-stroke bg-flare-surface">
+        <Spinner />
+      </div>
+    );
+  }
 
   return (
-    <div className="glass flex h-full flex-col gap-5 p-5">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-sm font-semibold text-white">Agent Activity</h2>
-          <p className="mt-0.5 text-xs text-[#64748B]">Registrations & verifications over time</p>
+    <div className="group relative border border-flare-stroke bg-flare-surface p-6 rounded-none transition-all duration-300 shadow-[0_20px_40px_rgba(0,0,0,0.3)]">
+      <IndustrialCorner position="tl" />
+      <IndustrialCorner position="tr" />
+      <IndustrialCorner position="bl" />
+      <IndustrialCorner position="br" />
+      
+      <div className="mb-6 flex items-center justify-between border-b border-flare-stroke pb-4">
+        <div className="flex items-center gap-3">
+          <Activity className="h-4 w-4 text-flare-accent" />
+          <h3 className="text-[12px] font-black text-flare-text-h uppercase tracking-[0.4em]">Network Velocity</h3>
         </div>
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1 rounded-lg border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)] p-1">
-            {tabs.map((t) => (
-              <button
-                key={t}
-                onClick={() => setTimeframe(t)}
-                className={cn(
-                  'rounded-md px-2.5 py-1 text-xs font-medium transition-all duration-150',
-                  timeframe === t
-                    ? 'bg-[rgba(74,222,128,0.12)] text-primary'
-                    : 'text-[#64748B] hover:text-[#94A3B8]',
-                )}
-              >
-                {t}
-              </button>
-            ))}
-          </div>
-          <div className="hidden items-center gap-1.5 text-[#475569] sm:flex">
-            <Clock className="h-3 w-3" />
-            <span className="text-[11px]">Live</span>
-          </div>
+           <Radio className="h-3 w-3 text-flare-accent animate-pulse" />
+           <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-flare-text-l opacity-40 font-bold">Protocol_Sync_Live</span>
         </div>
       </div>
 
-      {/* Legend */}
-      <div className="flex items-center gap-5">
-        {[
-          { color: '#4ADE80', label: 'Registrations' },
-          { color: '#22D3EE', label: 'Verifications' },
-        ].map(({ color, label }) => (
-          <div key={label} className="flex items-center gap-1.5">
-            <div className="h-2 w-2 rounded-full" style={{ background: color }} />
-            <span className="text-xs text-[#64748B]">{label}</span>
-          </div>
-        ))}
+      <div className="h-[220px] w-full">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(74, 222, 128, 0.04)" vertical={false} />
+            <XAxis
+              dataKey="name"
+              axisLine={false}
+              tickLine={false}
+              tick={{ fill: '#64748B', fontSize: 10, fontWeight: 900, fontFamily: 'monospace' }}
+              dy={10}
+            />
+            <YAxis
+              axisLine={false}
+              tickLine={false}
+              tick={{ fill: '#64748B', fontSize: 9, fontWeight: 900, fontFamily: 'monospace' }}
+            />
+            <Tooltip
+              cursor={{ fill: '#4ADE8008' }}
+              contentStyle={{
+                backgroundColor: '#0F1219',
+                border: '1px solid rgba(74, 222, 128, 0.1)',
+                borderRadius: '0px',
+                fontSize: '11px',
+                fontWeight: 900,
+                textTransform: 'uppercase',
+                letterSpacing: '0.1em',
+              }}
+              itemStyle={{ color: '#4ADE80' }}
+            />
+            <Bar dataKey="count" radius={[0, 0, 0, 0]}>
+              {chartData.map((_entry: unknown, index: number) => (
+                <Cell 
+                  key={`cell-${index}`} 
+                  fill={index === chartData.length - 1 ? '#4ADE80' : 'rgba(74, 222, 128, 0.2)'} 
+                  className="transition-all duration-300 hover:fill-flare-accent"
+                />
+              ))}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
       </div>
 
-      {/* Chart */}
-      {isLoading ? (
-        <div className="flex flex-1 min-h-[180px] items-center justify-center">
-          <Spinner size="md" />
-        </div>
-      ) : !data.length ? (
-        <div className="flex flex-1 min-h-[180px] flex-col items-center justify-center gap-2 text-center">
-          <p className="text-sm text-[#475569]">No registration data for this period</p>
-          <p className="text-xs text-[#334155]">Data appears as agents register on-chain</p>
-        </div>
-      ) : (
-        <div className="flex-1 min-h-[180px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart data={data} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
-              <defs>
-                <linearGradient id="greenGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%"   stopColor="#4ADE80" stopOpacity={0.18} />
-                  <stop offset="100%" stopColor="#4ADE80" stopOpacity={0}    />
-                </linearGradient>
-              </defs>
-              <CartesianGrid stroke="rgba(255,255,255,0.04)" vertical={false} />
-              <XAxis
-                dataKey="label"
-                tick={{ fill: '#475569', fontSize: 10, fontFamily: 'var(--font-mono)' }}
-                axisLine={false}
-                tickLine={false}
-              />
-              <YAxis
-                allowDecimals={false}
-                tick={{ fill: '#475569', fontSize: 10, fontFamily: 'var(--font-mono)' }}
-                axisLine={false}
-                tickLine={false}
-              />
-              <Tooltip
-                content={<CustomTooltip />}
-                cursor={{ stroke: 'rgba(255,255,255,0.05)', strokeWidth: 1 }}
-              />
-              <Area
-                type="monotone"
-                dataKey="registrations"
-                stroke="#4ADE80"
-                strokeWidth={1.5}
-                fill="url(#greenGrad)"
-                dot={false}
-                activeDot={{ r: 3, fill: '#4ADE80', strokeWidth: 0 }}
-              />
-              <Bar
-                dataKey="verifications"
-                fill="rgba(34,211,238,0.2)"
-                radius={[2, 2, 0, 0]}
-                maxBarSize={18}
-              />
-            </ComposedChart>
-          </ResponsiveContainer>
-        </div>
-      )}
+      <div className="mt-4 flex justify-between border-t border-flare-stroke pt-4 font-mono text-[9px] uppercase tracking-widest text-flare-text-l opacity-20 font-bold">
+        <span>Historical_Snapshot_T-30D</span>
+        <span className="text-flare-accent">Status_Online</span>
+      </div>
     </div>
   );
 }

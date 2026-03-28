@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useAccount } from 'wagmi';
-import { Loader2, AlertCircle, CheckCircle2, Wallet, BookOpen } from 'lucide-react';
+import { Loader2, AlertCircle, CheckCircle2, Wallet, BookOpen, Bot, Database, Fingerprint } from 'lucide-react';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,12 +20,11 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { WalletConnectButton } from '@/components/shared/wallet-connect-button';
+import { FlashlightCursor } from '@/components/shared/flashlight-cursor';
+import { IndustrialCorner } from '@/components/shared/industrial-corner';
 import { useRegisterAgent } from '@/hooks/use-register-agent';
 import { cn } from '@/lib/utils/index';
 
-/**
- * Form validation schema
- */
 const formSchema = z.object({
   address: z
     .string()
@@ -53,10 +52,6 @@ const AGENT_TYPES = [
   { value: 'CUSTOM', label: 'Custom', description: 'Other autonomous agents' },
 ];
 
-/**
- * Agent Registration Page
- * Allows users to register new autonomous agents on Enigma
- */
 export default function RegisterPage() {
   const router = useRouter();
   const { isConnected } = useAccount();
@@ -98,21 +93,25 @@ export default function RegisterPage() {
     );
   };
 
-  // Success state
   if (showSuccess) {
     return (
-      <div className="min-h-[calc(100vh-200px)] flex items-center justify-center px-4">
-        <div className="text-center">
+      <div className="h-[calc(100vh-64px)] flex items-center justify-center bg-[#05070A] relative overflow-hidden">
+        <FlashlightCursor />
+        <div className="text-center z-10 p-12 border border-[#4ADE80]/40 bg-[#0F1219] relative max-w-lg">
+          <IndustrialCorner position="tl" />
+          <IndustrialCorner position="tr" />
+          <IndustrialCorner position="bl" />
+          <IndustrialCorner position="br" />
           <div className="flex justify-center mb-6">
-            <div className="h-16 w-16 rounded-full bg-green-500/20 flex items-center justify-center">
-              <CheckCircle2 className="h-8 w-8 text-green-400" />
+            <div className="h-16 w-16 bg-[#4ADE80]/10 border border-[#4ADE80]/30 flex items-center justify-center">
+              <CheckCircle2 className="h-8 w-8 text-[#4ADE80]" />
             </div>
           </div>
-          <h1 className="text-2xl font-bold text-white mb-2">
-            Agent Registered Successfully!
+          <h1 className="text-2xl font-black text-white mb-2 uppercase tracking-tighter">
+            INIT_SUCCESSful
           </h1>
-          <p className="text-[rgba(255,255,255,0.6)]">
-            Redirecting to your agent profile...
+          <p className="text-[#64748B] font-mono text-[10px] uppercase tracking-widest">
+            Redirecting to node profile...
           </p>
         </div>
       </div>
@@ -120,184 +119,208 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-200px)] py-12 px-4">
-      <div className="max-w-xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-white mb-3">
-            Register Your Agent
-          </h1>
-          <p className="text-[rgba(255,255,255,0.6)] max-w-md mx-auto mb-4">
-            Add your autonomous agent to Enigma for trust scoring and discovery
-            by the community.
-          </p>
-          <Link
-            href="/docs#register"
-            className="inline-flex items-center gap-1.5 text-sm text-[#A78BFA] hover:text-[#C4B5FD] transition-colors"
-          >
-            <BookOpen className="h-4 w-4" />
-            Read the registration guide
-          </Link>
+    <div className="h-[calc(100vh-64px)] flex flex-col items-center justify-center bg-[#05070A] relative overflow-hidden p-4 sm:p-8">
+      <FlashlightCursor />
+      
+      {!isConnected ? (
+        <div className="flex flex-col items-center justify-center text-center space-y-12 animate-fade-in group z-10">
+          <div className="text-center space-y-4 mb-4">
+             <div className="flex items-center justify-center gap-3 mb-2">
+                <div className="w-12 h-[1px] bg-[#4ADE80]/30" />
+                <span className="text-[12px] font-black text-[#4ADE80] uppercase tracking-[0.4em]">Initialize Registry</span>
+                <div className="w-12 h-[1px] bg-[#4ADE80]/30" />
+             </div>
+             <h1 className="text-4xl md:text-6xl font-black text-white uppercase tracking-tighter">
+               FLARE Nodes
+             </h1>
+          </div>
+
+          <div className="relative">
+            <div className="h-44 w-44 flex items-center justify-center relative">
+               <div className="absolute inset-0 border-2 border-[#4ADE80]/10 transition-all duration-700 group-hover:scale-110 group-hover:rotate-45" />
+               <div className="absolute inset-4 border border-[#4ADE80]/20 transition-all duration-500 group-hover:-rotate-90" />
+               <Wallet className="h-14 w-14 text-[#4ADE80]/60 group-hover:text-[#4ADE80] transition-colors" />
+            </div>
+            <div className="absolute -top-2 -right-2 h-4 w-4 bg-[#FB7185] animate-pulse" />
+          </div>
+
+          <div className="space-y-6">
+            <p className="text-xs text-[#64748B] uppercase tracking-[0.3em] leading-relaxed max-w-sm mx-auto font-bold opacity-80">
+              Identity required to authorize node ownership and signature metadata.
+            </p>
+            <WalletConnectButton className="h-16 px-16 rounded-none border-[#4ADE80]/40 hover:border-[#4ADE80] hover:bg-[#4ADE80]/5 text-[#4ADE80] font-black uppercase tracking-[0.4em] transition-all shadow-[0_0_30px_rgba(74,222,128,0.1)]" />
+          </div>
         </div>
+      ) : (
+        <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-[1fr_450px] gap-0 border border-[#4ADE80]/20 bg-[#0F1219] relative z-10 shadow-[0_40px_100px_rgba(0,0,0,0.8)] overflow-hidden">
+          <IndustrialCorner position="tl" />
+          <IndustrialCorner position="tr" />
+          <IndustrialCorner position="bl" />
+          <IndustrialCorner position="br" />
 
-        {/* Connect Wallet Prompt */}
-        {!isConnected && (
-          <div data-tour="register-wallet" className="mb-8 p-6 rounded-lg bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.06)]">
-            <div className="flex items-start gap-4">
-              <div className="h-10 w-10 rounded-full bg-purple-500/20 flex items-center justify-center flex-shrink-0">
-                <Wallet className="h-5 w-5 text-purple-400" />
+          {/* Left Side: Industrial Titles & Info */}
+          <div className="flex flex-col p-10 bg-[#05070A]/60 border-r border-[#4ADE80]/10 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-[#4ADE80]/[0.02] -translate-y-1/2 translate-x-1/2 rotate-45" />
+            
+            <div className="space-y-1 mb-12">
+              <p className="text-[11px] font-black text-[#4ADE80]/60 uppercase tracking-[0.4em]">Step 01</p>
+              <h3 className="text-2xl font-black text-white uppercase tracking-tighter">Initialize Registry</h3>
+              <p className="text-[14px] font-black text-[#4ADE80] uppercase tracking-tighter opacity-80">FLARE Nodes</p>
+            </div>
+
+            <div className="flex-1 space-y-10">
+              <div className="space-y-4">
+                 <div className="flex items-center gap-3">
+                   <div className="h-8 w-8 bg-[#4ADE80]/10 border border-[#4ADE80]/20 flex items-center justify-center">
+                     <Bot className="h-4 w-4 text-[#4ADE80]" />
+                   </div>
+                   <span className="text-[10px] font-black text-white uppercase tracking-[0.3em]">Protocol_Entry</span>
+                 </div>
+                 <p className="text-[12px] text-[#64748B] leading-relaxed font-medium uppercase tracking-tight">
+                   Add your autonomous agent for verification, trust scoring, and network synchronization.
+                 </p>
               </div>
-              <div className="flex-1">
-                <h3 className="font-medium text-white mb-1">
-                  Connect Your Wallet
-                </h3>
-                <p className="text-sm text-[rgba(255,255,255,0.6)] mb-4">
-                  You need to connect your wallet to register an agent. This
-                  verifies your ownership.
-                </p>
-                <WalletConnectButton />
+
+              <div className="space-y-4 border-l border-[#4ADE80]/10 pl-6">
+                 <div className="flex items-center gap-3">
+                   <div className="h-1.5 w-1.5 bg-[#4ADE80]" />
+                   <span className="text-[9px] font-mono text-[#64748B] uppercase tracking-[0.2em]">Verification Phase 01</span>
+                 </div>
+                 <div className="flex items-center gap-3">
+                   <div className="h-1.5 w-1.5 bg-[#4ADE80]/40" />
+                   <span className="text-[9px] font-mono text-[#64748B] uppercase tracking-[0.2em] opacity-40">Telemetry Handshake</span>
+                 </div>
+                 <div className="flex items-center gap-3">
+                   <div className="h-1.5 w-1.5 bg-[#4ADE80]/10" />
+                   <span className="text-[9px] font-mono text-[#64748B] uppercase tracking-[0.2em] opacity-20">Database Write</span>
+                 </div>
               </div>
             </div>
-          </div>
-        )}
 
-        {/* Registration Form */}
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          {/* Agent Address */}
-          <div data-tour="register-address" className="space-y-2">
-            <Label htmlFor="address" className="text-white">
-              Agent Contract Address <span className="text-red-400">*</span>
-            </Label>
-            <Input
-              id="address"
-              placeholder="0x..."
-              {...register('address')}
-              className={cn(
-                'bg-[rgba(255,255,255,0.05)] border-[rgba(255,255,255,0.1)]',
-                errors.address && 'border-red-500/50'
-              )}
-              disabled={!isConnected || isPending}
-            />
-            {errors.address && (
-              <p className="text-sm text-red-400">{errors.address.message}</p>
-            )}
-          </div>
-
-          {/* Agent Name */}
-          <div className="space-y-2">
-            <Label htmlFor="name" className="text-white">
-              Agent Name <span className="text-red-400">*</span>
-            </Label>
-            <Input
-              id="name"
-              placeholder="My Trading Bot"
-              {...register('name')}
-              className={cn(
-                'bg-[rgba(255,255,255,0.05)] border-[rgba(255,255,255,0.1)]',
-                errors.name && 'border-red-500/50'
-              )}
-              disabled={!isConnected || isPending}
-            />
-            {errors.name && (
-              <p className="text-sm text-red-400">{errors.name.message}</p>
-            )}
-          </div>
-
-          {/* Agent Type */}
-          <div data-tour="register-type" className="space-y-2">
-            <Label className="text-white">
-              Agent Type <span className="text-red-400">*</span>
-            </Label>
-            <Select
-              value={selectedType}
-              onValueChange={(value) => setValue('type', value as FormData['type'])}
-              disabled={!isConnected || isPending}
+            <Link
+              href="/docs"
+              className="flex items-center gap-3 p-4 border border-[#4ADE80]/10 bg-[#4ADE80]/5 hover:bg-[#4ADE80]/10 transition-all mt-8"
             >
-              <SelectTrigger
-                className={cn(
-                  'bg-[rgba(255,255,255,0.05)] border-[rgba(255,255,255,0.1)]',
-                  errors.type && 'border-red-500/50'
-                )}
-              >
-                <SelectValue placeholder="Select agent type" />
-              </SelectTrigger>
-              <SelectContent>
-                {AGENT_TYPES.map((type) => (
-                  <SelectItem key={type.value} value={type.value}>
-                    <div className="flex flex-col">
-                      <span>{type.label}</span>
-                      <span className="text-xs text-[rgba(255,255,255,0.5)]">
-                        {type.description}
-                      </span>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {errors.type && (
-              <p className="text-sm text-red-400">{errors.type.message}</p>
-            )}
+              <BookOpen className="h-4 w-4 text-[#4ADE80]" />
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#4ADE80]">Technical_Guide</span>
+            </Link>
           </div>
 
-          {/* Description */}
-          <div className="space-y-2">
-            <Label htmlFor="description" className="text-white">
-              Description <span className="text-[rgba(255,255,255,0.5)]">(optional)</span>
-            </Label>
-            <Textarea
-              id="description"
-              placeholder="Describe what your agent does..."
-              rows={4}
-              {...register('description')}
-              className={cn(
-                'bg-[rgba(255,255,255,0.05)] border-[rgba(255,255,255,0.1)] resize-none',
-                errors.description && 'border-red-500/50'
-              )}
-              disabled={!isConnected || isPending}
-            />
-            {errors.description && (
-              <p className="text-sm text-red-400">{errors.description.message}</p>
-            )}
-          </div>
+          {/* Right Side: Dense Industrial Form */}
+          <div className="flex flex-col p-10 bg-[#0F1219]">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 h-full flex flex-col">
+              <div className="space-y-6 flex-1">
+                {/* Contract Address */}
+                <div className="space-y-2">
+                  <Label htmlFor="address" className="text-[10px] font-black uppercase tracking-widest text-[#475569]">Contract_Address</Label>
+                  <Input
+                    id="address"
+                    placeholder="0x000..."
+                    {...register('address')}
+                    className={cn(
+                      'h-12 rounded-none bg-[#05070A] border-[#4ADE80]/20 font-mono text-[11px] font-black text-[#4ADE80] placeholder:text-[#4ADE80]/10',
+                      'focus:ring-1 focus:ring-[#4ADE80]/40 focus:border-[#4ADE80] transition-all',
+                      errors.address && 'border-red-500/40'
+                    )}
+                    disabled={isPending}
+                  />
+                  {errors.address && <p className="text-[9px] font-mono text-red-400 uppercase tracking-widest">{errors.address.message}</p>}
+                </div>
 
-          {/* Error Message */}
-          {isError && (
-            <div className="p-4 rounded-lg bg-red-500/10 border border-red-500/20 flex items-start gap-3">
-              <AlertCircle className="h-5 w-5 text-red-400 flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="font-medium text-red-400">Registration Failed</p>
-                <p className="text-sm text-red-400/80">
-                  {error?.message || 'Something went wrong. Please try again.'}
-                </p>
+                {/* Agent Label */}
+                <div className="space-y-2">
+                  <Label htmlFor="name" className="text-[10px] font-black uppercase tracking-widest text-[#475569]">Operational_ID</Label>
+                  <Input
+                    id="name"
+                    placeholder="SYSTEM_ALPHA"
+                    {...register('name')}
+                    className={cn(
+                      'h-12 rounded-none bg-[#05070A] border-[#4ADE80]/20 font-mono text-[11px] font-black text-white placeholder:text-[#4ADE80]/10',
+                      'focus:ring-1 focus:ring-[#4ADE80]/40 focus:border-[#4ADE80] transition-all',
+                      errors.name && 'border-red-500/40'
+                    )}
+                    disabled={isPending}
+                  />
+                </div>
+
+                {/* Protocol Class */}
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-[#475569]">Protocol_Class</Label>
+                  <Select
+                    value={selectedType}
+                    onValueChange={(value) => setValue('type', value as FormData['type'])}
+                    disabled={isPending}
+                  >
+                    <SelectTrigger
+                      className={cn(
+                        'h-12 rounded-none bg-[#05070A] border-[#4ADE80]/20 font-mono text-[11px] font-black text-[#4ADE80]',
+                        errors.type && 'border-red-500/40'
+                      )}
+                    >
+                      <SelectValue placeholder="CLASS_NULL" />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-none border-[#4ADE80]/20 bg-[#0F1219] text-[#4ADE80]">
+                      {AGENT_TYPES.map((type) => (
+                        <SelectItem key={type.value} value={type.value} className="focus:bg-[#4ADE80]/10 focus:text-[#4ADE80] font-mono text-[10px] uppercase tracking-widest">
+                          {type.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Execution Logs */}
+                <div className="space-y-2">
+                  <Label htmlFor="description" className="text-[10px] font-black uppercase tracking-widest text-[#475569]">Execution_Summary</Label>
+                  <Textarea
+                    id="description"
+                    placeholder="Short node logs..."
+                    rows={3}
+                    {...register('description')}
+                    className={cn(
+                      'rounded-none bg-[#05070A] border-[#4ADE80]/20 font-mono text-[11px] font-black text-[#64748B] placeholder:text-[#4ADE80]/10 resize-none min-h-[90px]',
+                      'focus:ring-1 focus:ring-[#4ADE80]/40 focus:border-[#4ADE80] transition-all',
+                      errors.description && 'border-red-500/40'
+                    )}
+                    disabled={isPending}
+                  />
+                </div>
               </div>
-            </div>
-          )}
 
-          {/* Submit Button */}
-          <Button
-            data-tour="register-submit"
-            type="submit"
-            className="w-full"
-            size="lg"
-            disabled={!isConnected || isPending}
-          >
-            {isPending ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Registering Agent...
-              </>
-            ) : (
-              'Register Agent'
-            )}
-          </Button>
+              {/* Action Button */}
+              <div className="pt-6 border-t border-[#4ADE80]/10">
+                <Button
+                  type="submit"
+                  disabled={isPending}
+                  className={cn(
+                    'w-full h-14 rounded-none font-black uppercase tracking-[0.4em] text-[12px]',
+                    'bg-[#4ADE80] text-[#05070A] hover:bg-[#22D3EE] transition-all duration-300',
+                    'shadow-[0_4px_20px_rgba(74,222,128,0.2)] hover:shadow-[0_0_40px_rgba(34,211,238,0.4)]',
+                    'disabled:opacity-20'
+                  )}
+                >
+                  {isPending ? (
+                    <div className="flex items-center gap-3">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      EXECUTING...
+                    </div>
+                  ) : (
+                    'Execute_Registration'
+                  )}
+                </Button>
+              </div>
 
-          {/* Help Text */}
-          <p className="text-center text-sm text-[rgba(255,255,255,0.5)]">
-            By registering, your agent will be verified and receive a trust
-            score based on on-chain activity.
-          </p>
-        </form>
-      </div>
+              {isError && (
+                <div className="mt-4 p-3 border border-red-500/20 bg-red-500/5 text-center">
+                  <p className="text-[9px] font-mono text-red-500 uppercase tracking-widest">
+                    SYSTEM_ERR: {error?.message || 'REG_FAILED'}
+                  </p>
+                </div>
+              )}
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

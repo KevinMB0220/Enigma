@@ -66,10 +66,10 @@ export const avalancheFuji = defineChain({
 });
 
 /**
- * Enigma Contract Addresses
+ * FLARE Contract Addresses
  * These will be populated after deployment
  */
-export const ENIGMA_CONTRACTS = {
+export const FLARE_CONTRACTS = {
   mainnet: {
     agentRegistry: '' as `0x${string}`,
     trustScoreOracle: '' as `0x${string}`,
@@ -86,11 +86,11 @@ export const ENIGMA_CONTRACTS = {
  * Get contract address based on chain
  */
 export function getContractAddress(
-  contract: keyof typeof ENIGMA_CONTRACTS.mainnet,
+  contract: keyof typeof FLARE_CONTRACTS.mainnet,
   chainId: number
 ): `0x${string}` {
   const network = chainId === 43114 ? 'mainnet' : 'testnet';
-  return ENIGMA_CONTRACTS[network][contract];
+  return FLARE_CONTRACTS[network][contract];
 }
 
 /**

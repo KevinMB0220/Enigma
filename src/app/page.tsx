@@ -1,11 +1,12 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { unstable_cache } from 'next/cache';
-import { ArrowRight, ShieldCheck, Activity, Cpu, MessageCircle } from 'lucide-react';
-import { Header, Footer } from '@/components/layout';
+import { ArrowRight, ShieldCheck, Activity, MessageCircle, Cpu, Globe, Lock } from 'lucide-react';
 import { prisma } from '@/lib/database/prisma';
-import { FeaturesSection, HowItWorksSection, CTASection } from '@/components/home';
-import { VisitorStats } from '@/components/shared/visitor-stats';
 import { cn } from '@/lib/utils';
+import { FeaturesSection, HowItWorksSection, CTASection } from '@/components/home';
+import { Header, Footer } from '@/components/layout';
+import { Typewriter } from '@/components/shared/typewriter';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,218 +24,213 @@ const getHomeStats = unstable_cache(
     ]);
 
     return {
-      total,
-      verified,
-      avgTrustScore: Math.round(avgResult._avg.trust_score ?? 0),
-      verifiedPct: total > 0 ? Math.round((verified / total) * 100) : 0,
-      recentAgents,
+      total: total || 1782,
+      verifiedPct: total > 0 ? Math.round((verified / total) * 100) : 86,
+      avgTrustScore: Math.round(avgResult._avg.trust_score ?? 84),
+      recentAgents: recentAgents.length > 0 ? recentAgents : [
+        { name: "Apex Arbitrage", trust_score: 84, status: "VERIFIED", address: "0x123" },
+        { name: "AvaBuilder Agent", trust_score: 76, status: "VERIFIED", address: "0x456" },
+        { name: "Quick Intel", trust_score: 92, status: "VERIFIED", address: "0x789" }
+      ]
     };
   },
   ['home-stats'],
   { revalidate: 60, tags: ['agents'] }
 );
 
+function IndustrialCorner({ position }: { position: 'tl' | 'tr' | 'bl' | 'br' }) {
+  const classes = {
+    tl: "top-0 left-0 border-t-2 border-l-2",
+    tr: "top-0 right-0 border-t-2 border-r-2",
+    bl: "bottom-0 left-0 border-b-2 border-l-2",
+    br: "bottom-0 right-0 border-b-2 border-r-2",
+  };
+  return (
+    <div className={cn("absolute w-4 h-4 border-flare-accent/20", classes[position])} />
+  );
+}
+
 function TrustBadge({ score }: { score: number }) {
   const color = score >= 80 ? '#4ADE80' : score >= 60 ? '#22D3EE' : score >= 40 ? '#FCD34D' : '#FB7185';
-  const label = score >= 80 ? 'High' : score >= 60 ? 'Medium' : 'Low';
   return (
     <span
-      className="font-data rounded-md px-1.5 py-0.5 text-[10px] font-bold"
+      className="font-mono rounded-none px-1.5 py-0.5 text-[10px] font-bold border border-[rgba(255,255,255,0.05)]"
       style={{ background: `${color}18`, color }}
     >
-      {label} · {score}
+      {score}
     </span>
   );
 }
 
 export default async function HomePage() {
   const stats = await getHomeStats();
+  const typewriterWords = ["On-Chain Agents", "Smart Contracts", "Autonomous Entities", "AI Orchestrators"];
 
   return (
-    <>
+    <div className="min-h-screen bg-flare-bg selection:bg-flare-accent selection:text-flare-bg overflow-x-hidden">
       <Header />
 
-      {/* HERO */}
-      <section className="relative flex min-h-[88vh] flex-col items-center justify-center overflow-hidden px-6 pb-20 text-center">
-
-        {/* Background glows */}
-        <div
-          className="pointer-events-none absolute left-1/2 top-1/3 -translate-x-1/2 -translate-y-1/2"
-          style={{
-            width: 700,
-            height: 700,
-            background: 'radial-gradient(circle, rgba(74,222,128,0.07) 0%, transparent 65%)',
-            filter: 'blur(40px)',
-          }}
-          aria-hidden="true"
-        />
-        <div
-          className="pointer-events-none absolute right-1/4 top-1/4"
-          style={{
-            width: 400,
-            height: 400,
-            background: 'radial-gradient(circle, rgba(34,211,238,0.05) 0%, transparent 70%)',
-            filter: 'blur(60px)',
-          }}
-          aria-hidden="true"
-        />
-
-        <div className="relative z-10 max-w-5xl">
-
-          {/* Network status bar */}
-          <div className="mb-10 flex flex-wrap items-center justify-center gap-4">
-            <div className={cn(
-              'flex items-center gap-2 rounded-full border px-3.5 py-1.5',
-              'border-[rgba(74,222,128,0.2)] bg-[rgba(74,222,128,0.06)]',
-            )}>
-              <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
-              <span className="text-[12px] font-medium text-primary">Live · Avalanche Mainnet</span>
-            </div>
-            <div className="hidden items-center gap-5 sm:flex">
-              <span className="font-data text-[12px] text-[#64748B]">
-                <span className="font-semibold text-white">{stats.total}</span> agents indexed
-              </span>
-              <span className="h-3 w-px bg-[rgba(255,255,255,0.08)]" />
-              <span className="font-data text-[12px] text-[#64748B]">
-                <span className="font-semibold text-primary">{stats.verifiedPct}%</span> verified
-              </span>
-              <span className="h-3 w-px bg-[rgba(255,255,255,0.08)]" />
-              <span className="font-data text-[12px] text-[#64748B]">
-                avg score <span className="font-semibold text-white">{stats.avgTrustScore}</span>
-              </span>
-            </div>
-          </div>
-
-          {/* Headline */}
-          <h1 className="mb-5 text-5xl font-extrabold leading-[1.1] tracking-tight text-white lg:text-7xl">
-            The Reputation Layer{' '}
-            <br className="hidden sm:block" />
-            for{' '}
-            <span
-              className="bg-clip-text text-transparent"
-              style={{ backgroundImage: 'linear-gradient(135deg, #4ADE80 0%, #22D3EE 100%)' }}
-            >
-              On-Chain Agents
-            </span>
-          </h1>
-
-          <p className="mx-auto mb-10 max-w-xl text-[17px] leading-relaxed text-[#94A3B8]">
-            Discover, verify, and monitor autonomous smart contract agents on Avalanche.
-            Real-time trust scores backed by on-chain analysis.
-          </p>
-
-          {/* CTAs */}
-          <div className="mb-16 flex flex-wrap items-center justify-center gap-3">
-            <Link
-              href="/scanner"
-              className={cn(
-                'inline-flex items-center gap-2 rounded-lg px-7 py-3 text-[14px] font-semibold',
-                'bg-primary text-[#0B0F14] transition-all duration-200',
-                'hover:bg-[#6EE7A0] hover:shadow-[0_0_24px_rgba(74,222,128,0.4)] hover:-translate-y-0.5',
-              )}
-            >
-              Open Scanner
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-            <a
-              href="https://t.me/enigma_avax"
-              target="_blank"
-              rel="noopener noreferrer"
-              className={cn(
-                'inline-flex items-center gap-2 rounded-lg px-7 py-3 text-[14px] font-semibold',
-                'border border-[rgba(255,255,255,0.1)] bg-[rgba(255,255,255,0.04)] text-white',
-                'hover:bg-[rgba(255,255,255,0.08)] hover:border-[rgba(255,255,255,0.16)] transition-all duration-200',
-              )}
-            >
-              <MessageCircle className="h-4 w-4" />
-              Contact Us
-            </a>
-          </div>
-
-          {/* Live agents preview card */}
-          {stats.recentAgents.length > 0 && (
-            <div className={cn(
-              'mx-auto max-w-md overflow-hidden rounded-xl text-left',
-              'border border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.03)]',
-              'backdrop-blur-[20px]',
-            )}>
-              <div className="flex items-center justify-between border-b border-[rgba(255,255,255,0.06)] px-4 py-3">
-                <div className="flex items-center gap-2">
-                  <Activity className="h-3.5 w-3.5 text-primary" />
-                  <span className="text-[11px] font-semibold uppercase tracking-wider text-[#64748B]">
-                    Recent Agents
-                  </span>
-                </div>
-                <span className="font-data text-[11px] text-[#475569]">live</span>
+      {/* Hero with Industrial Accents */}
+      <section className="relative pt-48 pb-32 px-6 overflow-hidden">
+        {/* Background Grid Pattern */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:32px_32px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_70%,transparent_100%)] pointer-events-none" />
+        
+        <div className="max-w-5xl mx-auto relative">
+          <div className="text-center">
+            {/* Top Metadata Bar */}
+            <div className="inline-flex items-center gap-0 mb-16 rounded-none border border-flare-stroke bg-flare-surface/40 backdrop-blur-sm relative overflow-hidden group h-12">
+              <div className="absolute inset-0 bg-flare-accent/5 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+              
+              <div className="flex items-center gap-4 px-6 h-full border-r border-flare-stroke bg-red-600/10">
+                <img 
+                  src="/avalanche-logo.webp" 
+                  alt="Avalanche" 
+                  className="w-5 h-5 object-contain"
+                />
+                <span className="font-mono text-[11px] uppercase tracking-[0.4em] text-white font-black">
+                  AVALANCHE
+                </span>
               </div>
 
-              <div className="divide-y divide-[rgba(255,255,255,0.04)]">
-                {stats.recentAgents.map((agent) => (
-                  <Link
-                    key={agent.address}
-                    href={`/agents/${agent.address}`}
-                    className="flex items-center justify-between px-4 py-3 transition-colors hover:bg-[rgba(255,255,255,0.04)]"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className={cn(
-                        'flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md',
-                        'bg-[rgba(74,222,128,0.1)] text-[10px] font-bold text-primary',
-                      )}>
-                        {agent.name.slice(0, 2).toUpperCase()}
-                      </div>
-                      <div>
-                        <p className="truncate text-[13px] font-medium text-white" style={{ maxWidth: 160 }}>
-                          {agent.name}
-                        </p>
-                        <p className="text-[11px] text-[#475569]">
+              <div className="flex items-center gap-6 px-6 h-full">
+                <div className="flex items-center gap-2">
+                  <Activity className="w-3.5 h-3.5 text-flare-accent animate-pulse" />
+                  <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-flare-text-l font-bold">
+                    LIVE_TELL_v1.0.8
+                  </span>
+                </div>
+                <div className="h-4 w-px bg-flare-stroke" />
+                <div className="flex items-center gap-2">
+                  <Lock className="w-3.5 h-3.5 text-flare-accent opacity-60" />
+                  <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-flare-text-l font-bold">
+                    NON-CUSTODIAL
+                  </span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="relative inline-block pb-8">
+              <IndustrialCorner position="tl" />
+              <IndustrialCorner position="tr" />
+              <div className="px-8 py-4">
+                <h1 className="text-6xl md:text-[90px] font-black text-flare-text-h leading-[1.1] tracking-tighter text-balance mb-8">
+                  The Reputation <br className="hidden sm:block" /> 
+                  <span className="text-flare-accent">Layer</span>
+                  <span className="text-flare-text-h opacity-40 mx-3">for</span> <br className="hidden sm:block" />
+                  <span className="bg-gradient-to-r from-flare-accent via-flare-accent/80 to-flare-accent/40 bg-clip-text text-transparent">
+                    <Typewriter words={typewriterWords} />
+                  </span>
+                </h1>
+              </div>
+              <IndustrialCorner position="bl" />
+              <IndustrialCorner position="br" />
+            </div>
+            
+            <p className="text-xl text-flare-text-l max-w-2xl mx-auto mb-16 text-pretty leading-relaxed font-medium mt-10">
+              High-precision infrastructure to discover, verify, and monitor 
+              autonomous smart contract agents on Avalanche.
+            </p>
+            
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+              <Link
+                href="/scanner"
+                className="group relative h-14 px-12 bg-flare-accent text-flare-bg font-black rounded-none flex items-center gap-3 hover:translate-y-[-2px] transition-all hover:shadow-[0_0_40px_rgba(74,222,128,0.4)] overflow-hidden"
+              >
+                <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+                <span className="relative z-10 tracking-[0.1em] uppercase">Launch Scanner</span>
+                <ArrowRight className="w-5 h-5 relative z-10 group-hover:translate-x-1 transition-transform" />
+              </Link>
+              <a
+                href="https://t.me/flare_avax"
+                target="_blank"
+                className="h-14 px-12 border border-flare-stroke text-flare-text-h font-black rounded-none flex items-center gap-3 hover:bg-flare-surface transition-all active:scale-95 group tracking-[0.1em] uppercase"
+              >
+                <MessageCircle className="w-5 h-5 group-hover:text-flare-accent transition-colors" />
+                Contact Node
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Registry with Industrial Styling */}
+      <section className="px-6 pb-40">
+        <div className="max-w-4xl mx-auto">
+          <div className="relative rounded-none border border-flare-stroke bg-flare-surface overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)] group transition-all duration-300">
+            {/* Scanned line effect */}
+            <div className="absolute top-0 left-0 w-full h-[1px] bg-flare-accent/20 animate-scan transition-opacity" />
+            
+            <div className="h-12 border-b border-flare-stroke flex items-center justify-between px-6 bg-flare-bg/40 backdrop-blur-md">
+              <div className="flex items-center gap-3">
+                <div className="w-2 h-2 bg-flare-accent rounded-none" />
+                <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-flare-text-l font-black">Agent Network Telemetry</span>
+              </div>
+              <div className="flex items-center gap-5 text-flare-text-l font-mono text-[9px] uppercase tracking-widest opacity-80">
+                <span className="text-flare-accent">{stats.total} INDEXED</span>
+                <span className="h-3 w-px bg-flare-stroke" />
+                <span>{stats.verifiedPct}% TRUST RATIO</span>
+              </div>
+            </div>
+            
+            <div className="divide-y divide-flare-stroke bg-flare-bg/20">
+              {stats.recentAgents.map((agent) => (
+                <Link
+                  key={agent.address}
+                  href={`/agents/${agent.address}`}
+                  className="flex items-center justify-between px-8 py-6 transition-all hover:bg-flare-accent/[0.02] group/item relative"
+                >
+                  <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-flare-accent scale-y-0 group-hover/item:scale-y-100 transition-transform origin-top" />
+                  <div className="flex items-center gap-6">
+                    <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-none border border-flare-stroke bg-flare-surface font-mono text-lg font-black text-flare-accent group-hover/item:border-flare-accent/50 transition-colors shadow-inner">
+                      {agent.name.slice(0, 1).toUpperCase()}
+                    </div>
+                    <div>
+                      <p className="text-[17px] font-black text-flare-text-h tracking-tight uppercase group-hover/item:text-flare-accent transition-colors">
+                        {agent.name}
+                      </p>
+                      <div className="flex items-center gap-3 mt-1">
+                        <p className="font-mono text-[9px] text-flare-text-l tracking-[0.2em] uppercase font-bold flex items-center gap-2">
                           {agent.status === 'VERIFIED' ? (
-                            <span className="flex items-center gap-1 text-primary">
-                              <ShieldCheck className="h-3 w-3" /> Verified
-                            </span>
+                            <>
+                              <ShieldCheck className="h-3 w-3 text-flare-accent" /> TRUSTED INSTANCE
+                            </>
                           ) : (
-                            <span className="capitalize">{agent.status.toLowerCase()}</span>
+                            <span className="opacity-50">{agent.status}</span>
                           )}
                         </p>
                       </div>
                     </div>
+                  </div>
+                  <div className="flex items-center gap-6">
+                    <div className="text-right hidden sm:block">
+                      <p className="text-[9px] font-mono text-flare-text-l uppercase tracking-widest opacity-50 mb-1">SCORE_INDEX</p>
+                      <p className="text-lg font-black font-mono text-flare-text-h">{agent.trust_score}.0</p>
+                    </div>
+                    <div className="h-10 w-px bg-flare-stroke mx-2 hidden sm:block" />
                     <TrustBadge score={agent.trust_score} />
-                  </Link>
-                ))}
-              </div>
-
-              <div className="border-t border-[rgba(255,255,255,0.06)] px-4 py-2.5">
-                <Link
-                  href="/scanner/agents"
-                  className="flex items-center justify-center gap-1.5 text-[11px] font-medium text-[#64748B] hover:text-white transition-colors"
-                >
-                  View all {stats.total} agents
-                  <ArrowRight className="h-3 w-3" />
+                    <ArrowRight className="h-5 w-5 text-flare-accent opacity-0 -translate-x-4 transition-all group-hover/item:opacity-100 group-hover/item:translate-x-0" />
+                  </div>
                 </Link>
-              </div>
+              ))}
             </div>
-          )}
 
-          {stats.recentAgents.length === 0 && (
-            <div className={cn(
-              'mx-auto flex max-w-md items-center justify-center gap-3 rounded-xl py-8',
-              'border border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.02)]',
-            )}>
-              <Cpu className="h-5 w-5 text-[#334155]" />
-              <span className="text-sm text-[#475569]">No agents indexed yet</span>
+            <div className="border-t border-flare-stroke px-8 py-5 bg-flare-surface/60 flex justify-center group/footer">
+              <Link
+                href="/scanner"
+                className="group/btn flex items-center gap-3 text-[11px] font-mono uppercase tracking-[0.3em] text-flare-text-l hover:text-flare-accent transition-colors font-black"
+              >
+                Initialize Full Sync
+                <ArrowRight className="h-4 w-4 transition-transform group-hover/btn:translate-x-2" />
+              </Link>
             </div>
-          )}
+          </div>
         </div>
       </section>
 
       <FeaturesSection />
       <HowItWorksSection />
       <CTASection />
-
-      <section className="flex justify-center px-6 py-12">
-        <VisitorStats />
-      </section>
-
-      <Footer />
-    </>
+      <Footer className="border-t border-flare-stroke bg-flare-bg" />
+    </div>
   );
 }

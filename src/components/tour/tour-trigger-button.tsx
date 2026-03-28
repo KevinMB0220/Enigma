@@ -19,10 +19,11 @@ export function TourTriggerButton({ page, className }: TourTriggerButtonProps) {
       onClick={startTour}
       disabled={!isReady}
       className={cn(
-        'flex h-8 w-8 items-center justify-center rounded-lg transition-all duration-150',
-        'border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.04)]',
-        'text-[#94A3B8] hover:border-[rgba(74,222,128,0.3)] hover:bg-[rgba(74,222,128,0.06)] hover:text-primary',
-        'disabled:opacity-50 disabled:cursor-not-allowed',
+        'flex h-10 w-10 items-center justify-center rounded-none transition-all duration-300',
+        'border border-[#4ADE80]/20 bg-[#4ADE80]/5',
+        'text-[#4ADE80]/60 hover:border-[#4ADE80]/50 hover:bg-[#4ADE80]/15 hover:text-[#4ADE80]',
+        'hover:shadow-[0_0_15px_rgba(74,222,128,0.2)]',
+        'disabled:opacity-20 disabled:cursor-not-allowed',
         !isCompleted && isReady && 'animate-pulse',
         className
       )}
@@ -30,7 +31,7 @@ export function TourTriggerButton({ page, className }: TourTriggerButtonProps) {
       aria-label={`Start ${page} page tour`}
     >
       {isReady ? (
-        <HelpCircle className="h-4 w-4" />
+        <span className="font-mono text-[15px] font-black mt-0.5">?</span>
       ) : (
         <Loader2 className="h-4 w-4 animate-spin" />
       )}

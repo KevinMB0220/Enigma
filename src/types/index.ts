@@ -1,5 +1,5 @@
 /**
- * Enigma Type Definitions
+ * FLARE Type Definitions
  */
 
 export type { Database, Json } from './database';

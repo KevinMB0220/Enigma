@@ -10,7 +10,7 @@ interface LoadingSpinnerProps {
 
 /**
  * Attractive loading spinner with orbital animation
- * Designed to match the Enigma design system
+ * Designed to match the FLARE design system
  */
 export function LoadingSpinner({
   size = 'md',

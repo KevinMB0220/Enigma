@@ -2,6 +2,7 @@
 
 import { type LucideIcon, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { LineChart, Line, ResponsiveContainer } from 'recharts';
+import { IndustrialCorner } from '@/components/shared/industrial-corner';
 import { cn } from '@/lib/utils';
 
 interface KpiCardProps {
@@ -14,7 +15,7 @@ interface KpiCardProps {
   accentColor?: string;
 }
 
-const DEFAULT_SPARK = [4, 7, 5, 9, 6, 11, 8];
+const DEFAULT_SPARK = [4, 7, 5, 9, 6, 11, 8, 10, 7, 12];
 
 export function KpiCard({
   label,
@@ -32,33 +33,30 @@ export function KpiCard({
 
   return (
     <div className={cn(
-      'glass group relative overflow-hidden p-5 interactive-card',
-      'flex flex-col justify-between gap-4',
+      'group relative overflow-hidden p-6 border border-flare-stroke bg-flare-surface transition-all duration-300 rounded-none shadow-[0_10px_30px_rgba(0,0,0,0.3)]',
+      'flex flex-col justify-between min-h-[140px] hover:translate-y-[-2px]'
     )}>
-      {/* Subtle accent glow */}
-      <div
-        className="pointer-events-none absolute -right-6 -top-6 h-20 w-20 rounded-full opacity-0 blur-2xl transition-opacity duration-300 group-hover:opacity-100"
-        style={{ background: accentColor }}
-      />
-
-      {/* Top row */}
-      <div className="flex items-start justify-between">
-        <div className="flex flex-col gap-1.5">
-          <div
-            className="flex h-8 w-8 items-center justify-center rounded-lg transition-transform group-hover:scale-110"
-            style={{ background: `${accentColor}14` }}
-          >
-            <Icon className="h-4 w-4" style={{ color: accentColor }} />
+      <IndustrialCorner position="tl" size={3} />
+      <IndustrialCorner position="tr" size={3} />
+      <IndustrialCorner position="bl" size={3} />
+      <IndustrialCorner position="br" size={3} />
+      
+      <div className="flex items-start justify-between relative z-10">
+        <div className="flex flex-col gap-3">
+          <div className="flex h-10 w-10 items-center justify-center bg-flare-bg/60 transition-all rounded-md">
+            <Icon className="h-5 w-5" style={{ color: accentColor }} />
           </div>
-          <p className="text-xs font-medium text-[#64748B]">{label}</p>
+          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-flare-text-l group-hover:text-flare-text-h transition-colors">
+            {label}
+          </p>
         </div>
 
-        {/* Sparkline */}
-        <div className="h-12 w-20 opacity-60 group-hover:opacity-100 transition-opacity">
+        {/* Technical Sparkline */}
+        <div className="h-8 w-20 opacity-20 group-hover:opacity-100 transition-opacity">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={chartData}>
               <Line
-                type="monotone"
+                type="stepAfter"
                 dataKey="v"
                 stroke={accentColor}
                 strokeWidth={1.5}
@@ -70,15 +68,15 @@ export function KpiCard({
         </div>
       </div>
 
-      {/* Bottom row */}
-      <div className="flex items-end justify-between">
-        <span className="font-data text-3xl font-bold leading-none text-white">
+      <div className="flex items-end justify-between mt-auto relative z-10">
+        <span className="font-mono text-2xl font-black leading-none text-flare-accent tracking-tighter shadow-sm">
           {value}
         </span>
+        
         {delta && (
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1.5 border border-flare-stroke/40 px-2 py-0.5 bg-flare-bg/40">
             <TrendIcon className="h-3 w-3" style={{ color: trendColor }} />
-            <span className="font-data text-xs font-medium" style={{ color: trendColor }}>
+            <span className="font-mono text-[9px] font-black uppercase tracking-widest text-flare-text-l opacity-80">
               {delta}
             </span>
           </div>

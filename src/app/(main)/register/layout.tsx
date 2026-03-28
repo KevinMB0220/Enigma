@@ -2,10 +2,10 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Register Agent',
-  description: 'Register your autonomous agent on the Enigma platform for trust scoring and verification.',
+  description: 'Register your autonomous agent on the FLARE platform for trust scoring and verification.',
   openGraph: {
-    title: 'Register Agent | Enigma',
-    description: 'Register your autonomous agent on Enigma for trust scoring',
+    title: 'Register Agent | FLARE',
+    description: 'Register your autonomous agent on FLARE for trust scoring',
   },
 };
 

@@ -6,7 +6,7 @@ export function getDocsTourSteps(): StepOptions[] {
     {
       id: 'docs-welcome',
       title: 'Documentation',
-      text: 'Learn how Enigma works: trust scores, ERC-8004 registry, agent metadata, and the REST API.',
+      text: 'Learn how FLARE works: trust scores, ERC-8004 registry, agent metadata, and the REST API.',
       buttons: [
         {
           text: 'Skip',

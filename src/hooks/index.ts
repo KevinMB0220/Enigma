@@ -1,5 +1,5 @@
 /**
- * Custom React hooks for Enigma
+ * Custom React hooks for FLARE
  */
 
 export { useRegisterAgent, type RegisterAgentMutation } from './use-register-agent';

@@ -1,33 +1,34 @@
 'use client';
 
 import Link from 'next/link';
-import { Clock, Database, Shield, ShieldAlert, ShieldCheck, ShieldX } from 'lucide-react';
-import { LineChart, Line, ResponsiveContainer } from 'recharts';
+import { Clock, Database, Shield, ShieldAlert, ShieldCheck, ShieldX, TrendingUp } from 'lucide-react';
+import { AreaChart, Area, ResponsiveContainer, YAxis } from 'recharts';
 import { type Agent } from '@/hooks/use-agents';
 import { type SparklineMap } from '@/hooks/use-agent-sparklines';
 import { cn } from '@/lib/utils/index';
 
 function getTrustColor(score: number) {
-  if (score >= 80) return { text: 'text-[#4ADE80]', bg: 'bg-[rgba(74,222,128,0.1)]', line: '#4ADE80' };
-  if (score >= 60) return { text: 'text-[#22D3EE]', bg: 'bg-[rgba(34,211,238,0.1)]', line: '#22D3EE' };
-  if (score >= 40) return { text: 'text-[#FCD34D]', bg: 'bg-[rgba(252,211,77,0.1)]', line: '#FCD34D' };
-  return { text: 'text-[#FB7185]', bg: 'bg-[rgba(251,113,133,0.1)]', line: '#FB7185' };
+  // Neo-Precisión: Strictly warm/cool emerald and industrial warnings. No standard sky-blue.
+  if (score >= 80) return { text: 'text-[#4ADE80]', bg: 'bg-[#4ADE80]/10', line: '#4ADE80' };
+  if (score >= 60) return { text: 'text-[#10B981]', bg: 'bg-[#10B981]/10', line: '#10B981' };
+  if (score >= 40) return { text: 'text-[#FCD34D]', bg: 'bg-[#FCD34D]/10', line: '#FCD34D' };
+  return { text: 'text-[#FB7185]', bg: 'bg-[#FB7185]/10', line: '#FB7185' };
 }
 
 function getStatusConfig(status: string) {
   const map: Record<string, { icon: typeof ShieldCheck; text: string; bg: string }> = {
-    VERIFIED:  { icon: ShieldCheck, text: 'text-[#4ADE80]', bg: 'bg-[rgba(74,222,128,0.1)]' },
-    PENDING:   { icon: Clock,       text: 'text-[#FCD34D]', bg: 'bg-[rgba(252,211,77,0.1)]' },
-    FLAGGED:   { icon: ShieldAlert, text: 'text-[#FB7185]', bg: 'bg-[rgba(251,113,133,0.1)]' },
-    SUSPENDED: { icon: ShieldX,     text: 'text-[#FB7185]', bg: 'bg-[rgba(251,113,133,0.08)]' },
+    VERIFIED:  { icon: ShieldCheck, text: 'text-[#4ADE80]', bg: 'bg-[#4ADE80]/10' },
+    PENDING:   { icon: Clock,       text: 'text-[#FCD34D]', bg: 'bg-[#FCD34D]/10' },
+    FLAGGED:   { icon: ShieldAlert, text: 'text-[#FB7185]', bg: 'bg-[#FB7185]/10' },
+    SUSPENDED: { icon: ShieldX,     text: 'text-[#FB7185]', bg: 'bg-[#FB7185]/5' },
   };
-  return map[status] ?? { icon: Shield, text: 'text-[#64748B]', bg: 'bg-[rgba(255,255,255,0.05)]' };
+  return map[status] ?? { icon: Shield, text: 'text-[#64748B]', bg: 'bg-[#64748B]/5' };
 }
 
 function mockSparkData(address: string, score: number) {
   const seed = address.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
-  return Array.from({ length: 10 }, (_, i) => {
-    const v = ((seed * (i + 1) * 7919) % 21) - 10;
+  return Array.from({ length: 12 }, (_, i) => {
+    const v = ((seed * (i + 1) * 7919) % 31) - 15;
     return { v: Math.max(0, Math.min(100, score + v)) };
   });
 }
@@ -52,84 +53,90 @@ export function AgentCard({ agent, sparklines = {} }: AgentCardProps) {
     <Link
       href={`/agents/${agent.address}`}
       className={cn(
-        'glass group flex flex-col gap-4 p-4 transition-all duration-200',
-        'hover:border-[rgba(74,222,128,0.15)] hover:bg-[rgba(74,222,128,0.02)]',
+        'group flex flex-col gap-4 p-5 transition-all duration-300',
+        'border border-[#4ADE80]/10 bg-[#0F1219] rounded-none relative overflow-hidden',
+        'hover:border-[#4ADE80]/40 hover:bg-[#4ADE80]/[0.02]',
+        'shadow-[0_10px_30px_rgba(0,0,0,0.3)] hover:shadow-[0_20px_50px_rgba(0,0,0,0.5)]',
       )}
     >
+      {/* Decorative corners */}
+      <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-[#4ADE80]/30" />
+      <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-[#4ADE80]/30" />
+
       {/* Top row: avatar + score */}
       <div className="flex items-start justify-between">
-        <div className="relative h-10 w-10 flex-shrink-0">
-          {agent.metadata?.image ? (
-            <img
-              src={agent.metadata.image}
-              alt={agent.name}
-              className="h-10 w-10 rounded-xl object-cover ring-1 ring-[rgba(255,255,255,0.08)]"
-              onError={(e) => {
-                e.currentTarget.style.display = 'none';
-                const fallback = e.currentTarget.nextElementSibling as HTMLElement | null;
-                if (fallback) { fallback.classList.remove('hidden'); fallback.classList.add('flex'); }
-              }}
-            />
-          ) : null}
+        <div className="relative h-12 w-12 flex-shrink-0">
           <div
             className={cn(
-              'h-10 w-10 items-center justify-center rounded-xl text-sm font-bold',
-              agent.metadata?.image ? 'hidden' : 'flex',
+              'h-full w-full flex items-center justify-center rounded-none font-mono text-sm font-black border border-[#4ADE80]/20',
+              'bg-[#05070A]'
             )}
-            style={{ background: `${colors.line}14`, color: colors.line }}
+            style={{ color: colors.line }}
           >
             {monogram(agent.name)}
           </div>
+          <div className="absolute -bottom-1 -right-1 h-4 w-4 bg-[#05070A] border border-[#4ADE80]/30 flex items-center justify-center">
+             <TrendingUp className="h-2 w-2 text-[#4ADE80]/60" />
+          </div>
         </div>
 
-        <div className={cn('flex items-center gap-1 rounded-lg px-2.5 py-1.5', colors.bg)}>
-          <span className={cn('font-data text-lg font-bold leading-none', colors.text)}>
-            {agent.trust_score}
-          </span>
-          <span className="text-[10px] text-[#475569]">/100</span>
+        <div className={cn('flex flex-col items-end gap-0.5')}>
+           <span className="text-[9px] font-black uppercase tracking-[0.2em] text-[#475569] mb-1">TR_INDEX</span>
+           <div className={cn('flex items-center gap-1.5 px-3 py-1 bg-[#4ADE80]/5 border border-[#4ADE80]/10')}>
+              <span className={cn('font-mono text-[16px] font-black leading-none', colors.text)}>
+                {agent.trust_score}.0
+              </span>
+           </div>
         </div>
       </div>
 
       {/* Name + address */}
-      <div className="min-w-0">
-        <div className="flex items-center gap-1.5">
-          <p className="truncate text-sm font-semibold text-white group-hover:text-[#4ADE80] transition-colors">
+      <div className="min-w-0 space-y-1">
+        <div className="flex items-center gap-2">
+          <p className="truncate text-[13px] font-black text-flare-text-h uppercase tracking-tight group-hover:text-[#4ADE80] transition-colors">
             {agent.name}
           </p>
           {agent.metadata && (
-            <span title="Has on-chain metadata">
-              <Database className="h-3 w-3 shrink-0 text-[#475569]" />
-            </span>
+            <Database className="h-3 w-3 shrink-0 text-[#4ADE80]/40" />
           )}
         </div>
-        <p className="font-data text-[10px] text-[#475569]">
-          {agent.address.slice(0, 8)}...{agent.address.slice(-6)}
+        <p className="font-mono text-[9px] text-[#475569] uppercase tracking-widest opacity-60">
+          ID_{agent.address.slice(0, 12)}
         </p>
       </div>
 
-      {/* Sparkline */}
-      <div className="h-10 w-full">
+      {/* High-Contrast Industrial Area Chart (Replaces "just a line") */}
+      <div className="h-14 w-full relative pt-2">
+        <div className="absolute top-0 left-0 text-[8px] font-black text-[#4ADE80]/20 tracking-tighter">DATA_STRM</div>
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={sparkData} margin={{ top: 2, right: 2, bottom: 2, left: 2 }}>
-            <Line
-              type="monotone"
+          <AreaChart data={sparkData}>
+            <defs>
+              <linearGradient id={`grad-${agent.address}`} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor={colors.line} stopOpacity={0.2}/>
+                <stop offset="95%" stopColor={colors.line} stopOpacity={0}/>
+              </linearGradient>
+            </defs>
+            <YAxis hide domain={[0, 100]} />
+            <Area
+              type="stepAfter"
               dataKey="v"
               stroke={colors.line}
-              strokeWidth={1.5}
-              dot={false}
+              strokeWidth={2}
+              fillOpacity={1}
+              fill={`url(#grad-${agent.address})`}
               isAnimationActive={false}
             />
-          </LineChart>
+          </AreaChart>
         </ResponsiveContainer>
       </div>
 
       {/* Bottom: status + type */}
-      <div className="flex items-center justify-between">
-        <div className={cn('flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-medium', status.bg, status.text)}>
+      <div className="flex items-center justify-between mt-1 pt-3 border-t border-[#4ADE80]/5">
+        <div className={cn('flex items-center gap-2 px-2 py-1 text-[9px] font-black uppercase tracking-widest', status.text)}>
           <StatusIcon className="h-3 w-3" />
           {agent.status}
         </div>
-        <span className="text-[10px] text-[#475569]">{agent.type}</span>
+        <span className="text-[9px] font-mono text-[#475569] uppercase tracking-widest">{agent.type}</span>
       </div>
     </Link>
   );

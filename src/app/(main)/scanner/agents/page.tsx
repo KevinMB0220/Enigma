@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useRef } from 'react';
-import { Bot, SlidersHorizontal, X, LayoutList, LayoutGrid } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { Bot, SlidersHorizontal, X, LayoutList, LayoutGrid, Database, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAgents } from '@/hooks/use-agents';
 import { useAgentSparklines } from '@/hooks/use-agent-sparklines';
 import { AgentTable } from '@/components/scanner/agent-table';
@@ -12,6 +13,7 @@ import { EmptyState } from '@/components/scanner/empty-state';
 import { ErrorState } from '@/components/scanner/error-state';
 import { AgentTableSkeleton } from '@/components/scanner/agent-table-skeleton';
 import { Spinner } from '@/components/shared/spinner';
+import { IndustrialCorner } from '@/components/shared/industrial-corner';
 import { cn } from '@/lib/utils';
 import { type AgentStatus } from '@prisma/client';
 
@@ -26,57 +28,46 @@ function Pagination({ page, meta, onPage }: {
 }) {
   if (!meta || meta.totalPages <= 1) return null;
 
-  // Generate visible page numbers (window of 5)
-  const start = Math.max(1, Math.min(page - 2, meta.totalPages - 4));
-  const end = Math.min(meta.totalPages, start + 4);
-  const pageNumbers = Array.from({ length: end - start + 1 }, (_, i) => start + i);
-
   const btnCls = cn(
-    'flex h-7 min-w-7 items-center justify-center rounded-lg px-2 text-xs transition-all',
-    'border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)]',
-    'text-[#94A3B8] hover:bg-[rgba(255,255,255,0.06)] hover:text-white',
-    'disabled:cursor-not-allowed disabled:opacity-30',
+    'flex h-9 items-center justify-center rounded-none px-4 text-[10px] font-black uppercase tracking-[0.2em] transition-all',
+    'border border-[#4ADE80]/10 bg-[#4ADE80]/5',
+    'text-[#4ADE80]/60 hover:bg-[#4ADE80]/10 hover:text-[#4ADE80] hover:border-[#4ADE80]/30',
+    'disabled:cursor-not-allowed disabled:opacity-20',
   );
 
   return (
-    <div className="flex items-center justify-between border-t border-[rgba(255,255,255,0.06)] px-5 py-3">
-      <span className="font-data text-xs text-[#64748B]">{meta.total} agents</span>
-      <div className="flex items-center gap-1">
-        {/* First */}
-        <button disabled={page <= 1} onClick={() => onPage(1)} className={btnCls}>«</button>
-        {/* Prev */}
-        <button disabled={page <= 1} onClick={() => onPage(page - 1)} className={btnCls}>‹</button>
-
-        {/* Page numbers */}
-        {pageNumbers.map((p) => (
-          <button
-            key={p}
-            onClick={() => onPage(p)}
-            className={cn(
-              btnCls,
-              p === page && 'border-[rgba(74,222,128,0.3)] bg-[rgba(74,222,128,0.08)] text-[#4ADE80]',
-            )}
-          >
-            {p}
-          </button>
-        ))}
-
-        {/* Next */}
-        <button disabled={page >= meta.totalPages} onClick={() => onPage(page + 1)} className={btnCls}>›</button>
-        {/* Last */}
-        <button disabled={page >= meta.totalPages} onClick={() => onPage(meta.totalPages)} className={btnCls}>»</button>
+    <div className="flex items-center justify-between border-t border-[#4ADE80]/10 px-6 py-4 bg-[#05070A]/40">
+      <span className="font-mono text-[9px] uppercase tracking-[0.4em] text-[#4ADE80]/30">
+        {`PAGE::${page.toString().padStart(2, '0')} // TOTAL::${meta.total}`}
+      </span>
+      <div className="flex items-center gap-2">
+        <button disabled={page <= 1} onClick={() => onPage(page - 1)} className={btnCls}>
+          <ChevronLeft className="h-4 w-4 mr-2" /> PREV
+        </button>
+        <button disabled={page >= meta.totalPages} onClick={() => onPage(page + 1)} className={btnCls}>
+          NEXT <ChevronRight className="h-4 w-4 ml-2" />
+        </button>
       </div>
     </div>
   );
 }
 
 export default function AgentsPage() {
+  const searchParams = useSearchParams();
   const [filters, setFilters] = useState<FilterValues>(DEFAULT_FILTERS);
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState(searchParams.get('search') || '');
   const [page, setPage] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const contentRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const urlSearch = searchParams.get('search');
+    if (urlSearch !== null && urlSearch !== search) {
+      setSearch(urlSearch);
+      setPage(1);
+    }
+  }, [searchParams, search]);
 
   const isFiltered = !!filters.service || !!filters.status || filters.trustScoreRange[0] > 0 || filters.trustScoreRange[1] < 100;
 
@@ -94,13 +85,12 @@ export default function AgentsPage() {
     ...(filters.sortBy        && { sortBy: filters.sortBy }),
     ...(filters.sortOrder     && { sortOrder: filters.sortOrder }),
     page,
-    limit: viewMode === 'grid' ? 24 : 25,
+    limit: viewMode === 'grid' ? 24 : 12,
   });
 
   const agents = data?.agents ?? [];
   const meta   = data?.pagination;
 
-  // Fetch real sparkline data for the currently visible agents
   const agentAddresses = agents.map((a) => a.address);
   const { data: sparklinesData } = useAgentSparklines(agentAddresses);
   const sparklines = sparklinesData ?? {};
@@ -112,100 +102,105 @@ export default function AgentsPage() {
   };
 
   return (
-    <div className="flex flex-col gap-4 p-4 sm:gap-6 sm:p-6">
+    <div className="flex flex-col gap-6 p-6 sm:p-8 bg-[#05070A] min-h-full">
 
-      {/* Page header */}
-      <div className="flex items-center gap-3">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[rgba(74,222,128,0.1)] border border-[rgba(74,222,128,0.2)]">
-          <Bot className="h-4 w-4 text-primary" />
-        </div>
-        <div>
-          <h1 className="text-base font-semibold text-white">Agent Registry</h1>
-          <p className="text-xs text-[#64748B]">
-            {meta?.total ?? agents.length} agents indexed on Avalanche
-          </p>
+      {/* Page header (Industrial) */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-[#4ADE80]/10 pb-6">
+        <div className="flex items-center gap-4">
+          <div className="relative h-12 w-12 flex items-center justify-center bg-[#4ADE80]/10 border border-[#4ADE80]/20">
+            <Bot className="h-6 w-6 text-[#4ADE80]" />
+            <div className="absolute top-0 right-0 w-1.5 h-1.5 bg-[#4ADE80] animate-pulse" />
+          </div>
+          <div>
+            <h1 className="text-xl font-black text-flare-text-h uppercase tracking-tighter">AGENT_REGISTRY</h1>
+            <div className="flex items-center gap-2 mt-1">
+               <span className="h-1 w-1 bg-[#4ADE80] rounded-none" />
+               <p className="font-mono text-[10px] text-[#64748B] uppercase tracking-[0.3em]">
+                 VERIFIED_NODES: {meta?.total ?? agents.length}
+               </p>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Table + Filters */}
-      <div className="flex gap-4">
+      {/* Main Panel Area */}
+      <div className="flex gap-8">
 
-        {/* Main panel */}
-        <div ref={contentRef} className="glass flex min-w-0 flex-1 flex-col overflow-hidden">
+        <div ref={contentRef} className="relative flex min-w-0 flex-1 flex-col border border-[#4ADE80]/10 bg-[#0B0F14]/40 overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+          <IndustrialCorner position="tl" />
+          <IndustrialCorner position="tr" />
+          <IndustrialCorner position="bl" />
+          <IndustrialCorner position="br" />
 
           {/* Toolbar */}
-          <div className="flex items-center gap-2 border-b border-[rgba(255,255,255,0.06)] px-5 py-3">
+          <div className="flex items-center gap-4 border-b border-[#4ADE80]/10 px-6 py-4 bg-[#05070A]/40">
             <div className="flex-1">
-              <SearchBar value={search} onChange={(v) => { setSearch(v); setPage(1); }} />
+              <SearchBar 
+                value={search} 
+                onChange={(v) => { setSearch(v); setPage(1); }}
+                className="bg-[#05070A]/60"
+              />
             </div>
 
-            {/* View toggle */}
-            <div className="flex rounded-lg border border-[rgba(255,255,255,0.08)] overflow-hidden">
+            {/* View Mode Toggle (Industrial Squares) */}
+            <div className="flex border border-[#4ADE80]/10 bg-[#05070A]/80">
               <button
                 onClick={() => setViewMode('list')}
                 className={cn(
-                  'flex h-8 w-8 items-center justify-center transition-colors',
+                  'flex h-10 w-12 items-center justify-center transition-all duration-300',
                   viewMode === 'list'
-                    ? 'bg-[rgba(74,222,128,0.1)] text-[#4ADE80]'
-                    : 'text-[#64748B] hover:text-white hover:bg-[rgba(255,255,255,0.04)]',
+                    ? 'bg-[#4ADE80]/20 text-[#4ADE80] shadow-[inset_0_0_15px_rgba(74,222,128,0.1)]'
+                    : 'text-[#475569] hover:text-[#4ADE80]/60 hover:bg-[#4ADE80]/5',
                 )}
                 title="List view"
               >
-                <LayoutList className="h-3.5 w-3.5" />
+                <LayoutList className="h-4 w-4" />
               </button>
+              <div className="w-px bg-[#4ADE80]/10 h-6 my-auto" />
               <button
                 onClick={() => setViewMode('grid')}
                 className={cn(
-                  'flex h-8 w-8 items-center justify-center transition-colors',
+                  'flex h-10 w-12 items-center justify-center transition-all duration-300',
                   viewMode === 'grid'
-                    ? 'bg-[rgba(74,222,128,0.1)] text-[#4ADE80]'
-                    : 'text-[#64748B] hover:text-white hover:bg-[rgba(255,255,255,0.04)]',
+                    ? 'bg-[#4ADE80]/20 text-[#4ADE80] shadow-[inset_0_0_15px_rgba(74,222,128,0.1)]'
+                    : 'text-[#475569] hover:text-[#4ADE80]/60 hover:bg-[#4ADE80]/5',
                 )}
                 title="Grid view"
               >
-                <LayoutGrid className="h-3.5 w-3.5" />
+                <LayoutGrid className="h-4 w-4" />
               </button>
             </div>
 
-            {/* Filter toggle (mobile/medium) */}
+            {/* Filter Toggle (Industrial) */}
             <button
               onClick={() => setShowFilters(f => !f)}
               className={cn(
-                'flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all xl:hidden',
+                'flex h-10 items-center gap-3 px-5 text-[10px] font-black uppercase tracking-[0.2em] transition-all xl:hidden',
                 'border',
                 showFilters || isFiltered
-                  ? 'border-[rgba(74,222,128,0.3)] bg-[rgba(74,222,128,0.06)] text-primary'
-                  : 'border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)] text-[#94A3B8] hover:text-white',
+                  ? 'border-[#4ADE80]/40 bg-[#4ADE80]/10 text-[#4ADE80]'
+                  : 'border-[#4ADE80]/10 bg-[#05070A]/80 text-[#94A3B8] hover:text-[#4ADE80]',
               )}
             >
-              {showFilters ? <X className="h-3.5 w-3.5" /> : <SlidersHorizontal className="h-3.5 w-3.5" />}
-              Filters
+              {showFilters ? <X className="h-4 w-4" /> : <SlidersHorizontal className="h-4 w-4" />}
+              PARAMS
               {isFiltered && (
-                <span className="flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[9px] font-bold text-[#0B0F14]">!</span>
+                <span className="flex h-1.5 w-1.5 bg-[#4ADE80] animate-pulse" />
               )}
             </button>
           </div>
 
-          {/* Inline filter panel (mobile) */}
+          {/* Mobile Filter Panel */}
           {showFilters && (
-            <div className="border-b border-[rgba(255,255,255,0.06)] px-5 py-4 xl:hidden">
+            <div className="border-b border-[#4ADE80]/10 px-6 py-6 bg-[#0B0F14]/20 xl:hidden">
               <Filters values={filters} onChange={(f) => { setFilters(f); setPage(1); }} />
             </div>
           )}
 
-          {/* Top pagination */}
-          <Pagination page={page} meta={meta} onPage={handlePage} />
-
-          {/* Content */}
-          <div className="min-w-0">
+          {/* Content Wrapper */}
+          <div className="min-w-0 p-6">
             {isLoading ? (
-              viewMode === 'grid' ? (
-                <div className="flex justify-center py-16">
-                  <Spinner size="md" />
-                </div>
-              ) : (
-                <AgentTableSkeleton rows={10} />
-              )
+               <AgentTableSkeleton rows={10} />
             ) : isError ? (
               <ErrorState onRetry={() => refetch()} />
             ) : agents.length === 0 ? (
@@ -214,25 +209,30 @@ export default function AgentsPage() {
                 onResetFilters={handleReset}
               />
             ) : viewMode === 'grid' ? (
-              <div className="grid grid-cols-2 gap-3 p-4 sm:grid-cols-3 lg:grid-cols-4">
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {agents.map((agent) => (
                   <AgentCard key={agent.address} agent={agent} sparklines={sparklines} />
                 ))}
               </div>
             ) : (
-              <AgentTable agents={agents} sparklines={sparklines} />
+              <AgentTable agents={agents} />
             )}
           </div>
 
-          {/* Bottom pagination */}
           <Pagination page={page} meta={meta} onPage={handlePage} />
         </div>
 
-        {/* Right panel: persistent Filters on xl */}
-        <div className="hidden w-64 flex-shrink-0 xl:block">
-          <div className="glass p-4">
-            <p className="mb-3 text-[10px] font-semibold uppercase tracking-widest text-[#475569]">
-              Filters
+        {/* Desktop Sidebar (Industrial) */}
+        <div className="hidden w-72 flex-shrink-0 xl:block">
+          <div className="relative border border-[#4ADE80]/20 bg-[#0B0F14] p-8 shadow-[0_20px_40px_rgba(0,0,0,0.4)]">
+             <IndustrialCorner position="tl" />
+             <IndustrialCorner position="tr" />
+             <IndustrialCorner position="bl" />
+             <IndustrialCorner position="br" />
+             
+            <p className="mb-8 flex items-center gap-3 border-b border-[#4ADE80]/10 pb-4 text-[11px] font-black uppercase tracking-[0.4em] text-flare-text-h">
+              <SlidersHorizontal size={14} className="text-[#4ADE80]" />
+              PARAMETERS
             </p>
             <Filters values={filters} onChange={(f) => { setFilters(f); setPage(1); }} />
           </div>
