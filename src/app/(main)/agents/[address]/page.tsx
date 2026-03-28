@@ -42,7 +42,7 @@ function MetricBadge({ label, value, color = "#4ADE80" }: { label: string; value
   );
 }
 
-function SectionHeading({ title, icon: Icon }: { title: string; icon: any }) {
+function SectionHeading({ title, icon: Icon }: { title: string; icon: React.ComponentType<{ className?: string }> }) {
   return (
     <div className="flex items-center gap-3 mb-8">
        <div className="h-8 w-8 flex items-center justify-center bg-[#4ADE80]/5 border border-[#4ADE80]/10">
@@ -163,12 +163,12 @@ export default function AgentProfilePage() {
   ];
 
   const allEvents = [
-    ...(heartbeats?.logs || []).map((h: any) => ({ 
-      id: h.id, 
-      type: 'HEARTBEAT', 
-      time: h.timestamp, 
-      label: `${h.result} · ${h.responseTimeMs}ms`, 
-      sortKey: new Date(h.timestamp).getTime() 
+    ...(heartbeats?.logs || []).map((h: { id: string; timestamp: string; result: string; responseTimeMs: number }) => ({
+      id: h.id,
+      type: 'HEARTBEAT',
+      time: h.timestamp,
+      label: `${h.result} · ${h.responseTimeMs}ms`,
+      sortKey: new Date(h.timestamp).getTime()
     })),
     ...(agent.ratings?.recent || []).map((r) => ({ 
       id: r.id, 

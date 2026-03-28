@@ -109,7 +109,7 @@ export function useTour(page: TourPage) {
           
           // Defensive check for 'this' and its options
           // In some environments, Shepherd's 'this' might be different or we might be in an arrow context
-          const currentStep = this as any;
+          const currentStep = this as { options?: { attachTo?: unknown } };
           if (!element && currentStep && currentStep.options) {
             currentStep.options.attachTo = undefined;
           }

@@ -48,7 +48,7 @@ function TablePagination({ page, meta, onPage }: {
           PREV_SYNC
         </button>
         <span className="font-mono text-[10px] font-black text-flare-text-h tracking-widest mt-0.5">
-          {page.toString().padStart(2, '0')} // {meta.totalPages.toString().padStart(2, '0')}
+          {`${page.toString().padStart(2, '0')} // ${meta.totalPages.toString().padStart(2, '0')}`}
         </span>
         <button
           disabled={page >= meta.totalPages}

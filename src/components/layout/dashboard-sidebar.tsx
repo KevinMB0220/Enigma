@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import type { Route } from 'next';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
@@ -106,7 +107,7 @@ export function DashboardSidebar({ isOpen = false, onClose }: DashboardSidebarPr
             return (
               <Link
                 key={`${item.href}-${item.label}`}
-                href={item.href as any}
+                href={item.href as Route}
                 onClick={onClose}
                 className={cn(
                   'group flex items-center h-14 rounded-none transition-all duration-300 relative overflow-hidden',

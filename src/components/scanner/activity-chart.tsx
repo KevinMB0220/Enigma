@@ -22,7 +22,7 @@ export function ActivityChart() {
 
   const chartData = useMemo(() => {
     if (!data) return [];
-    return data.map((d: any) => ({
+    return data.map((d: { date: string; registrations: number }) => ({
       name: d.date.split('-').slice(1).join('/'),
       count: d.registrations,
     }));
@@ -84,7 +84,7 @@ export function ActivityChart() {
               itemStyle={{ color: '#4ADE80' }}
             />
             <Bar dataKey="count" radius={[0, 0, 0, 0]}>
-              {chartData.map((_entry: any, index: number) => (
+              {chartData.map((_entry: unknown, index: number) => (
                 <Cell 
                   key={`cell-${index}`} 
                   fill={index === chartData.length - 1 ? '#4ADE80' : 'rgba(74, 222, 128, 0.2)'} 

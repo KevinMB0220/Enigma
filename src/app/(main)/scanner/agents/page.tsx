@@ -38,7 +38,7 @@ function Pagination({ page, meta, onPage }: {
   return (
     <div className="flex items-center justify-between border-t border-[#4ADE80]/10 px-6 py-4 bg-[#05070A]/40">
       <span className="font-mono text-[9px] uppercase tracking-[0.4em] text-[#4ADE80]/30">
-        PAGE::{page.toString().padStart(2, '0')} // TOTAL::{meta.total}
+        {`PAGE::${page.toString().padStart(2, '0')} // TOTAL::${meta.total}`}
       </span>
       <div className="flex items-center gap-2">
         <button disabled={page <= 1} onClick={() => onPage(page - 1)} className={btnCls}>

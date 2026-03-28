@@ -42,7 +42,7 @@ import { IndustrialCorner } from '@/components/shared/industrial-corner';
 
 // ── Shared Primitives (Neo-Precisión) ──────────────────────────────────────────────
 
-function SectionHeading({ icon: Icon, children }: { icon: any; children: React.ReactNode }) {
+function SectionHeading({ icon: Icon, children }: { icon: React.ComponentType<{ className?: string }>; children: React.ReactNode }) {
   return (
     <div className="group relative mb-8 animate-fade-in-up">
       <h2 className="flex items-center gap-4 text-3xl font-black uppercase tracking-tighter text-white">
@@ -421,7 +421,7 @@ function MetadataSection() {
         ))}
       </div>
 
-      <Para className="italic opacity-80">The image URL must be publicly reachable. FLARE does not cache images — the browser fetches them directly from your server. Use HTTPS and CORS-permissive headers.</Para>
+      <Para><span className="italic opacity-80">The image URL must be publicly reachable. FLARE does not cache images — the browser fetches them directly from your server. Use HTTPS and CORS-permissive headers.</span></Para>
     </div>
   );
 }
@@ -711,7 +711,7 @@ function APISection() {
 
 // ── Icons ──────────────────────────────────────────────────────────────────────────
 
-function UsersIcon(props: any) {
+function UsersIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
   );

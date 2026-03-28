@@ -117,7 +117,7 @@ export function TourCta({ page, title, description, className }: TourCtaProps) {
           'border border-[#4ADE80]/20 shadow-[0_24px_60px_rgba(0,0,0,1)]',
         )}
       >
-        <IndustrialCorner position="top-right" size={20} color="#4ADE80" opacity={0.2} />
+        <IndustrialCorner position="tr" size={20} />
         
         {/* Close Button - Industrial Style */}
         <button
