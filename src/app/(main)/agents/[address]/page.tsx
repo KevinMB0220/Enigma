@@ -22,6 +22,7 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { RatingForm } from '@/components/agent/rating-form';
 import { ReportModal } from '@/components/agent/report-modal';
 import { Spinner } from '@/components/shared/spinner';
@@ -338,7 +339,11 @@ export default function AgentProfilePage() {
                           <DetailRow label="Authority_Key" value={agent.ownerAddress || 'SYSTEM'} mono />
                           <DetailRow label="Cycle_Longevity" value={formatAge(agent.createdAt)} />
                           <DetailRow label="Status_Verified" value={agent.status} />
-                          <DetailRow label="Network_L1" value="Avalanche C-Chain" />
+                          <DetailRow label="Network_L1" value={
+                             <div className="flex items-center gap-2">
+                                <span className="font-mono text-white">AVALANCHE</span>
+                             </div>
+                          } />
                        </div>
                     </div>
 
@@ -396,7 +401,7 @@ export default function AgentProfilePage() {
                        </div>
                        <ExternalLink className="h-5 w-5 text-[#475569] group-hover:text-[#4ADE80] transition-colors" />
                     </Link>
-                 </div>
+                  </div>
               </div>
            )}
 
@@ -478,11 +483,11 @@ export default function AgentProfilePage() {
   );
 }
 
-function DetailRow({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
+function DetailRow({ label, value, mono }: { label: string; value: React.ReactNode; mono?: boolean }) {
    return (
       <div className="flex flex-col gap-2 border-b border-white/5 pb-4">
          <span className="text-[9px] font-black uppercase text-[#475569] tracking-widest">{label}</span>
-         <span className={cn("text-[13px] font-semibold text-white truncate", mono && "font-mono text-[#4ADE80]")}>{value || '—'}</span>
+         <div className={cn("text-[13px] font-semibold text-white truncate", mono && "font-mono text-[#4ADE80]")}>{value ?? '—'}</div>
       </div>
    );
 }

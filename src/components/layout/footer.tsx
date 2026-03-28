@@ -52,7 +52,7 @@ export const Footer: FC<FooterProps> = ({ className }) => {
               <span className="text-sm font-bold text-flare-text-h tracking-tight uppercase">FLARE Platform</span>
             </Link>
             <p className="text-xs text-flare-text-l leading-relaxed uppercase tracking-wider">
-              Autonomous Agent <br /> Reputation Layer <br /> Avalanche network
+              Autonomous Agent <br /> Reputation Layer <br /> Built on Avalanche
             </p>
           </div>
 
@@ -112,12 +112,20 @@ export const Footer: FC<FooterProps> = ({ className }) => {
 
         {/* Bottom Section */}
         <div className="mt-16 pt-8 border-t border-flare-stroke flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-[10px] font-mono text-flare-text-l uppercase tracking-widest">
-            © {currentYear} ENIGMA. REPUTATION LAYER FOR THE AGENTIC AGE.
+          <p className="text-[10px] font-mono text-flare-text-l uppercase tracking-widest leading-relaxed">
+            © {currentYear} FLARE. REPUTATION LAYER FOR THE AGENTIC AGE.
           </p>
-          <div className="flex items-center gap-2">
-            <div className="h-1.5 w-1.5 rounded-full bg-flare-accent animate-pulse" />
-            <span className="text-[10px] font-mono text-flare-text-l uppercase tracking-widest">Avalanche Verified</span>
+          
+          <div className="flex items-center gap-4 py-2 px-4 bg-flare-surface/30 border border-white/5 self-end">
+            <span className="text-[9px] font-mono text-flare-text-l uppercase tracking-[0.2em]">Validated by</span>
+            <div className="flex items-center gap-2">
+              <img 
+                src="/avalanche-logo.webp" 
+                alt="Avalanche" 
+                className="w-4 h-4 object-contain"
+              />
+              <span className="text-[10px] font-black uppercase tracking-[0.1em] text-white">Avalanche</span>
+            </div>
           </div>
         </div>
       </div>

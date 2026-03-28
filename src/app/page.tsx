@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { unstable_cache } from 'next/cache';
 import { ArrowRight, ShieldCheck, Activity, MessageCircle, Cpu, Globe, Lock } from 'lucide-react';
 import { prisma } from '@/lib/database/prisma';
@@ -77,27 +78,34 @@ export default async function HomePage() {
         <div className="max-w-5xl mx-auto relative">
           <div className="text-center">
             {/* Top Metadata Bar */}
-            <div className="inline-flex items-center gap-6 px-4 py-2 mb-16 rounded-none border border-flare-stroke bg-flare-surface/40 backdrop-blur-sm relative overflow-hidden group">
+            <div className="inline-flex items-center gap-0 mb-16 rounded-none border border-flare-stroke bg-flare-surface/40 backdrop-blur-sm relative overflow-hidden group h-12">
               <div className="absolute inset-0 bg-flare-accent/5 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
-              <div className="flex items-center gap-2">
-                <Globe className="w-3 h-3 text-flare-accent opacity-60" />
-                <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-flare-text-l font-bold">
-                  AVAX MAINNET
+              
+              <div className="flex items-center gap-4 px-6 h-full border-r border-flare-stroke bg-red-600/10">
+                <img 
+                  src="/avalanche-logo.webp" 
+                  alt="Avalanche" 
+                  className="w-5 h-5 object-contain"
+                />
+                <span className="font-mono text-[11px] uppercase tracking-[0.4em] text-white font-black">
+                  AVALANCHE
                 </span>
               </div>
-              <div className="h-4 w-px bg-flare-stroke" />
-              <div className="flex items-center gap-2">
-                <Activity className="w-3 h-3 text-flare-accent animate-pulse" />
-                <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-flare-text-l font-bold">
-                  LIVE TELEMETRY
-                </span>
-              </div>
-              <div className="h-4 w-px bg-flare-stroke" />
-              <div className="flex items-center gap-2">
-                <Lock className="w-3 h-3 text-flare-accent opacity-60" />
-                <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-flare-text-l font-bold">
-                  NON-CUSTODIAL
-                </span>
+
+              <div className="flex items-center gap-6 px-6 h-full">
+                <div className="flex items-center gap-2">
+                  <Activity className="w-3.5 h-3.5 text-flare-accent animate-pulse" />
+                  <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-flare-text-l font-bold">
+                    LIVE_TELL_v1.0.8
+                  </span>
+                </div>
+                <div className="h-4 w-px bg-flare-stroke" />
+                <div className="flex items-center gap-2">
+                  <Lock className="w-3.5 h-3.5 text-flare-accent opacity-60" />
+                  <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-flare-text-l font-bold">
+                    NON-CUSTODIAL
+                  </span>
+                </div>
               </div>
             </div>
             

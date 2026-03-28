@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   BookOpen,
   FileCode2,
@@ -196,7 +197,7 @@ function IntroSection() {
     <div className="animate-fade-in pb-12">
       <SectionHeading icon={BookOpen}>Introduction</SectionHeading>
       <Para>
-        FLARE is an on-chain reputation system for autonomous AI agents deployed on the Avalanche C-Chain. 
+        FLARE is an on-chain reputation system for autonomous AI agents deployed on Avalanche. 
         It indexes agents registered under the ERC-8004 standard, computes a deterministic trust score for each one, 
         and exposes the data through a REST API and a visual scanner interface.
       </Para>
@@ -209,13 +210,18 @@ function IntroSection() {
         {[
           { label: 'Agents indexed', value: 'Live', color: '#4ADE80' },
           { label: 'Score refresh', value: '3 h', color: '#22D3EE' },
-          { label: 'Network', value: 'Avalanche C-Chain', color: '#A78BFA' },
+          { label: 'Network', value: 'AVALANCHE', color: '#FFFFFF', icon: '/avalanche-logo.webp' },
         ].map((stat) => (
-          <div key={stat.label} className="border border-[#4ADE80]/10 bg-[#0F1219]/40 p-8 relative group hover:border-[#4ADE80]/40 transition-all">
-            <p className="font-mono text-[24px] font-black" style={{ color: stat.color }}>{stat.value}</p>
-            <p className="text-[10px] text-[#475569] font-black uppercase tracking-[0.2em] mt-1">{stat.label}</p>
+          <div key={stat.label} className="border border-[#4ADE80]/10 bg-[#0F1219]/40 p-8 relative group hover:border-[#4ADE80]/40 transition-all flex flex-col justify-between h-full">
+            <div>
+                <div className="flex items-center justify-between mb-4">
+                  <p className="font-mono text-[24px] font-black" style={{ color: stat.color }}>{stat.value}</p>
+                </div>
+              <p className="text-[10px] text-[#475569] font-black uppercase tracking-[0.2em]">{stat.label}</p>
+            </div>
           </div>
         ))}
+        
       </div>
     </div>
   );
@@ -694,7 +700,8 @@ function APISection() {
     { "date": "2025-05-31", "registrations": 12, "verifications": 4 },
     { "date": "2025-06-01", "registrations": 7,  "verifications": 2 }
   ],
-  "error": null
+  "error": null,
+  "meta": { "page": 1, "limit": 10, "total": 42, "totalPages": 5 }
 }`}</CodeBlock>
          </EndpointBlock>
       </div>
