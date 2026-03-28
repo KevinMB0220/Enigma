@@ -141,7 +141,7 @@ export default function AgentProfilePage() {
         <div className="border border-red-500/20 bg-red-500/5 p-12 text-center max-w-xl">
            <AlertCircle className="h-12 w-12 text-red-400 mx-auto mb-6" />
            <h1 className="text-3xl font-black text-white uppercase tracking-tighter mb-4">PROFILE_NOT_LOCATED</h1>
-           <p className="text-sm text-[#64748B] mb-8 font-mono">{error instanceof Error ? error.message : 'The requested agent address does not exist in the Enigma registry.'}</p>
+           <p className="text-sm text-[#64748B] mb-8 font-mono">{error instanceof Error ? error.message : 'The requested agent address does not exist in the FLARE registry.'}</p>
            <div className="flex items-center justify-center gap-4">
               <Link href="/scanner" className="h-12 px-8 bg-white/5 border border-white/10 text-white font-black uppercase tracking-widest text-[11px] flex items-center justify-center hover:bg-white/10 transition-all text-center">RETURN_TO_BASE</Link>
               <button onClick={() => refetch()} className="h-12 px-8 bg-[#4ADE80] text-[#05070A] font-black uppercase tracking-widest text-[11px] flex items-center justify-center hover:brightness-110 transition-all">RETRY_SYNC</button>
@@ -256,7 +256,7 @@ export default function AgentProfilePage() {
                  </div>
 
                  <p className="text-lg font-medium text-[#94A3B8] leading-relaxed max-w-3xl mb-8">
-                    {agent.description || "Experimental autonomous agent instance protocol active on Enigma core layer."}
+                    {agent.description || "Experimental autonomous agent instance protocol active on FLARE core layer."}
                  </p>
 
                  <div className="flex flex-wrap gap-4 mt-auto pt-6 border-t border-white/5" data-tour="agent-actions">

@@ -4,14 +4,14 @@ import { createLogger } from './logger';
 
 const logger = createLogger('auth');
 
-const DEFAULT_MESSAGE = 'Sign this message to verify your wallet ownership on Enigma';
+const DEFAULT_MESSAGE = 'Sign this message to verify your wallet ownership on FLARE';
 
 /**
  * Verify a wallet signature and return the recovered address
  *
  * @param address - The claimed wallet address
  * @param signature - The signature to verify
- * @param message - Optional custom message (defaults to standard Enigma message)
+ * @param message - Optional custom message (defaults to standard FLARE message)
  * @returns The verified wallet address (lowercase)
  * @throws {UnauthorizedError} If signature verification fails
  */

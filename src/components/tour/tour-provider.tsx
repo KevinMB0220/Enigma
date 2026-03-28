@@ -2,16 +2,16 @@
 
 import { createContext, useContext, useCallback, useState, useEffect, type ReactNode } from 'react';
 import 'shepherd.js/dist/css/shepherd.css';
-import '@/styles/shepherd-enigma.css';
+import '@/styles/shepherd-flare.css';
 
 // LocalStorage keys
 const STORAGE_KEYS = {
-  SCANNER_COMPLETED: 'enigma_tour_scanner_completed',
-  REGISTER_COMPLETED: 'enigma_tour_register_completed',
-  DOCS_COMPLETED: 'enigma_tour_docs_completed',
-  AGENT_COMPLETED: 'enigma_tour_agent_completed',
-  CTA_DISMISSED: 'enigma_tour_cta_dismissed',
-  VERSION: 'enigma_tour_version',
+  SCANNER_COMPLETED: 'flare_tour_scanner_completed',
+  REGISTER_COMPLETED: 'flare_tour_register_completed',
+  DOCS_COMPLETED: 'flare_tour_docs_completed',
+  AGENT_COMPLETED: 'flare_tour_agent_completed',
+  CTA_DISMISSED: 'flare_tour_cta_dismissed',
+  VERSION: 'flare_tour_version',
 } as const;
 
 const CURRENT_TOUR_VERSION = '1.1.0';

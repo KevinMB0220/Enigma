@@ -19,7 +19,7 @@ export function WebsiteJsonLd() {
       data={{
         '@context': 'https://schema.org',
         '@type': 'WebApplication',
-        name: 'Enigma',
+        name: 'FLARE',
         description: 'Trust Score Platform for Autonomous Agents on Avalanche',
         applicationCategory: 'BlockchainApplication',
         operatingSystem: 'Web',

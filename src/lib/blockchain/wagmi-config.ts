@@ -5,7 +5,7 @@ import { avalanche, avalancheFuji } from './config';
 const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || '';
 
 /**
- * Wagmi configuration for Enigma
+ * Wagmi configuration for FLARE
  * Supports Avalanche mainnet and Fuji testnet
  */
 export const wagmiConfig = createConfig({
@@ -15,10 +15,10 @@ export const wagmiConfig = createConfig({
     walletConnect({
       projectId,
       metadata: {
-        name: 'Enigma',
+        name: 'FLARE',
         description: 'Trust Score Platform for Autonomous Agents on Avalanche',
-        url: 'https://enigma.io',
-        icons: ['https://enigma.io/logo.png'],
+        url: 'https://flare.io',
+        icons: ['https://flare.io/logo.png'],
       },
     }),
   ],

@@ -68,7 +68,7 @@ export function FeaturesSection() {
           Core Logic
         </div>
         <h2 className="mb-4 text-4xl font-bold text-flare-text-h lg:text-5xl tracking-tight">
-          Why Enigma?
+          Why FLARE?
         </h2>
         <p className="mx-auto max-w-2xl text-flare-text-l text-balance">
           A high-precision infrastructure for evaluating and monitoring autonomous agents on Avalanche network.

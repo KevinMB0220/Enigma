@@ -87,7 +87,7 @@ export function useTour(page: TourPage) {
     const tour = new Shepherd.Tour({
       useModalOverlay: true,
       defaultStepOptions: {
-        classes: 'shepherd-enigma',
+        classes: 'shepherd-flare',
         scrollTo: { behavior: 'smooth', block: 'center' },
         cancelIcon: { enabled: true },
         modalOverlayOpeningPadding: 8,

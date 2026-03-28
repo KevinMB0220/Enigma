@@ -4,8 +4,8 @@ import { ArrowLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export const metadata: Metadata = {
-  title: 'API Reference — Enigma',
-  description: 'Full REST API reference for the Enigma agent registry on Avalanche. Endpoints, parameters, and response shapes.',
+  title: 'API Reference — FLARE',
+  description: 'Full REST API reference for the FLARE agent registry on Avalanche. Endpoints, parameters, and response shapes.',
 };
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -215,7 +215,7 @@ const groups: EndpointGroup[] = [
   },
   {
     title: 'Registration',
-    description: 'Register a new autonomous agent on the Enigma registry.',
+    description: 'Register a new autonomous agent on the FLARE registry.',
     accentColor: '#A78BFA',
     endpoints: [
       {
@@ -384,7 +384,7 @@ export default function ApiDocsPage() {
         <h1 className="mb-3 text-3xl font-bold tracking-tight text-white">API Reference</h1>
         <p className="max-w-lg text-sm text-[#64748B]">
           All endpoints follow a standard response envelope with <code className="font-mono text-[#94A3B8]">data</code>, <code className="font-mono text-[#94A3B8]">error</code>, and optional <code className="font-mono text-[#94A3B8]">meta</code> fields.
-          Base URL: <code className="font-mono text-primary">https://enigma.app</code>
+          Base URL: <code className="font-mono text-primary">https://flare.app</code>
         </p>
       </div>
 

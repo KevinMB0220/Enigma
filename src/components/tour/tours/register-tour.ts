@@ -6,7 +6,7 @@ export function getRegisterTourSteps(): StepOptions[] {
     {
       id: 'register-intro',
       title: 'Register Your Agent',
-      text: 'This form lets you add your autonomous agent to Enigma. Once registered, it will be indexed and receive a trust score.',
+      text: 'This form lets you add your autonomous agent to FLARE. Once registered, it will be indexed and receive a trust score.',
       buttons: [
         {
           text: 'Skip',

@@ -86,13 +86,13 @@ export function DashboardSidebar({ isOpen = false, onClose }: DashboardSidebarPr
         <div className="flex h-[64px] items-center px-6 overflow-hidden shrink-0">
           <div className="flex items-center gap-5 min-w-[200px]">
              <div className="flex-shrink-0">
-                <Image src="/logo-f1-waves-dark.svg" alt="Enigma" width={32} height={32} className="object-contain" />
+                <Image src="/logo-f1-waves-dark.svg" alt="FLARE" width={32} height={32} className="object-contain" />
              </div>
              <span className={cn(
                "font-black text-flare-text-h text-lg uppercase tracking-[0.4em] transition-opacity duration-300",
                isHovered || isOpen ? "opacity-100" : "opacity-0"
              )}>
-               Enigma
+               FLARE
              </span>
           </div>
         </div>

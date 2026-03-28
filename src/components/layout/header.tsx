@@ -42,14 +42,14 @@ export function Header() {
               <div className="flex h-10 w-10 items-center justify-center bg-transparent rounded-none group-hover:scale-105 transition-all">
                 <Image 
                    src="/logo-f1-waves-dark.svg" 
-                   alt="Enigma" 
+                   alt="FLARE" 
                    width={36} 
                    height={36} 
                    className="object-contain" 
                    priority
                 />
               </div>
-              <span className="font-black text-flare-text-h tracking-[0.4em] text-xl uppercase group-hover:text-flare-accent transition-colors">Enigma</span>
+              <span className="font-black text-flare-text-h tracking-[0.4em] text-xl uppercase group-hover:text-flare-accent transition-colors">FLARE</span>
             </Link>
 
             {/* SearchBar on Scanner */}

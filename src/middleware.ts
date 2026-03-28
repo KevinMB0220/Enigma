@@ -121,7 +121,7 @@ export async function middleware(request: NextRequest) {
   // Collect security + CORS headers to apply (and re-apply after Supabase setAll)
   const origin = request.headers.get('origin');
   const allowedOrigins = [
-    process.env.NEXT_PUBLIC_APP_URL || 'https://enigma-scanner.vercel.app',
+    process.env.NEXT_PUBLIC_APP_URL || 'https://flare-scanner.vercel.app',
     'http://localhost:3000',
   ];
 

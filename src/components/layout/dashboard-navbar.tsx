@@ -94,7 +94,7 @@ export function DashboardNavbar({ onMenuToggle }: DashboardNavbarProps) {
             <div className="relative">
               <Image
                 src="/logo-f1-waves-dark.svg"
-                alt="Enigma"
+                alt="FLARE"
                 width={30}
                 height={30}
                 className="object-contain transition-all group-hover:scale-110"

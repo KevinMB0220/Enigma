@@ -78,8 +78,8 @@ function generateTwitterShareUrl(agent: Agent) {
   // Example Target string:
   // 🕵️ AvaBuilder Agent — Trust Score: 46/100
   // 🛡️ VERIFIED | CUSTOM
-  // Verified on Enigma • Avalanche https://...
-  const text = `🕵️ ${agent.name} — Trust Score: ${agent.trust_score}/100\n${statusEmoji} ${agent.status} | ${typeStr}\n\nVerified on Enigma • Avalanche ${url}`;
+  // Verified on FLARE • Avalanche https://...
+  const text = `🕵️ ${agent.name} — Trust Score: ${agent.trust_score}/100\n${statusEmoji} ${agent.status} | ${typeStr}\n\nVerified on FLARE • Avalanche ${url}`;
   return `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
 }
 

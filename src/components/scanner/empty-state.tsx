@@ -18,7 +18,7 @@ export function EmptyState({ variant = 'no-agents', onResetFilters }: EmptyState
     'no-agents': {
       icon: Plus,
       title: 'No agents registered yet',
-      description: 'Be the first to register an autonomous agent on Enigma.',
+      description: 'Be the first to register an autonomous agent on FLARE.',
       cta: {
         label: 'Register Agent',
         href: '/register' as const,

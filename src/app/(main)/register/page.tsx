@@ -131,7 +131,7 @@ export default function RegisterPage() {
                 <div className="w-12 h-[1px] bg-[#4ADE80]/30" />
              </div>
              <h1 className="text-4xl md:text-6xl font-black text-white uppercase tracking-tighter">
-               Enigma Nodes
+               FLARE Nodes
              </h1>
           </div>
 
@@ -165,7 +165,7 @@ export default function RegisterPage() {
             <div className="space-y-1 mb-12">
               <p className="text-[11px] font-black text-[#4ADE80]/60 uppercase tracking-[0.4em]">Step 01</p>
               <h3 className="text-2xl font-black text-white uppercase tracking-tighter">Initialize Registry</h3>
-              <p className="text-[14px] font-black text-[#4ADE80] uppercase tracking-tighter opacity-80">Enigma Nodes</p>
+              <p className="text-[14px] font-black text-[#4ADE80] uppercase tracking-tighter opacity-80">FLARE Nodes</p>
             </div>
 
             <div className="flex-1 space-y-10">

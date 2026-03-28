@@ -133,7 +133,7 @@ export default async function HomePage() {
                 <ArrowRight className="w-5 h-5 relative z-10 group-hover:translate-x-1 transition-transform" />
               </Link>
               <a
-                href="https://t.me/enigma_avax"
+                href="https://t.me/flare_avax"
                 target="_blank"
                 className="h-14 px-12 border border-flare-stroke text-flare-text-h font-black rounded-none flex items-center gap-3 hover:bg-flare-surface transition-all active:scale-95 group tracking-[0.1em] uppercase"
               >

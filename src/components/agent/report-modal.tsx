@@ -28,7 +28,7 @@ interface ReportModalProps {
   agentAddress: string;
 }
 
-const SIGN_MESSAGE = 'Sign this message to verify your wallet ownership on Enigma';
+const SIGN_MESSAGE = 'Sign this message to verify your wallet ownership on FLARE';
 
 const REPORT_REASONS = [
   { value: 'PROXY_HIDDEN', label: 'Hidden Proxy' },

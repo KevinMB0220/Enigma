@@ -13,7 +13,7 @@ interface RatingFormProps {
   agentAddress: string;
 }
 
-const SIGN_MESSAGE = 'Sign this message to verify your wallet ownership on Enigma';
+const SIGN_MESSAGE = 'Sign this message to verify your wallet ownership on FLARE';
 const MAX_COMMENT_LENGTH = 280;
 
 export function RatingForm({ agentAddress }: RatingFormProps) {

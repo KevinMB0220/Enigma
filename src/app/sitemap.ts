@@ -1,6 +1,6 @@
 import { MetadataRoute } from 'next';
 
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://enigma.app';
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://flare.app';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   return [

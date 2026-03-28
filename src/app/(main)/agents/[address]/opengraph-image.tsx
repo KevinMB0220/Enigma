@@ -4,7 +4,7 @@ import fs from 'fs';
 import path from 'path';
 
 export const runtime = 'nodejs';
-export const alt    = 'Enigma Trust Certificate';
+export const alt    = 'FLARE Trust Certificate';
 export const size   = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
@@ -28,7 +28,7 @@ function statusColor(status: string) {
 export default async function Image({ params }: { params: { address: string } }) {
   const address = params.address.toLowerCase();
 
-  // Load the Enigma logo from the public folder as a base64 data URL
+  // Load the FLARE logo from the public folder as a base64 data URL
   const logoPath = path.join(process.cwd(), 'public', 'logo-f1-waves-dark.svg');
   const logoData = fs.readFileSync(logoPath, 'utf-8');
   const logoSrc  = `data:image/svg+xml;base64,${Buffer.from(logoData).toString('base64')}`;
@@ -96,7 +96,7 @@ export default async function Image({ params }: { params: { address: string } })
           {/* Logo + wordmark */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={logoSrc} width={40} height={40} alt="Enigma" style={{ borderRadius: 10, objectFit: 'contain' }} />
+            <img src={logoSrc} width={40} height={40} alt="FLARE" style={{ borderRadius: 10, objectFit: 'contain' }} />
             <div style={{ display: 'flex', flexDirection: 'column' }}>
               <span style={{ color: '#ffffff', fontSize: 22, fontWeight: 800, letterSpacing: '-0.5px' }}>ENIGMA</span>
               <span style={{ color: '#475569', fontSize: 11, letterSpacing: '2px', textTransform: 'uppercase' }}>Reputation Layer</span>
@@ -209,7 +209,7 @@ export default async function Image({ params }: { params: { address: string } })
           marginTop: 8,
         }}>
           <span style={{ color: '#1E293B', fontSize: 13, fontFamily: 'monospace' }}>
-            enigma.app/agents/{address.slice(0, 10)}…
+            flare.app/agents/{address.slice(0, 10)}…
           </span>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <div style={{

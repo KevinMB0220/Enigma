@@ -44,12 +44,12 @@ export const Footer: FC<FooterProps> = ({ className }) => {
             <Link href="/" className="flex items-center gap-3 group">
               <Image
                 src="/logo-f1-waves-dark.svg"
-                alt="Enigma"
+                alt="FLARE"
                 width={28}
                 height={28}
                 className="object-contain transition-transform group-hover:scale-105"
               />
-              <span className="text-sm font-bold text-flare-text-h tracking-tight uppercase">Enigma Platform</span>
+              <span className="text-sm font-bold text-flare-text-h tracking-tight uppercase">FLARE Platform</span>
             </Link>
             <p className="text-xs text-flare-text-l leading-relaxed uppercase tracking-wider">
               Autonomous Agent <br /> Reputation Layer <br /> Avalanche network

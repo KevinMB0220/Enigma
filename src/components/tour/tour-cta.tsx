@@ -25,7 +25,7 @@ const defaultMessages: Record<TourPage, { title: string; description: string }> 
   },
   docs: {
     title: 'First time?',
-    description: 'Take a tour to understand how Enigma works.',
+    description: 'Take a tour to understand how FLARE works.',
   },
   agent: {
     title: 'Agent Profile',

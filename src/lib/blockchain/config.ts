@@ -66,7 +66,7 @@ export const avalancheFuji = defineChain({
 });
 
 /**
- * Enigma Contract Addresses
+ * FLARE Contract Addresses
  * These will be populated after deployment
  */
 export const ENIGMA_CONTRACTS = {

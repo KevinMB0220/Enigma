@@ -196,7 +196,7 @@ function IntroSection() {
     <div className="animate-fade-in pb-12">
       <SectionHeading icon={BookOpen}>Introduction</SectionHeading>
       <Para>
-        Enigma is an on-chain reputation system for autonomous AI agents deployed on the Avalanche C-Chain. 
+        FLARE is an on-chain reputation system for autonomous AI agents deployed on the Avalanche C-Chain. 
         It indexes agents registered under the ERC-8004 standard, computes a deterministic trust score for each one, 
         and exposes the data through a REST API and a visual scanner interface.
       </Para>
@@ -251,10 +251,10 @@ function QuickStartSection() {
            <h3 className="text-xl font-black text-white uppercase tracking-tighter mb-4">3. Use the API</h3>
            <Para>All data is available via REST. No API key is needed for read-only access.</Para>
            <CodeBlock lang="bash">{`# List top agents by trust score
-curl https://enigma.avax.network/api/v1/agents?sortBy=trust_score&sortOrder=desc&limit=10
+curl https://flare.avax.network/api/v1/agents?sortBy=trust_score&sortOrder=desc&limit=10
 
 # Get a specific agent
-curl https://enigma.avax.network/api/v1/agents/0xABCDEF…`}</CodeBlock>
+curl https://flare.avax.network/api/v1/agents/0xABCDEF…`}</CodeBlock>
            <Para>The API base URL is <Code>/api/v1</Code>. All responses follow the shape <Code>{'{ data, error, meta }'}</Code>.</Para>
         </div>
       </div>
@@ -266,14 +266,14 @@ function RegisterSection() {
   return (
     <div className="animate-fade-in pb-12">
       <SectionHeading icon={UserPlus}>Register Your Agent</SectionHeading>
-      <Para>Ready to get your AI agent on-chain? Follow these steps to register your agent on the Enigma platform and start building trust with the community.</Para>
+      <Para>Ready to get your AI agent on-chain? Follow these steps to register your agent on the FLARE platform and start building trust with the community.</Para>
 
       <div className="space-y-12 mt-12 mb-16">
         {[
           { id: '1', title: 'Prepare Your Metadata', desc: 'Create a JSON file with your agent\'s metadata. Host it on a publicly accessible URL (IPFS, your own server, or any CDN). This will be your tokenURI.' },
           { id: '2', title: 'Connect Your Wallet', desc: 'Go to the Register page and connect your wallet. You\'ll need some AVAX for the transaction gas fee.' },
           { id: '3', title: 'Submit Registration', desc: 'Enter your agent\'s contract address and metadata URI, select the agent type, and submit the transaction. The registration will be processed on-chain immediately.' },
-          { id: '4', title: 'Wait for Indexing', desc: 'Enigma\'s indexer runs every 3 hours. Once indexed, it will appear in the scanner with a PENDING status. The trust score will be calculated in the next cycle.' },
+          { id: '4', title: 'Wait for Indexing', desc: 'FLARE\'s indexer runs every 3 hours. Once indexed, it will appear in the scanner with a PENDING status. The trust score will be calculated in the next cycle.' },
         ].map((step) => (
           <div key={step.id} className="relative pl-16 group">
              <div className="absolute left-0 top-0 h-10 w-10 flex items-center justify-center bg-[#4ADE80]/10 border border-[#4ADE80]/20 font-black text-xs text-[#4ADE80]">0{step.id}</div>
@@ -361,7 +361,7 @@ function ERC8004Section() {
       <SectionHeading icon={Layers}>ERC-8004 Agent Registry</SectionHeading>
       <Para>ERC-8004 is a token standard for registering autonomous AI agents on EVM chains. Each agent is minted as an NFT on the Avalanche C-Chain registry contract. The token&apos;s <Code>tokenURI</Code> resolves to a JSON blob describing the agent&apos;s identity, services, and capabilities.</Para>
       
-      <Para>Enigma listens to Transfer events on the registry contract and automatically indexes any newly minted agent within the next indexer cycle (up to 3 hours).</Para>
+      <Para>FLARE listens to Transfer events on the registry contract and automatically indexes any newly minted agent within the next indexer cycle (up to 3 hours).</Para>
 
       <SubHeading>Registering an Agent</SubHeading>
       <Para>Call <Code>register(tokenURI)</Code> on the ERC-8004 registry contract with your agent&apos;s metadata URI. The URI should point to a publicly accessible JSON document that follows the metadata schema described in the next section. Once indexed, your agent will appear in the scanner with a PENDING status until the trust score is calculated.</Para>
@@ -415,7 +415,7 @@ function MetadataSection() {
         ))}
       </div>
 
-      <Para className="italic opacity-80">The image URL must be publicly reachable. Enigma does not cache images — the browser fetches them directly from your server. Use HTTPS and CORS-permissive headers.</Para>
+      <Para className="italic opacity-80">The image URL must be publicly reachable. FLARE does not cache images — the browser fetches them directly from your server. Use HTTPS and CORS-permissive headers.</Para>
     </div>
   );
 }
@@ -424,7 +424,7 @@ function APISection() {
   return (
     <div className="animate-fade-in pb-12">
       <SectionHeading icon={FileCode2}>API Reference</SectionHeading>
-      <Para>All endpoints follow a standard response envelope with data, error, and optional meta fields. Base URL: <Code>https://enigma.app</Code></Para>
+      <Para>All endpoints follow a standard response envelope with data, error, and optional meta fields. Base URL: <Code>https://flare.app</Code></Para>
 
       <SubHeading>Standard Response Format</SubHeading>
       <CodeBlock lang="json">{`{
@@ -803,7 +803,7 @@ export default function DocsPage() {
                    <span className="text-[10px] font-black text-[#64748B] group-hover:text-white uppercase tracking-widest transition-colors">FULL_API_RESOURCES</span>
                    <ChevronRight className="h-3.5 w-3.5 text-[#475569] group-hover:text-[#4ADE80] transition-all" />
                 </a>
-                <a href="https://t.me/enigma_avax" target="_blank" className="flex items-center justify-between group">
+                <a href="https://t.me/flare_avax" target="_blank" className="flex items-center justify-between group">
                    <span className="text-[10px] font-black text-[#64748B] group-hover:text-white uppercase tracking-widest transition-colors">COMMUNITY_UPLINK</span>
                    <ExternalLink className="h-3.5 w-3.5 text-[#475569] group-hover:text-[#4ADE80] transition-all" />
                 </a>
