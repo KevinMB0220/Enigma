@@ -113,7 +113,7 @@ export default async function HomePage() {
               <IndustrialCorner position="tl" />
               <IndustrialCorner position="tr" />
               <div className="px-8 py-4">
-                <h1 className="text-6xl md:text-[90px] font-black text-flare-text-h leading-[0.85] tracking-tighter text-balance mb-8">
+                <h1 className="text-6xl md:text-[90px] font-black text-flare-text-h leading-[1.1] tracking-tighter text-balance mb-8">
                   The Reputation <br className="hidden sm:block" /> 
                   <span className="text-flare-accent">Layer</span>
                   <span className="text-flare-text-h opacity-40 mx-3">for</span> <br className="hidden sm:block" />
